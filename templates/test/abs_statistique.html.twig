@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistique absence{% endblock %}
+
+{% block stylesheets %}
+    {{parent()}}
+{% endblock %}
+
+{% block body %}
+
+<div class="example-wrapper">
+    <canvas id="myChart" width="75" height="75"></canvas>
+    <button id="test">statistique</button>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script src="{{ absolute_url(asset("cooladmin/vendor/jquery-3.2.1.min.js")) }}"></script>
+    <script src="{{ absolute_url(asset("cooladmin/vendor/chartjs/Chart.bundle.min.js")) }}"></script>
+<script>
+    $(function(){
+        var ctx = document.getElementById('myChart');
+        var myChart = new Chart(ctx, { 
+            type:'line'
+         });
+         console.log(myChart);
+        $('#test').click(function(){
+            
+            $.ajax({
+                url: '{{ path('test_statistique_absence') }}',
+                type:'get',
+                dataType:'json',
+                data:{
+                    date:'01/01/2020 - 29/11/2020'
+                },
+                success: function(data){
+                    var options = {
+                        type: 'line',
+                        data: {
+                            labels: data.x,
+                            datasets: [{
+                                label: 'absence personnel',
+                                data: data.y,
+                                fill: false,
+                                borderColor: [
+                                    'rgba(0, 128, 255, 1)',    
+                                ],
+                                borderWidth: 3,
+                                pointBorderWidth: 2,
+                                pointBorderColor: 'rgba(0, 0, 0, 1)',
+                                lineTension: 0.3,
+                                pointBorderWidth: 2
+                            }]
+                        }
+                    }
+                    myChart = new Chart(ctx, options);
+                },
+                error: function(data){
+                    console.log("error", data)
+                }
+            }) ;
+        });
+       
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Limitation Accès{% endblock %}
+
+{% block pageTitle %}<i class="fas fa-check"></i> Insertion Limitation Accès{% endblock %}
+{% block body %}
+    <div class="col-lg-6 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4>Édition</h4>
+                <hr>
+                {% form_theme form 'form-theme.html.twig' %}
+                {{ form_start(form) }}
+                <div class="form-group">
+                    {{ form_row(form.id_personnel) }}
+                </div>
+                <div class="form-group">
+                    {{ form_row(form.date_debut) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.jours_autorisations) }}
+                    {{ form_errors(form.jours_autorisations) }}
+                    <ul class="list-group">
+                        {% for f in form.jours_autorisations %}
+                            <li class="list-group-item">{{ form_widget(f) }} {{ form_label(f) }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <button type="submit" class="btn btn-primary" id="">
+                    Enregistrer
+                </button>
+                {{ form_end(form) }}
+
+                {#
+                <form method="post" action="{{url('edit_limitation_access')}}" class="form">
+                    <div class="from-group">
+                        <label>Matricule:</label>
+                        <select class="form-control matricule" name="matricule">
+                            <option value="">-- Choisir --</option>
+                            {% for d in liste_personnel %}
+                                <option value="{{d.id_personnel}}">{{d.id_personnel}} {{d.prenom}} {{d.nom}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Liste Jours:</label><br>
+                        {% for k,j in liste_jour %}
+                            <input type="checkbox" value="{{ k }}" name="jours"/>&nbsp;<label>{{ j }}</label><br>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-2">
+                        Rechercher
+                    </button>
+                </form>
+                #}
+
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4>Insertion à partir d'un fichier txt</h4>
+                <hr>
+                <form method="post" action="" enctype="multipart/form-data">
+                    <div class="card-body dropzone" id="liste_txt">
+                        <div class="fallback">
+                            <input name="file" type="file" multiple/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{%endblock%}
+{% block javascripts %}
+    {{parent()}}
+    <script>
+        $('.matricule').select2();
+        $('.id_personnel').select2();
+        $('.date_debut').daterangepicker({
+            singleDatePicker: true,
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+
+        initializeDropzone();
+        function initializeDropzone() {
+            var formElement = document.querySelector('#liste_txt');
+            if (!formElement) {
+                return;
+            }
+            var dropzone_default = new Dropzone(formElement, {
+
+                url: Routing.generate('add_from_liste_limitation_access'),
+                maxFiles: 10,
+                dictMaxFilesExceeded: "Vous ne devez envoyer qu'un seul fichier à la fois",
+                dictDefaultMessage: "Veuillez glisser un fichier ici",
+                // maxfilesexceeded: "La taille du fichier ne doit pas dépassé 20Mo",
+                acceptedFiles: '.txt',
+                paramName: 'liste_txt',
+                maxFilesize: 20, // in Mb
+                addRemoveLinks: true,
+                init: function() {
+                    this.on("maxfilesexceeded", function(file) {
+                        this.removeFile(file);
+                    });
+                    this.on("addedfile", function(file) {
+                        $('#envoyer').attr('disabled', false);
+                    });
+                    this.on("sending", function(file, xhr, formData) {
+                        formData.append('action','sendPiece');
+                        $('button').attr('disabled', true);
+                    });
+                    this.on("error", function(file, message) {
+                        this.removeFile(file);
+                        $('button').attr('disabled', false);
+                    });
+                    this.on("success", function(file, response) {
+
+                        /*if (response.match('KO') != null) {
+                            alert("Il y a une erreur survenue lors de l'envoi du fichier vers le serveur.");
+                        } else {
+                            $("#pieceListe").append(response);
+
+                        }*/
+                        window.location.reload();
+                        $('button').attr('disabled', false);
+                    });
+                }
+            });
+        }
+    </script>
+{% endblock%}

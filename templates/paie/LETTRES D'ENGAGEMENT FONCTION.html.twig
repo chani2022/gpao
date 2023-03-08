@@ -1,0 +1,170 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+    </head>
+    <body style="font-family:Arial;word-wrap:break-word">
+        {% if infos is not defined %}
+        {% set infos = app.session.get('infos') %}
+        {% endif %}
+
+        {% if infos is not null %}
+        <page>
+            <div style="position: relative;
+                        width: 100%;
+                        min-height: 1px;
+                        padding-right: 15px;
+                        padding-left: 15px;">
+                <div style="display: -ms-flexbox;
+                        display: flex;
+                        -ms-flex-wrap: wrap;
+                        flex-wrap: wrap;
+                        margin-right: -15px;
+                        margin-left: -15px;">
+               
+
+                
+                <section>
+                        <div style="padding:2.5cm 3cm">
+                        <div style="display: -ms-flexbox;
+                                    display: flex;
+                                    -ms-flex-wrap: wrap;
+                                    flex-wrap: wrap;
+                                    margin-right: -15px;
+                                    margin-left: -15px;">
+                            <div style="margin-top: 1rem !important;flex: 0 0 100%;
+                                    max-width: 100%;position: relative;
+                                    width: 100%;
+                                    min-height: 1px;
+                                    padding-right: 15px;
+                                    padding-left: 15px;">
+                            </div>
+                                <div style="margin-top: 1rem !important;flex: 0 0 100%;
+                                    max-width: 100%;position: relative;
+                                    width: 100%;
+                                    min-height: 1px;
+                                    padding-right: 15px;
+                                    ">
+                                    <img src="{{absolute_url(asset("images/logo-eline-large.png"))}}" alt="ELINE" />
+                                </div>
+                        </div>
+                        <div style="display: -ms-flexbox;
+                                    display: flex;
+                                    -ms-flex-wrap: wrap;
+                                    flex-wrap: wrap;
+                                    margin-right: -15px;
+                                    margin-left: -15px;
+                                }">
+                            <div style="margin-top: 1rem !important;flex: 0 0 50%;
+                                        max-width: 50%;">
+                                    <p>ELINE SOFT & DATA</p>
+                                    <p>21 Rue Andriambelomasina<br> Immeuble Akany Rainimamonjy</p>
+                                    <p>Amparibe Antananarivo 101</p>
+                                    <p>NIF : 4001693087</p>
+                                    <p>STAT : 63113120114010603</p>
+                                    <p>RCS : 2014B00553</p>
+                                    <p>Tél : +261349074605</p>
+                            </div>
+                            <div style="margin-top: 1rem !important;flex: 0 0 50%;
+                                        max-width: 50%;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: -ms-flexbox;
+                                    display: flex;
+                                    -ms-flex-wrap: wrap;
+                                    flex-wrap: wrap;
+                                    margin-right: -15px;
+                                    margin-left: -15px;">
+                            <div style="flex: 0 0 50%;
+                                        max-width: 50%;position: relative;
+                                        width: 100%;
+                                        min-height: 1px;
+                                        padding-right: 15px;
+                                        padding-left: 15px;">
+                            </div>
+                            <div style="margin-top: 80px !important;flex: 0 0 50%;
+                                        max-width: 50%; margin-left:500px;">
+                                <div class="form-group label-floating">
+                                    <label class="control-label">Antananarivo, le {{ infos.date|date("d/m/Y") }}</label>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem !important;flex: 0 0 50%;
+                                        max-width: 50%;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: -ms-flexbox;
+                                    display: flex;
+                                    -ms-flex-wrap: wrap;
+                                    flex-wrap: wrap;
+                                    margin-right: -15px;
+                                    margin-left: -15px;">
+
+                            <div style="align-self: center !important;flex: 0 0 100%;
+                                        max-width: 100%;margin-top:80px;">
+                                        <center>
+                                        <strong>LETTRE D’ENGAGEMENT</strong></center>
+                                        
+                            </div>
+                            
+                            <div style="margin-top: 1rem !important;flex: 0 0 100%;
+                                        max-width: 100%;word-wrap:break-word;">
+                                <p style="margin-left:150px;">
+                                              Je, soussigné(e),
+                                </p>
+                                <p style="margin-left:50px;">
+                                    Nom et prénom……………………………………………………………..
+                                </p>
+                                <p style="margin-left:50px;">
+                                    Matricule……………………………………………………………………..
+                                </p>
+                                <p style="margin-left:50px;">
+                                              M’engage à respecter les règles et procédures mentionnées ci-dessous pour la prise de fonction « Transmission », à savoir :
+                                </p>
+                                <p style="margin-left:50px;">
+                                <ul>        
+                                    <li>-	De respecter le secret professionnel liant à la tâche exercée au sein de la société.</li>
+                                    -	A bien respecter les consignes données lors de la formation
+                                    -	De ne divulguer sous aucun prétexte, les contacts ni les contenus des courriels ni toute autre information en dehors du cadre qui a été indiqué lors de la formation.
+                                    -	De ne pas utiliser l’adresse de messagerie en dehors de l’enceinte de la société, ni les autres applications ou site web relative à l’exercice de la tâche.
+                                </ul>
+                                </p>
+                                <p style="margin-left:50px;">
+                                    Veuillez agréer, Madame / Monsieur, l'expression de nos salutations distinguées. 
+                                </p>
+                                <p style="margin-left:50px;">
+                                    En foi de quoi, cette attestation lui est délivrée pour servir et faire valoir ce que de droit.
+                               
+                                </p>      
+                            </div>
+                            
+                            
+                            
+                            <div style="margin-top:50px;">
+                                       
+                                            <label style="font-weight:bold;margin-left:100px;">L’employé(e)</label>
+                                            <label style="font-weight:bold;margin-left:500px;">LA DIRECTION</label>
+                                    </div>
+                        </div>
+                    </div>
+                    
+
+                    
+                    </section>
+               
+                <!--Colone3 page-->
+                <div style="flex: 0 0 8.333333%;
+                            max-width: 8.333333%;position: relative;
+                            width: 100%;
+                            min-height: 1px;
+                            padding-right: 15px;
+                            padding-left: 15px;">
+                </div>
+                <!--Fin Colone3 page-->
+                    </div>
+            </div>
+            
+        </page>
+        {% endif %}
+    </body>
+</html>

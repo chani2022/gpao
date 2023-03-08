@@ -1,0 +1,403 @@
+{% extends "base-home.html.twig" %}
+{% block title %}
+{% block pageTitle %} Lettre 
+{% endblock %}
+
+{% endblock %}
+{% block stylesheets %}
+    <style>
+        page {
+        background: white;
+        display: block;
+        margin: 0 auto;
+        margin-bottom: 0.5cm;
+       
+        }
+        page[size="A4"] {  
+        width: 21cm;
+        height: 29.7cm; 
+        }
+        #dateSuppl{
+            display:none
+        }
+
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container">    
+    <div class="row" >
+            <div class="col-md-12 col-lg-12" >
+                <div class="card">
+                    <div class="col-lg-6 col-md-6">
+                        <div class="card-body">
+                                {% form_theme form 'form-theme.html.twig' %}
+                                {% for message in app.flashes('danger') %}
+                                             <div class="list-group-item list-group-item-danger">
+                                                    {{ message }}
+                                              </div>   
+                                         {% endfor %}
+                                    {{ form_start(form) }}
+                                    {{ form_errors(form) }}
+                                    <div class="form-group">
+                                        {{ form_row(form.Matricule, {'attr': {'class': 'form-control','id':'form_date','name':'date'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_row(form.Choisissez, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group" id="dateSuppl">
+                                        {{ form_row(form.Date, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        {{ form_row(form.motif, {'label': 'Motif','label_attr': {'id': 'motif_label'}, 'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_row(form.intervalDateMiseAPied, {'label': 'Date mise a pied','label_attr': {'id': 'intervalDateMiseAPied_label'}, 'attr': {'class': 'form-control','autocomplete':'off'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_row(form.nbJour, {'label': 'Nombre de jour','label_attr': {'id': 'nbjour_label'}, 'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_row(form.dateFinM, {'label': 'Date de reprise du fonction','label_attr': {'id': 'dateFinM_label'}, 'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_row(form.sanctionAvertissement, {'label': 'Sanction','label_attr': {'id': 'sanctionAvertissement_label'}, 'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_row(form.dateLicenciement, {'label': 'Date de licencement','label_attr': {'id': 'Licenciement_label'}, 'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group" id="id_donner_pouvoir">
+                                        {{ form_row(form.donnerPouvoir, {'label': 'Donneur de pouvoir','label_attr': {'id': 'Donner pouvoir_label'}, 'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <button id="btn_click" type="submit" class="btn btn-primary">
+                                        <span class="fa fa-save"></span> Valider
+                                    </button>
+                                {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            {% if infos is not empty %}
+            <div class="row" style="background: white;
+                display: block;
+                margin: 0 auto;
+                margin-bottom: 0.5cm;
+                ">
+                <!--<div class="row" style="background: white;
+                display: block;
+                margin: 0 auto;
+                margin-bottom: 0.5cm;
+                width: 21cm;
+                height: 29.7cm; ">
+                -->
+            <br/>
+            <div class="card-body">
+                <a style="color:white;background:green;border-color:green;"class="btn btn-warning" href="{{ path('html_word') }}" > Télécharger</a>
+            </div>
+            {# {% set vars = [{'user': user,'date': date}] %} #}
+            {%  set template = "paie/" ~ infos.template%}
+            {% include template  %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            var DatePickerLocal = {
+                "direction": "ltr",
+                "format": "DD/MM/YYYY",
+                "separator": " -",
+                "applyLabel": "Appliquer",
+                "cancelLabel": "Annuler",
+                "fromLabel": "Da",
+                "toLabel": "A",
+                "customRangeLabel": "Plage personnalisée",
+                "daysOfWeek": [
+                    "Di",
+                    "Lu",
+                    "Ma",
+                    "Me",
+                    "Jeu",
+                    "Ve",
+                    "Sa"
+                ],
+                "monthNames": [
+                    "Janvier",
+                    "Février",
+                    "Mars",
+                    "Avril",
+                    "Mai",
+                    "Juin",
+                    "Juillet",
+                    "Août",
+                    "Septembre",
+                    "Octobre",
+                    "Novembre",
+                    "Décembre"
+                ],
+                "firstDay": 1
+            };
+            $("#form_Date").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker: true,
+                locale:{
+                    
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+              
+            });
+            
+            $('#form_Date').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY'));
+            });
+            
+            $("#form_dateFinM").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker: true,
+                locale:{
+                    
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+              
+            });
+            
+            $("#form_dateLicenciement").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker: true,
+                locale:{
+                    
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+              
+            });
+            
+            $('#form_dateFinM').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY'));
+            });
+        });
+
+    
+ $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_intervalDateMiseAPied").daterangepicker({
+            autoUpdateInput:false,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                //'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                //'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                //'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                //'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                //'Compte actuel': [moment().startOf('month').subtract(10, 'days'), moment().endOf('month').subtract(11, 'days')],
+                //'Compte précédent': [moment().startOf('month').subtract(10, 'days').subtract(1, 'month'), moment().endOf('month').subtract(11, 'days').subtract(1, 'month')],
+               // 'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(10, 'days'), moment().endOf('month').subtract(1, 'month').subtract(10, 'days')],
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_intervalDateMiseAPied').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+    });
+
+ 
+$('#form_intervalDateMiseAPied').daterangepicker({
+    locale: {
+            format: 'DD/MM/YYYY'
+            }
+});
+
+
+
+
+$(document).ready(function () {
+    
+    /*au changement du champs user on met à jour l'affichage des champs*/
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_Matricule').select2({matcher: select2matchCustomUser});
+    $('select#form_Choisissez').select2({matcher: select2matchCustomUser});
+    $('select#form_donnerPouvoir').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+        
+    </script>
+    <script>
+        $(document).ready(function(){
+            toggleDateSuppl($("#form_Choisissez"));
+            $("#form_Choisissez").change(function(){
+                toggleDateSuppl($(this));
+            });
+            function toggleDateSuppl(obj){
+                if(obj.val() == 'certificat-de-travail'){
+                    $("#dateSuppl").show();
+                }else{
+                    $("#dateSuppl").hide();
+                }
+                
+                if(obj.val() == 'mise-a-pied'){
+                    $("#form_motif").show();
+                    $("#motif_label").show();
+                    
+                    $("#form_intervalDateMiseAPied").show();
+                    $("#intervalDateMiseAPied_label").show();
+                    
+                    
+                    $("#form_dateFinM").hide();
+                    $("#dateFinM_label").hide();
+                    
+                    
+                }else{
+                    $("#form_motif").hide();
+                    $("#motif_label").hide();
+                    
+                    $("#form_intervalDateMiseAPied").hide();
+                    $("#intervalDateMiseAPied_label").hide();
+                    
+                    $("#form_dateFinM").hide();
+                    $("#dateFinM_label").hide();
+                    
+                }
+                
+               // if(obj.val() == 'attestation-d-emploi' || obj.val() == 'certificat-de-travail' || obj.val() == 'Avertissement ecrit'|| obj.val() == 'lettre-de-licenciement'|| obj.val() == 'rupture-d-essai'|| obj.val() == 'CONTRAT DE TRAVAIL'|| obj.val() == 'LETTRES D\'ENGAGEMENT FONCTION'|| obj.val() == 'JUSTIFICATION DE DEPLACEMENT PROFESSIONNEL'){
+                  // $('#btn_click').click(
+                      //  function(){
+                           // $('#form_intervalDateMiseAPied').val('');
+                   // });
+               // }
+               
+                if(obj.val() == 'Avertissement ecrit'){
+                    $("#form_sanctionAvertissement").hide();
+                    $("#sanctionAvertissement_label").hide();
+                    
+                }else{
+                    
+                    $("#form_sanctionAvertissement").hide();
+                    $("#sanctionAvertissement_label").hide();
+                   
+                }
+                
+                if(obj.val() == 'mise-a-pied'){
+                    $("#form_nbJour").hide();
+                    $("#nbjour_label").hide();
+                    
+                }else{
+                    $("#form_nbJour").hide();
+                    $("#nbjour_label").hide();
+                }
+                
+                if(obj.val() == 'Avertissement ecrit' || obj.val() == 'mise-a-pied' || obj.val() == 'lettre-de-licenciement' || obj.val() == 'rupture-d-essai'){
+                    $("#form_motif").show();
+                     $("#motif_label").show();
+                }else{
+                    $("#form_motif").hide();
+                     $("#motif_label").hide();
+                }
+                
+                
+                if(obj.val() == 'lettre-de-licenciement'){
+                    $("#form_dateLicenciement").show();
+                    $("#Licenciement_label").show();
+                    
+                    
+                }else{
+                    $("#form_dateLicenciement").hide();
+                    $("#Licenciement_label").hide();
+                }
+                
+                if(obj.val() == 'PROCURATION'){
+                    $("#id_donner_pouvoir").show();
+                    
+                }else{
+                    $("#id_donner_pouvoir").hide();
+                }
+                
+            }
+        });
+        
+        
+    </script>
+{% endblock %}

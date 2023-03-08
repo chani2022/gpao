@@ -1,0 +1,251 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Extra{% endblock %}
+{% block pageTitle %}Extra{% endblock %}
+{% block body %}
+<style>
+.table {
+    table-layout:fixed;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+ul {
+  list-style: none;
+}
+.tbl_scroll{
+    display: block;height: 400px;overflow-y: scroll;
+}
+.tbl_scroll_1{
+    display: block;
+    height: 249px;
+    overflow-y: scroll;
+}
+.tbl_scroll_2{
+    display: block;
+    overflow-y: scroll;
+}
+
+.thead{
+  display:inline-block;
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+
+
+</style>
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_row(form.matricule,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.interval_date_extra,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.isFacturable,{'label':'Facturable : '}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.export,{'label':'Exporter en excel : '}) }}
+            </div>
+            <button id="enregistrer" type="submit" class="btn btn-primary">
+                <span class="fa fa-eye"></span> Afficher
+            </button>
+        {{ form_end(form) }}
+        <br/>
+       {% if excel.isExportToExcel==true %}
+            <div class="form-group">
+                <a id="download" class="btn btn-primary" href="{{ asset('upload/temp'~ excel.fileName) }}"><span class="fa fa-download"></span> Cliquer ici pour télécharger le fichier excel</a><br/>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+<div class="col-lg-12 col-md-12">
+<br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    {% if dossier_facture!=null or dossier_no_facture != null %}
+                                    <table class="table tbl_scroll_2">
+                                        <thead style="background:#4272d7;color:#fff;">
+                                                <tr>
+                                                    <th>Facturable</th>
+                                                    <th>Non facturable:</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody> 
+                                                    {#% if prods!=null %#}
+                                                        <tr>
+                                                            <td>
+                                                                {% for var_facturable in dossier_facture %}
+                                                                        <span style="color:green"><strong>{{var_facturable}}</strong></span><br/>
+                                                                {% endfor %}
+                                                            </td>
+                                                            <td>
+                                                            {% for var_non_facturable in dossier_no_facture %}
+                                                                        <span style="color:red">{{var_non_facturable}}</span><br/>
+                                                                {% endfor %}
+                                                            </td>
+                                                        </tr>
+                                                    {#% endif %#}
+                                            </tbody>
+                                    </table>
+                                            <p>
+                                                <span style="font-size:20px">
+                                                <strong>Taux général&nbsp;: </strong>
+                                                </span>
+                                                <span style="color:red;font-size:20px">{{taux_generale|number_format(2, ',', ' ')}}%</span>
+                                            </p>
+                                            <p>
+                                                <span style="font-size:15px"><strong>Total des prix(en Ariary)&nbsp;: </strong></span> <span style="color:red;font-size:15">{{total_prix|number_format(2, ',', ' ')}}</span>
+                                            </p>  
+                                            <p>
+                                            <span style="font-size:15px">
+                                                <strong>Prix total dossier facturable(en Ariary)&nbsp;: </strong>
+                                                </span>
+                                            <span style="color:red">{{total_facturable|number_format(2, ',', ' ')}}</span>
+                                            </span>  
+                                            <p>              
+                                                <span style="font-size:15px">
+                                                    <strong>Dossier dont le prix ne sont pas indiqués&nbsp;: </strong>
+                                                </span>
+                                            </p>
+                                            {% for key,value in dossier_dont_prix_pas_indique %}
+                                            <p> 
+                                                <span style="color:green">{{key}}&nbsp;:</span>
+                                                
+                                                {% for key2,value2 in dossier_dont_prix_pas_indique[key] %}
+
+                                                    <span>|{{value2}}|&nbsp;&nbsp;</span>
+                                            
+                                                {% endfor %}
+                                                </p>
+                                           {% endfor %}
+                                <span style="font-size:15px">
+                                    <strong>Nombre de ligne&nbsp;: </strong>
+                                    {{nb_lignes}}
+                                </span>
+                            <br/>
+                    {% endif %}  
+                    <br/>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{parent()}}
+<script>
+    $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_interval_date_extra").daterangepicker({
+            autoUpdateInput:false,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                'Compte actuel': [moment().startOf('month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').format('20-MM-YYYY')],
+                     'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').subtract(1, 'month').format('20-MM-YYYY')],
+                // 'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(10, 'days'), moment().endOf('month').subtract(1, 'month').subtract(10, 'days')],
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_interval_date_extra').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+    });
+
+ 
+$('#form_interval_date_extra').daterangepicker({
+    locale: {
+            format: 'DD/MM/YYYY'
+            }
+});
+
+
+$(document).ready(function () {
+    /*au changement du champs user on met à jour l'affichage des champs*/
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_matricule').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+$('#download').click(function() {
+    var x = document.getElementById('download');
+    x.style.display = 'none';
+    document.getElementById("form_export").checked = false;
+});
+
+</script>
+{% endblock %}

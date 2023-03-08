@@ -1,0 +1,443 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Régularisation absence{% endblock %}
+{% block style %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}
+{% block pageTitle %} Régularisation absence {% endblock %}
+
+{% block body %}
+   
+
+<div class="col-lg-12 col-md-12">
+    <div class="row">
+    <div class="col-6">
+        <div class="card">
+            <div class="card-body">
+            {% form_theme form 'form-theme.html.twig' %}
+
+                {{ form_start(form) }}
+
+                {{ form_errors(form) }}
+                
+                    <div class="form-group">
+                    {{ form_row(form.Matricule, {'attr': {'class': 'form-control matricule'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_row(form.Motif, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_row(form.DateAbsence, {'attr': {'class': 'form-control','id':'form_date','placeholder':'Date','name':'date','autocomplete':'off','readonly':'readonly'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_row(form.piece, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_label(form.deduire, 'A deduire sur salaire', { 'attr': {'class': 'form-control'} }) }}
+                    {{ form_row(form.deduire, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_row(form.insertionRh, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_row(form._token, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group">
+                        {#{{ form_row(form.motif, {'attr': {'class': 'form-control'}}) }} #}
+                    
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <span class="fa fa-save"></span> Enregistrer
+                    </button>
+                {{ form_end(form) }}
+                </div>
+        </div>
+  </div>
+  <div class="col-6" >
+  <div class="card">
+            <div class="card-body">
+                <form name="form" method="get">
+                <div class="form-group">
+                        <input class="au-input au-input--xl form-control" name="keyword" type="text" placeholder="Matricule" value="{{search_matricule}}" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <div>
+                        <input type="text" name="date" value="{{search_date}}" placeholder="Date" class="DateException_avec_interval form-control" autocomplete="off" readonly="readonly">
+                    </div>
+                </div>
+                <div class="form-group">
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            {% if search_piece=="1" %}
+                    <input id="check_piece" name="piece" type="checkbox" class="form-check-input" value="1" checked>Piece
+                            {% else %}
+                            <input id="check_piece" name="piece" type="checkbox" class="form-check-input" value="1">Piece
+                            {% endif %}
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                             {% if search_deduire=="1" %}
+                            <input name="deduire" type="checkbox" class="form-check-input" value="1" checked>A deduire sur salaire
+                             {% else %}
+                             <input name="deduire" type="checkbox" class="form-check-input" value="1">A deduire sur salaire
+                             {% endif %}
+                          </label>
+                        </div>  
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                {% if search_rh=="1" %}
+                                <input id="validation_rh" type="checkbox" value="1" class="form-check-input" name="insertion_rh" checked>Insertion RH
+                                {% else %}
+                                <input id="validation_rh" type="checkbox" value="1" class="form-check-input" name="insertion_rh">
+                                Insertion RH
+                                {% endif %}
+                            </label>
+                        </div>  
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                {% if search_cp=="1" %}
+                                <input id="validation_cp" type="checkbox" value="1"  class="form-check-input" name="validation_cp" checked>Validation
+                                {% else %}
+                                <input id="validation_cp" value="1"  type="checkbox" class="form-check-input" name="validation_cp">
+                                Validation
+                                {% endif %}
+                            </label>
+                        </div>  
+
+                </div>
+                <button id="test" type="submit" class="btn btn-primary">
+                    Valider
+                </button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><i class="fa fa-pie-chart"></i>&nbsp;Statistique</button>
+               
+            </form>
+
+               
+            </div>
+        </div>
+  </div>
+</div>
+</div>
+
+
+    <div class="col-lg-12 col-md-12">
+    <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive" >
+                    <table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Nom et prénom(s)</th>
+                                    <th>Motif</th>
+                                    <th>Date debut</th>
+                                    <th>Date fin</th>
+                                    <th>Piece</th>
+                                    <th>A deduire</th>
+                                    <th>Insérer par RH</th>
+                                    <th>Validation</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                            {#{{information}}#}
+                            {#{{list_absence|length}}#}
+                            {#{ dump(list_absence) }#}
+                            {% if list_absence %}
+                                {% for tabl in list_absence %}
+                               
+                                    <div class="form-group">
+                                        <tr>
+                                            <td>{{tabl.id_personnel}}</td>
+                                            <td>{{tabl.nom}} {{tabl.prenom}}</td>
+                                            <td>{{tabl.motif}}</td>
+                                            <td>{{tabl.date_debut_absence|date("d/m/Y") }}</td>
+                                            <td>{{tabl.date_fin_absence|date("d/m/Y") }}</td>
+                                            <td>{{tabl.avec_piece}}</td>
+                                            <td>{{tabl.a_deduire_sur_salaire}}</td>
+                                            <td>{{tabl.insertion_rh}}</td>
+                                            <td>{{tabl.validation_cp}}</td>
+                                            {#{dump(tabl.insertion_rh)}#}
+                                            {% if tabl.insertion_rh=="NON" %}
+                                                <td>
+                                                 <a style="display:none" type ="submit" title="Supprimer" class="btn btn-primary" href="{{path('regularisation_absence')}}/2?id={{tabl.id_absence_personnel}}" class=""><i class="fas fa-trash-alt"></i>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                 <a style="display:none" type ="submit" title="Modifier" class="btn btn-primary"  href="{{path('regularisation_absence')}}/1?id={{tabl.id_absence_personnel}}" class=""><i class="fa fa-edit"></i>
+                                                    </a>
+                                                </td>
+                                                
+                                            </td>
+                                            {% else %}
+
+                                            <td>
+                                                 <a  type ="submit" title="Supprimer" class="btn btn-primary" href="{{path('regularisation_absence')}}/2?id={{tabl.id_absence_personnel}}" class=""><i class="fas fa-trash-alt"></i>
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                 <a  type ="submit" title="Modifier" class="btn btn-primary"  href="{{path('regularisation_absence')}}/1?id={{tabl.id_absence_personnel}}" class=""><i class="fa fa-edit"></i>
+                                                    </a>
+                                                </td>
+                                            
+                                            {% endif %}
+                                        </tr>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="navigation pagination justify-content-center">
+{{ knp_pagination_render(list_absence) }}
+</div>
+{#{dump(search_date)}#}
+{#{dump(search_piece)}#}
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            /**
+             * statistique absence
+             */
+            var ctx = document.getElementById('myChart');
+            var myChart = new Chart(ctx, { 
+                type:'line'
+             });
+             
+            $('form[name="form_statistique"').submit(function(e){
+                e.preventDefault();
+                var donnee = {
+                  date: $('input[name="date_statistique"]').val(),
+                  keyword:$('input[name="keyword_statistique"]').val(),
+                  deduire:null,
+                  insertion_rh:null,
+                  piece:null,
+                  validation_cp:null
+                };
+                $('input:checked').each(function(){
+                   if($(this).attr("name") == "piece_statistique"){
+                       donnee.piece = $(this).val();
+                   } 
+                   if($(this).attr("name") == "deduire_statistique"){
+                       donnee.deduire = $(this).val();
+                   }
+                   if($(this).attr("name") == "insertion_rh_statistique"){
+                       donnee.insertion_rh = $(this).val();
+                   }
+                   if($(this).attr("name") == "validation_cp_statistique"){
+
+                        donnee.validation_cp = $(this).val();
+                   }
+                });
+                console.log(donnee);
+                $.ajax({
+                    url: '{{ path('regularisation_absence_statistique') }}',
+                    type:'get',
+                    dataType:'json',
+                    data: donnee,
+                    /**
+                    data:{
+                        date:$('input[name="date_statistique"]').val(),
+                        keyword:$('input[name="keyword_statistique"]').val(),
+                        piece:$('input[name="piece_statistique"]').val(),
+                        deduire:$('input[name="deduire_statistique"]').val(),
+                        insertion_rh:$('input[name="insertion_rh_statistique"]').val()
+
+                    },**/
+                    success: function(data){
+                      //console.log("Testfsdffsdfsdfsdfsdfsdfsd",data);
+                      //console.log("xxxxxxxxxxxxxxxxx",data[0][0]);
+                      //console.log( data.keys( {'date':''} ) );
+                        if(data.x=="error"){
+                          alert("Date invalide");
+                          const button = document.getElementById('validation_statistique');
+                            if (disableButton) button.disabled = "disabled";
+                        }else{
+                          console.log('Date ok');
+                        }
+
+                        //console.log(myTab);
+                        myChart.destroy();
+                        var options = {
+                            type: 'line',
+                            data: {
+                                labels: data.x,
+                                datasets: [{
+                                    label: 'absence personnel',
+                                    data: data.y,
+                                    fill: false,
+                                    borderColor: [
+                                        'rgba(0, 128, 255, 1)',    
+                                    ],
+                                    borderWidth: 3,
+                                    pointBorderWidth: 2,
+                                    pointBorderColor: 'rgba(0, 0, 0, 1)',
+                                    lineTension: 0.3,
+                                    pointBorderWidth: 2
+                                }]
+                            }
+                        }
+                        myChart = new Chart(ctx, options);
+                        $('#validation_statistique').prop('disabled', false).removeClass('btn-secondary');
+                    },
+                    error: function(data){
+                        console.log("error", data)
+                    },
+                    beforeSend: function(){
+                        
+                        $('#validation_statistique').prop('disabled', true);
+                        console.log($('#validaton_statistique').attr("class"));
+                    }
+                }) ;
+            });
+
+            $(".matricule").select2();
+            var DatePickerLocal = {
+                        "direction": "ltr",
+                        "format": "DD/MM/YYYY",
+                        "separator": " -",
+                        "applyLabel": "Appliquer",
+                        "cancelLabel": "Annuler",
+                        "fromLabel": "Da",
+                        "toLabel": "A",
+                        "customRangeLabel": "Plage personnalisée",
+                        "daysOfWeek": [
+                            "Di",
+                            "Lu",
+                            "Ma",
+                            "Me",
+                            "Jeu",
+                            "Ve",
+                            "Sa"
+                        ],
+                        "monthNames": [
+                            "Janvier",
+                            "Février",
+                            "Mars",
+                            "Avril",
+                            "Mai",
+                            "Juin",
+                            "Juillet",
+                            "Août",
+                            "Septembre",
+                            "Octobre",
+                            "Novembre",
+                            "Décembre"
+                        ],
+                        "firstDay": 1
+                    };
+           
+        });
+        
+    </script>
+
+<script>
+        $("#form_DateAbsence").daterangepicker({
+                autoUpdateInput:false,
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                
+            });
+            
+            $('#form_DateAbsence').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+    </script>
+
+     <script>
+        $(".DateException_avec_interval").daterangepicker({
+                autoUpdateInput:false,
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                
+            });
+            
+            $('.DateException_avec_interval').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+    </script>
+
+    <script type="text/javascript">
+        /**if(JQuery(#caseACocher).get(0).checked){
+
+        } **/
+        $(document).ready(function(){
+
+            $("#test").on('click',function(e){
+
+                 if($("#check_piece").is(":checked")){
+                   // alert("ok");
+                }
+            });
+
+
+            $('input[type="checkbox"]').click(function(){
+                if($(this).is(":checked")){
+                    $("#test").on('click',function(e){
+                       /** jQuery("#validation_rh"). attr('checked', true);**/
+                    });
+                }
+                else if($(this).is(":not(:checked)")){
+                    $("#test").on('click',function(e){
+                        /**alert("case non coché");**/
+                    });
+                }
+            });
+        });
+    </script>
+    <script type="text/javascript">
+       /** $("#test").on('click',function(e){
+            alert("test");
+        });
+       /** $("#test").css({"background-color":"blue"});**/
+    </script>
+
+    
+<script>
+    $('select#form_Matricule').select2({matcher: select2matchCustomUser});
+
+    /*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+</script>
+
+{% endblock %}

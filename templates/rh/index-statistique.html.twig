@@ -1,0 +1,172 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}RH statistique{% endblock %}
+{% block stylesheets %}
+    <style>
+        #listeMessage .unread td{
+            font-weight: bold;
+            color: #098ddf;
+        }
+    </style>
+{% endblock %}
+{% block pageTitle %}
+    <i class="fas fa-stats"></i>Statistique R.H</span>
+{% endblock %}
+
+{% block body %}
+
+
+    <div class="col-lg-12 col-md-12">
+        <div class="card card-default">
+            <div class="card-body">
+
+                <h3>Recherche</h3>
+                <hr>
+                <form method="post" action="#" class="form">
+                    <div class="form-group">
+                        <button class="btn btn-sm btn-dark" type="button" onclick="selectGroupUser()"><i class="fas fa-users"></i> Séléctionner tous les Opérateurs</button>
+                        <button class="btn btn-sm btn-dark" type="button" onclick="selectGroupUser(true)"><i class="fas fa-users"></i> Séléctionner les personnes autres personnes à part les opérateurs</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Fonction</label>
+                        <select class="fonction form-control" name="fonction[]" multiple="mulitple">
+                            {% for f in liste_fonction %}
+                                <option value="{{ f['nom_fonction'] }}">{{ f['nom_fonction'] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="">Période du</label>
+                        <input type="text" name="date" id="searchDate" class="form-control"  value="">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="lancerRecherche">
+                        Rechercher
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+
+<div class="col-lg-12 col-md-12">
+    <br/>
+        <div class="card card-default">
+            <div class="card-body">
+                <canvas id="statsResult"></canvas>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascripts %}
+    {{parent()}}
+    <script>
+        
+         function selectGroupUser(isCadre){
+            var allOpt = [];
+            var toSearch = ['OP 1','OP 2','CORE 1','CORE 2','CQ 1','CQ 2'];
+            
+            if (isCadre === "undefined"){
+                isCadre = false;
+            }
+            
+            console.log(allOpt);
+            
+            $(".fonction option").each(function(index, value){
+                var content = $(this).text();
+                if (isCadre==true){
+                    if (toSearch.indexOf(content)<0){
+                        allOpt.push($(this).val())
+                    }
+                }else{
+                    if (toSearch.indexOf(content)>=0){
+                        allOpt.push($(this).val())
+                    }
+                }
+                
+            });
+            
+            $(".fonction").val(allOpt);
+            $(".fonction").trigger("change");
+        }
+        $(document).ready(function(){
+
+            $(".fonction").select2();
+
+
+
+            $("#lancerRecherche").click(function (event) {
+                event.preventDefault();
+                $(this).attr("disabled",true)
+
+                var dt = $("#searchDate").val();
+                var fonction = $(".fonction").val();
+                var url = Routing.generate('get_val_statistique_rh');
+                var statsOptions = {
+                    type:'line',
+                    data:{
+                        labels:[],
+                        datasets:[{
+                            label:"",
+                            data:[]
+                        }]
+                    }
+
+                }
+                $.ajax({
+                    method:"POST",
+                   url:url,
+                    data:{"date":dt, "fonction":fonction},
+                   success:function(data){
+                        console.log(data['stats'])
+                        //if (data['stats'] !== undefined){
+                        statsOptions = data['stats']
+                        //}
+                       var statsResult = new Chart(document.getElementById("statsResult"),
+                           statsOptions
+                       )
+                   },
+                    complete:function(data){
+                        $("#lancerRecherche").attr("disabled",false)
+                    },
+                    error:function(){
+
+                    }
+                });
+
+            });
+
+            $("#searchDate").daterangepicker({
+
+                ranges: {
+                    'Aujourd\'hui': [moment(), moment()],
+                    'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                    'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                    'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                    'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                locale:{
+                    format: "YYYY-MM-DD",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                autoUpdateInput:false,
+
+            });
+
+            $('#searchDate').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+            });
+
+        });
+
+    </script>
+{% endblock %}

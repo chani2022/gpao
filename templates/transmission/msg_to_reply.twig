@@ -1,0 +1,31 @@
+<div class="col-lg-8 col-md-8">
+    <div class="card card-default">
+        <div class="card-header bg-primary text-white">
+            <b>Message de&nbsp;:</b> <i class="fas fa-user"></i> {{ allUsers[messages.getExpediteur()]['login']|title }} ({{ allUsers[messages.getExpediteur()]['nom_fonction']|title }})<br>
+            <b>Envoyé le&nbsp;:</b> {{messages.getDateEnvoie()|date("d/m/Y H:i:s")}}
+            <b>Objet&nbsp;:</b> {{ messages.getObjet()}}
+        </div>   
+        <div class="card-body">
+            {{messages.getContenu()|raw}}
+        </div>
+    </div>
+</div>
+<div class="col-lg-4 col-md-4">
+    <div class="card card-default">
+        <div class="card-header">
+            <i class="fas fa-file"></i> Pièce Jointe
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for d in messages.getPieces() %}
+                    <li class="list-group-item list-group-item-light">
+                        {{ d.getNomOrigine() }} 
+                        <a href="{{url('transmission_download_piece', {id:d.getId()})}}" title="Télécharger ce fichier">
+                            <i class="fas fa-download"></i> 
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>

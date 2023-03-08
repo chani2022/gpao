@@ -1,0 +1,30 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Récolte d'heure{% endblock %}
+
+{% block pageTitle %}Édition Récolte d'heure{% endblock %}
+{% block stylesheets %}
+   
+{% endblock %}
+{% block body %}
+    <div class="col-lg-6 col-md-6 mr-auto ml-auto">
+        {% form_theme form 'form-theme.html.twig' %}
+                
+        {{ form_start(form) }}
+        
+        {{ form_errors(form) }}
+        <div class="card">
+            <div class="card-body" style="height:500px;overflow: scroll">
+                {{ form(form) }}
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-block btn-success">Enregistrer</button>
+            </div>
+        </div>
+         
+
+        {{ form_end(form) }}
+    </div>
+
+
+{% endblock %}

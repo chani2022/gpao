@@ -1,0 +1,66 @@
+<div class="menu-sidebar2__content js-scrollbar2">
+    <nav class="navbar-sidebar2">
+        <ul class="list-unstyled navbar__list">
+            
+            {% for mainMenu in menus %}
+                {% set hasSub = "" %}
+                {% set active = "" %}
+                {% set hasAccess = 1 %}
+                
+                {% if mainMenu.child|length > 0 %}
+                    {% set hasSub = "has-sub" %}
+                    {% for child in mainMenu.child %}
+                        {% if child.routes!="" and child.routes == ROUTES_ACTIVE %}
+                            {% set active = "active" %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                
+                {# controle accès#}
+                {% if mainMenu.roles|length > 0 and app.user.roles[0] not in mainMenu.roles  %}
+                    {% set hasAccess = 0 %}
+                {% endif %}
+                
+                
+                {% if hasAccess == 1 %}
+                    <li class="{{active}} {{hasSub}}">
+                        <a
+                            {% if hasSub != "" %}
+                            class="js-arrow" href="#"
+                                {%else%}
+                            href=""
+                            {% endif %}
+
+                         >
+                            <i class="{{mainMenu.icon}}"></i>{{mainMenu.name}}
+                            {%if hasSub !="" %}
+                                <span class="arrow">
+                                    <i class="fas fa-angle-down"></i>
+                                </span>
+                            {%endif%}
+                        </a>
+                        {% if hasSub != "" %}
+                            <ul class="list-unstyled navbar__sub-list js-sub-list">
+                            {% for child in mainMenu.child %}
+                                <li class="{% if child.routes!="" and child.routes == ROUTES_ACTIVE %}active{% endif %}">
+                                    <a href="
+                                    {% if child.routes != "" %}
+                                        {{url(child.routes)}}
+                                        {% else %}
+                                        #
+                                        {% endif %}">
+                                    <i class="{{child.icon}}"></i>
+                                        {{child.name}}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </li>
+                {% endif %}
+                
+            {% endfor %}
+           
+        </ul>
+    </nav>
+</div>

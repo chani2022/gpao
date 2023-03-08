@@ -1,0 +1,140 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Navette{% endblock %}
+
+{% block pageTitle %}
+    <i class="zmdi zmdi-view-agenda"></i> Tous les notes pour le dossier&nbsp;: {{ dossier.getNomDossier() }}
+{% endblock %}
+{% block body %}
+    <div class="col-lg-12 col-md-12 mb-3">
+        <a href="{{ url('transmission_envoie', {writeForFolder: dossier.getId()}) }}" class="btn btn-success">
+            <i class="fas fa-pencil-alt"></i> Ajouter une note pour ce dossier
+        </a>
+
+        <a href="{{ url('navette_exportation_word', {id: dossier.getId()}) }}" class="btn btn-primary">
+            <i class="fas fa-file-alt"></i> Exporter dans un fichier
+        </a>
+        
+    </div>
+<div class="container">
+    <div class="col-lg-12 col-md-12">
+        <div class="card card-default">
+            <div class="card-body">
+
+                <h3>Recherche</h3>
+                <hr>
+                <form method="post" action="" class="form-inline">
+                    <input type="text" name="date" id="searchDate" class="form-control ml-2" placeholder="Date..." value="">
+                    <input type="checkbox" name="mailClient" value="1" class="ml-2"
+                        {% if app.request.request.get('mailClient')%} checked="checked" {% endif %}
+                    >
+                    <label class="ml-2">Mails clients</label>
+                    <input type="checkbox" name="sansReponses" value="1" class="ml-2"
+                        {% if app.request.request.get('sansReponses')%} checked="checked" {% endif %}
+                    >
+                    <label class="ml-2">Sans réponses</label>
+                    <button type="submit" class="btn btn-primary ml-2">
+                        Rechercher
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div class="alert alert-secondary">
+            <i class="fas fa-info"></i> {{notes|length}} éléments trouvés
+        </div>
+        <div class="alert">
+            <center><h1><i class="fas fa-folder"></i> {{ dossier.getNomDossier() }}</h1></center>
+        </div>
+    </div>
+</div>
+    
+
+    {#
+    {{dump(app.request.attributes.get('_route'))}}
+    {{dump(app.request.attributes.get('_route_params'))}}
+    #}
+
+    
+
+    <div class="col-lg-12 col-md-12">
+    <div class="bs-docs-section">
+                <div class="row">
+                 {% for messages in navettePaginated %}
+                  <div class="col-lg-4">
+                                <div class="card card-default" style="height:400px">
+                                        <div class="card-header">
+                                            <h6>
+                                                {% if messages.getMailClient() == true %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="fas fa-info"></i>
+                                                {% endif %}
+                                                {{messages.getObjet()}}
+                                            </h6>
+                                            <b>Inséré le&nbsp;:</b> {{messages.getDateEnvoie()|date("d/m/Y H:i:s")}}<br>
+                                            {% if messages.getDateReelReception() %}
+                                                <b>Date réception&nbsp;:</b> {{messages.getDateReelReception()|date("d/m/Y")}}<br>
+                                            {% endif %}
+                                            {% if messages.getReponses()|length == 0 and messages.getTransmissions()|length == 0%}
+                                                <span class="text-danger">Aucune réponse</span>
+                                            {% endif %}
+                                            </div>
+                                            <div class="card-body" style="height:300px;overflow-y:auto;font-size:9pt;">
+                                                {{messages.getContenu()|raw}}
+                                            </div>
+                                            <div class="card-footer">
+                                                <a href="{{ url('transmission_read', {id: messages.getId()}) }}" class="btn btn-primary btn-sm btn-block"><i class="zmdi zmdi-view-list"></i> Consulter</a>
+                                                <a href="{{ url('transmission_envoie', {idTransmission: messages.getId()}) }}" class="btn btn-success btn-sm btn-block"><i class="fas fa-pencil-alt"></i> Modifier</a>
+                                        </div>
+                                </div>
+                        </div>
+                {% endfor %}
+                </div>
+                </div>
+      </div>    
+<div class="navigation pagination justify-content-center">
+        {{ knp_pagination_render(navettePaginated) }}
+</div>
+{% endblock %}
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            
+            $("#searchDate").daterangepicker({
+                
+                ranges: {
+                    'Aujourd\'hui': [moment(), moment()],
+                    'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                    'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                    'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                    'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                locale:{
+                    format: "YYYY-MM-DD",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                {%if dateDebut %}
+                    startDate: "{{dateDebut}}",
+                    endDate: "{{dateFin}}"
+                {%else%}
+                    autoUpdateInput:false,
+                {%endif%}
+            });
+            
+            $('#searchDate').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+            });
+            
+       
+        });
+    </script>
+{% endblock %}

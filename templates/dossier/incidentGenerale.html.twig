@@ -1,0 +1,115 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %} Incident général {% endblock %}
+{% block pageTitle %} Incident général {% endblock %}
+{% block body %}
+
+<div class="row">
+<div class="col-lg6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+            {% form_theme form 'form-theme.html.twig'%}
+            {{ form_start(form) }}
+                <div class="form-group">
+                    {{form_row(form.date_incident, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <div class="form-group">
+                    {{form_row(form.heure_debut, {'attr': {'class': 'form-control','':''}}) }}
+                </div>
+                <div class="form-group">
+                    {{form_row(form.heure_fin, {'attr': {'class': 'form-control','':''}}) }}
+                </div>
+                <div class="form-group">
+                    {{form_row(form.raison, {'attr': {'class': 'form-control'}}) }}
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span class="fa fa-save"></span> Enregistrer
+                </button>
+            {{ form_end(form)}}
+        </div>
+    </div>
+</div>
+
+<!--    -->
+<div class="col-lg-12 col-md-12">
+<br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                        <table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Date incident</th>
+                                    <th>Heure début</th>
+                                    <th>Heure fin</th>
+                                    <th>Raison</th>
+                                    <th>Insérer par</th>
+                                </tr>
+                            </thead>
+	                         <tbody> 
+                                {% for incident in incidents %}
+	                            <tr>
+                                <td>{{ incident.getDateIncident()|date("d/m/Y") }}</td>
+                                <td>{{ incident.getHeureDebut()|date("H:i:s") }}</td>
+                                <td>{{ incident.getHeureFin()|date("H:i:s") }}</td>
+                                <td>{{incident.getraison()}}</td>
+                                <td>{{incident.getInsererPar()}}</td>
+                                {% if is_granted('ROLE_SUPER_ADMIN') %}
+                                    <td> 
+                                        <a title="Supprimer" href="{{ path('incident_generale', {'id': incident.id}) }}" >
+                                            <i class="fas fa-trash alt"></i>
+                                        </a>
+                                    </td>
+                                {% endif %}
+                                 
+                                </tr>
+                                {% endfor %}
+	                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--    -->
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+$(document).ready(function(){
+     $('#form_heure_debut').daterangepicker({
+            timePicker : true,
+            singleDatePicker:true,
+            timePicker24Hour : true,
+            timePickerIncrement : 1,
+            timePickerSeconds : true,
+            locale : {
+                format : 'HH:mm:ss'
+            }
+        }).on('show.daterangepicker', function(ev, picker) {
+            picker.container.find(".calendar-table").hide();
+   });
+   $('#form_heure_fin').daterangepicker({
+            timePicker : true,
+            singleDatePicker:true,
+            timePicker24Hour : true,
+            timePickerIncrement : 1,
+            timePickerSeconds : true,
+            locale : {
+                format : 'HH:mm:ss'
+            }
+        }).on('show.daterangepicker', function(ev, picker) {
+            picker.container.find(".calendar-table").hide();
+   });
+});
+</script>
+<script>
+        $('#form_date_incident').daterangepicker({
+        singleDatePicker : true,
+     
+});
+    </script>
+
+{% endblock %}

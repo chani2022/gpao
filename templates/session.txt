@@ -1,0 +1,5 @@
+{% if app.user==null %}
+      {{ render(controller(
+        'App\\Controller\\SecurityController::logout', {max: 3}
+    )) }}
+{% endif %}

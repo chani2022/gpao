@@ -1,0 +1,76 @@
+{% extends 'base-home.html.twig' %}
+{% block body %}
+<div class="row">
+    {% for key,c in data %}
+    {% if textSearch!="true" %}
+    <div class="col">
+      <div class="col-lg-12 col-md-12">
+      <div class="card card-default">
+            <div class="card-body">
+                <h5>
+                <i class="fas fa-folder"></i> {{key}}
+                </h5>
+                <span class="text-muted">
+                    CDC&nbsp;: {{c.cdc}}<br>
+                    Ajouté le&nbsp;: {{ c.date_ajout|date('d-m-Y') }}<br>
+                    Nom de la mairie&nbsp;: {{ c.nom_mairie}}<br>
+                    Nombre d'échanges&nbsp;: {{ c.nombre_echanges}}
+                </span>
+                <br>
+                <a href="{{url('dossier_gestion', {idDossier:c.id_dossier})}}" class="btn btn-sm btn-link" title="Modifier"><i class="fa fa-edit"></i> Modifier ce dossier</a>
+                <a href="{{ url('navette_consulter_pour_dossiers', {id: c.id_dossier}) }}" class="btn btn-primary btn-block"><i class="zmdi zmdi-collection-bookmark"></i> Voir la navette</a>
+                <a href="{{ url('transmission_envoie', {writeForFolder: c.id_dossier}) }}" class="btn btn-success btn-block">
+                    <i class="fas fa-pencil-alt"></i> Ajouter une note
+                </a>
+            </div>
+        </div>
+        <br>
+      
+      </div>
+    </div>
+    {% else %} 
+    <div class="col-md-4">
+        <div class="col-lg-12 col-md-12">
+        <div class="card card-default" style="width:350px">
+            <div class="card-header">
+                <h5>
+                    <i class="fas fa-folder"></i> {{c.nom_mairie}}
+                </h5>
+                <h6>
+                    <i class="fas fa-info"></i>
+                    {{c.objet}}
+                </h6>
+                <b>Inséré le&nbsp;:</b> {{ c.insere|date('d-m-Y') }}<br>
+                <b>Date réception&nbsp;:</b> {{ c.reception|date('d-m-Y') }}<br>
+            </div>
+              <div class="card-body" style="height:300px;overflow-y:auto;font-size:9pt;">
+                  <span class="text-muted">
+                      {{c.contenu|striptags('<p>,<a>,<pre>')|raw}}
+                  </span>
+                  <br>
+              </div>
+              <div class="card-footer">
+                
+                <a href="{{ url('transmission_read', {id: c.transmission.id}) }}" class="btn btn-primary btn-block"><i class="zmdi zmdi-view-list"></i> Consulter</a>
+                  <a href="{{ url('transmission_envoie', {idTransmission: c.transmission.id}) }}" class="btn btn-success btn-block">
+                      <i class="fas fa-pencil-edit"></i> Modifier
+                  </a>
+              </div>
+          </div>
+          <br>
+        
+        </div>
+      </div>
+
+
+    
+
+
+    {% endif %}
+   {% endfor %}
+       
+ </div>
+ 
+
+
+{% endblock %}

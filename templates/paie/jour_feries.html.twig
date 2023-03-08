@@ -1,0 +1,140 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Jours fériés{% endblock %}
+
+{% block pageTitle %} Jours fériés {% endblock %}
+
+{% block body %}
+
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+
+        <div class="card-body">
+
+       {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+            <div class="form-group">
+            {{ form_row(form.date, {'attr': {'class': 'form-control','id':'form_date','name':'date'}}) }}
+            </div>
+            <div class="form-group">
+                 {{ form_row(form.motif, {'attr': {'class': 'form-control'}}) }}
+            
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <span class="fa fa-save"></span> Enregistrer
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+    
+</div>
+    <div class="col-lg-6 col-md-6">
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Motif</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                            {% for tabl in jourFeries %}
+                                <div class="form-group">
+                                    <tr>
+                                        <td>{{tabl.date|date("d/m/Y") }}</td>
+                                        <td>{{tabl.motif}}</td>
+                                        <td>
+                                            <a href="{{ path('remove_jour_feries', {id: tabl.id}) }}">
+                                                <i class="fas fa-trash alt"></i>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            {#<a href="{{ path('edit_jour_feries', {id: tabl.id}) }}" data-toggle="modal" data-target="#editJourFeriesModal">
+                                                <i class="fas fa-edit alt"></i>
+                                            </a>#}
+                                            <a href="{{ path('add_Jour_feries', {'id': tabl.id, paramDefaults:1}) }}" >
+                                                <i class="fas fa-edit alt"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            var DatePickerLocal = {
+                        "direction": "ltr",
+                        "format": "DD/MM/YYYY",
+                        "separator": " -",
+                        "applyLabel": "Appliquer",
+                        "cancelLabel": "Annuler",
+                        "fromLabel": "Da",
+                        "toLabel": "A",
+                        "customRangeLabel": "Plage personnalisée",
+                        "daysOfWeek": [
+                            "Di",
+                            "Lu",
+                            "Ma",
+                            "Me",
+                            "Jeu",
+                            "Ve",
+                            "Sa"
+                        ],
+                        "monthNames": [
+                            "Janvier",
+                            "Février",
+                            "Mars",
+                            "Avril",
+                            "Mai",
+                            "Juin",
+                            "Juillet",
+                            "Août",
+                            "Septembre",
+                            "Octobre",
+                            "Novembre",
+                            "Décembre"
+                        ],
+                        "firstDay": 1
+                    };
+            $("#form_date").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker: true,
+                locale:{
+                    
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+              
+            });
+            
+            $('#form_date').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY'));
+            });
+        });
+        
+    </script>
+{% endblock %}

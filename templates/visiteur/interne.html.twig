@@ -1,0 +1,173 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Sortie{% endblock %}
+
+{% block pageTitle %} Sortie avant l'heure {% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row" id="pageContentWrapper">               
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+
+                <div class="card-body">
+
+            {% form_theme form 'form-theme.html.twig' %}
+                {{ form_start(form) }}
+                {{ form_errors(form) }}
+                    
+                    <div class="form-group">
+                    {{ form_row(form.matricule, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    <div class="form-group">
+                        {{form_row(form.motifs,{'attr':{'class':'form-control'}})}}
+                    </div>
+                    <div class="form-group">
+                        {{form_row(form.donneurOrdre,{'attr':{'class':'form-control'}})}}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <span class="fa fa-save"></span> Enregistrer
+                    </button>
+                {{ form_end(form) }}
+                </div>
+            </div>
+            
+        </div>
+
+
+
+        <div class="col-lg-6 col-md-6">
+        
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Dates</th>
+                                        <th>Matricule</th>
+                                        <th>Motifs</th>
+                                        <th>Heure de sortie</th>
+                                        <th>Donneur d'ordre</th> 
+
+                                    </tr>
+                                </thead>
+                            <tbody>
+
+                            {% form_theme form 'form-theme.html.twig' %}
+                            {{ form_start(form_search_by_date) }}
+                                    {{ form_errors(form_search_by_date) }}
+                                    <div class="input-group">
+                                    
+                                        {{ form_widget(form_search_by_date.date_search, {'attr': {'class': 'form-control','placeholder': 'Recherche par date'}}) }}
+                                            <button type="submit" class="btn btn-primary form-inline">
+                                                <span class="fa fa-search"></span> 
+                                            </button>
+                                    </div>
+                                    {{ form_end(form_search_by_date) }}
+                                    <br/>
+                                    {{ form_start(form_search) }}
+                                    {{ form_errors(form_search) }}
+                                            <div class="input-group">
+                                            {{ form_widget(form_search.search, {'attr': {'class': 'form-control','placeholder': 'Recherche'}}) }}
+                                            <button type="submit" class="btn btn-primary form-inline">
+                                                <span class="fa fa-search"></span> 
+                                            </button>
+                                            </div>
+                                    {{ form_end(form_search) }}
+                                    <br/>
+
+                                {% for tabl in list_visiteur %}
+                                
+                                    <div class="form-group">
+                                        <tr>
+                                            <td>{{tabl.dates|date('d/m/Y')}}</td>
+                                            <td>{{tabl.matricule}}</td>
+                                            <td>{{tabl.motifs}}</td>
+                                            <td>{{tabl.heuresortie|date('H:i:s')}}</td>
+                                            <td>{{tabl.donneurOrdre}}</td>
+
+                                            <td> 
+                                                <a title="Supprimer" href="{{ path('interne', {'id': tabl.id, paramDefaults:2}) }}" >
+                                                        <i class="fas fa-trash alt"></i>
+                                                </a>
+                                            </td>
+
+                                        </tr>
+                                    </div>
+                                    
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            var DatePickerLocal = {
+                        "direction": "ltr",
+                        "format": "DD/MM/YYYY",
+                        "separator": " -",
+                        "applyLabel": "Appliquer",
+                        "cancelLabel": "Annuler",
+                        "fromLabel": "Da",
+                        "toLabel": "A",
+                        "customRangeLabel": "Plage personnalisée",
+                        "daysOfWeek": [
+                            "Di",
+                            "Lu",
+                            "Ma",
+                            "Me",
+                            "Jeu",
+                            "Ve",
+                            "Sa"
+                        ],
+                        "monthNames": [
+                            "Janvier",
+                            "Février",
+                            "Mars",
+                            "Avril",
+                            "Mai",
+                            "Juin",
+                            "Juillet",
+                            "Août",
+                            "Septembre",
+                            "Octobre",
+                            "Novembre",
+                            "Décembre"
+                        ],
+                        "firstDay": 1
+                    };
+            $("#form_date_search").daterangepicker({
+                //autoUpdateInput:false,
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                
+            });
+            
+            $('#form_date_search').on('apply.daterangepicker', function(ev, picker) {
+			$(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+            
+       
+        });
+        
+    </script>
+{% endblock %}

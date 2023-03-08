@@ -1,0 +1,444 @@
+index:
+    path: /
+    controller: App\Controller\MainController::index
+
+test_statistique_absence:
+    path: /absence/statistique
+    controller: App\Controller\TestController::testStatistique
+    
+test:
+    path: /test
+    controller: App\Controller\TestController::index
+
+test_react:
+    path: /testreact
+    controller: App\Controller\TestController::testReact
+    
+api:
+    path: /api
+    controller: App\Controller\TestController::testApi
+    
+
+login:
+   path: /login
+   controller: App\Controller\SecurityController::login
+
+logout:
+   path: /logout
+   controller: App\Controller\SecurityController::logout
+
+main_home_index:
+    path: /home
+    controller: App\Controller\MainController::homeMainIndex
+
+#transmission
+recherche_rapide:
+    path: /recherche
+    controller: App\Controller\TransmissionController::rechercheRapide
+
+transmission_index:
+  path: /transmission/index
+  controller: App\Controller\TransmissionController::index
+
+
+transmission_boite_envoie:
+    path: /transmission/boite/envoie
+    controller: App\Controller\TransmissionController::boiteEnvoie
+
+transmission_envoie:
+    path: /transmission/new/{writeForFolder}/{idTransmission}
+    controller: App\Controller\TransmissionController::envoie
+    requirements:
+        writeForFolder: \d+
+        idTransmission: \d+
+    defaults:
+        writeForFolder: 0
+        idTransmission: 0
+
+transmission_receive_piece:
+    path: /transmission/receive-piece
+    controller: App\Controller\TransmissionController::receivePiece
+    options:
+      expose: true
+
+
+transmission_load_destinataires:
+    path: /transmission/load-destinataires
+    controller: App\Controller\TransmissionController::loadDestinataires
+    options:
+      expose: true
+
+transmission_read:
+    path: /transmission/read/{id}
+    controller: App\Controller\TransmissionController::readMessage
+    options:
+      expose: true
+    requirements:
+        id: \d+
+
+transmission_marquer_lu:
+  path: /transmission/setread
+  controller: App\Controller\TransmissionController::markRead
+  options:
+    expose: true
+
+transmission_delete:
+    path: /transmission/delete/{id}
+    controller: App\Controller\TransmissionController::deleteTransmission
+    options:
+      expose: true
+    requirements:
+        id: \d+
+
+transmission_download_piece:
+    path: /transmission/download/{id}
+    controller: App\Controller\TransmissionController::downloadPiece
+    options:
+      expose: true
+    requirements:
+        id: \d+
+        
+#regularisation_absence
+regularisation_absence:
+    path: /rh/regularisation_absence/{defaultParam}
+    controller: App\Controller\RhController::regularisationAbs
+    options:
+      expose: true
+    defaults:
+        defaultParam: 0
+        
+#statistique absence        
+regularisation_absence_statistique:
+    path: /rh/statistique/absence
+    controller: App\Controller\RhController::statistiqueAbsence
+      
+#exception connexion       
+rh_exceptionConnexion:
+    path: /rh/exception
+    controller: App\Controller\RhController::exceptionConnexion
+    
+rh_importation_exportation_rib:
+    path: /rh/{slug}
+    controller: App\Controller\RhController::importationAndExportationRib
+    defaults:
+        slug: null
+#cdc
+cdc_gestion:
+    path: /cdc/gestion/{idCdc}
+    controller: App\Controller\DossierController::gestionCDC
+    options:
+      expose: true
+    requirements:
+        idCdc: \d+
+    defaults:
+        idCdc: 0
+        
+#progression dossier    
+progression_dossier:
+    path: /dossier/progression_dossier
+    controller: App\Controller\DossierController::progressionDossier
+    
+    
+api_progression_dossier:
+    path: /dossier/api/progression_dossier
+    controller: App\Controller\DossierController::apiProgressionDossier
+    
+#dossier
+dossier_gestion:
+    path: /dossier/gestion/{idDossier}
+    controller: App\Controller\DossierController::gestionDossier
+    options:
+      expose: true
+    requirements:
+        idDossier: \d+
+    defaults:
+        idDossier: 0
+
+dossier_planning:
+    path: /dossier/planning
+    controller: App\Controller\DossierController::planning
+    options:
+      expose: true
+      
+heure_reel:
+    path: /production/heure
+    controller: App\Controller\DossierController::heureObjectif
+
+
+#navette
+navette_ajout:
+    path: /navette/add/{id}
+    controller: App\Controller\DossierController::ajoutNavette
+    options:
+      expose: true
+    requirements:
+        id: \d+
+        
+suivi_prod:
+    path: /dossier/suivi/prod
+    controller: App\Controller\DossierController::suiviProd
+    
+incident_generale:
+    path: /dossier/incident/general/{id}
+    controller: App\Controller\DossierController::incidentGenerale
+    defaults:
+        id: 0
+        
+evolution_travail:
+    path: /dossier/evolution/travail
+    controller: App\Controller\DossierController::evolutionTravail
+    
+evolution_operateur:
+    path: /dossier/evolution/operateur
+    controller: App\Controller\DossierController::evolutionOperateur
+
+navette_consulter:
+    path: /navette/show/{id}
+    controller: App\Controller\DossierController::showNavette
+    options:
+      expose: true
+    requirements:
+        id: \d+
+
+navette_consulter_pour_dossiers:
+    path: /navette/view/all/{id}
+    controller: App\Controller\DossierController::showAllForDossier
+    options:
+      expose: true
+    requirements:
+        id: \d+
+
+navette_exportation:
+    path: /navette/export/{id}
+    controller: App\Controller\DossierController::exportationNavette
+    options:
+      expose: true
+    requirements:
+        id: \d+
+        
+navette_exportation_word:
+    path: /navette/export/word/{id}
+    controller: App\Controller\DossierController::exportationNavetteWord
+    options:
+        expose: true
+    requirements:
+        id: \d+
+
+#recolte
+recolte_index:
+    path: /recolte/index
+    controller: App\Controller\PaieController::indexRecolte
+    options:
+        expose: true
+
+recolte_creation:
+    path: /recolte/creation/{dateDebut}/{dateFin}
+    controller: App\Controller\PaieController::creationRecolte
+    options:
+        expose: true
+
+recolte_save:
+    path: /recolte/save
+    controller: App\Controller\PaieController::saveRecolte
+    options:
+        expose: true
+
+#ajout jour feries
+add_Jour_feries:
+    path: /add/jour_ferie/{paramDefaults}
+    controller: App\Controller\PaieController::addJourFeries
+    options:
+      expose: true
+    defaults:
+      paramDefaults: 0
+
+#supp jour feries
+remove_jour_feries:
+    path: /delete/jour-ferie/{id}
+    controller: App\Controller\PaieController::removeJourFeries
+    options:
+      expose: true
+    requirements:
+      id: \d+
+
+lettres_user:
+    path: /lettres_user
+    controller: App\Controller\PaieController::lettres
+    options:
+      expose: true
+
+lettres_user_view:
+    path: /lettres_user/{id}/{slug}
+    controller: App\Controller\PaieController::lettresView
+    options:
+      expose: true
+
+download_lettres:
+    path: /download/
+    controller: App\Controller\PaieController::htmlToPdf
+    options:
+      expose: true
+
+#securite
+visiteur:
+    path: /visiteur/{paramDefaults}
+    controller: App\Controller\SecuriteController::visiteur
+    options:
+      expose: true
+    defaults:
+      paramDefaults: 0
+
+#Sortie avant heure
+interne:
+    path: /interne/{paramDefaults}
+    controller: App\Controller\SecuriteController::interne
+    options:
+      expose: true
+    defaults:
+      paramDefaults: 0
+      
+absence_imprevu:
+    path: /absence/imprevu
+    controller: App\Controller\RhController::absenceImprevu
+      
+#statistique generale
+statistique_generale:
+    path: /statistique/general
+    controller: App\Controller\RhController::dashbordStatistique
+    
+#statistiques RH
+index_statistique_rh:
+  path: /statistique/index
+  controller: App\Controller\RhController::indexStatistique
+  options:
+    expose: true
+
+get_val_statistique_rh:
+  path: /statistique/get
+  controller: App\Controller\RhController::getStatsVal
+  options:
+    expose: true
+
+#limitation acces
+index_limitation_access:
+  path: /la/index
+  controller: App\Controller\PersonnelController::index
+  options:
+    expose: true
+
+edit_limitation_access:
+  path: /la/edit
+  controller: App\Controller\PersonnelController::edit
+  options:
+    expose: true
+
+add_from_liste_limitation_access:
+  path: /la/add
+  controller: App\Controller\PersonnelController::addFromList
+  options:
+    expose: true
+
+#ajout communique
+add_communique:
+  path: /com/add/index
+  controller: App\Controller\PersonnelController::indexAjoutCommunique
+  options:
+    expose: true
+    
+#retard des utilisateur
+retard_user:
+    path: /rh/retard/operateur
+    controller: App\Controller\RhController::retard
+    
+suivi_rejet:
+    path: /dossier/suivi/rejet
+    controller: App\Controller\DossierController:suiviRejet
+    
+dossier_extra:
+    path: /dossier/extra
+    controller: App\Controller\DossierController:extra
+    
+dossier_extra_v2:
+    path: /dossier/extra/operateur
+    controller: App\Controller\DossierController:extraV1
+    
+dossier_extra_v2_cadre:
+    path: /dossier/extra/cadre
+    controller: App\Controller\DossierController:extraCadre
+    
+dossier_suivi_extra:
+    path: /dossier/suivi/extra
+    controller: App\Controller\DossierController:suiviExtra
+    
+dossier_suivi_extra_absence:
+    path: /dossier/suivi/extra/absence
+    controller: App\Controller\DossierController:absenceExtra
+    
+dossier_suivi_extra_heure_manquant:
+    path: /dossier/suivi/extra/heure/manquant
+    controller: App\Controller\DossierController:heureManquantExtra
+    
+dossier_suivi_extra_extra_effectuez:
+    path: /dossier/suivi/extra/extra_effectuez
+    controller: App\Controller\DossierController:nombreExtraEffectuez
+    
+dossier_statistique_extra_et_production:
+    path: /dossier/statistique/extra/production
+    #controller: App\Controller\DossierController:statistiqueExtraProduction
+    controller: App\Controller\DossierController:compExtraProd
+    
+dossier_extra_general:
+    path: /dossier/extra/general
+    controller: App\Controller\DossierController::extraGeneral
+    
+dossier_api_compar:
+    path: /api/compar
+    controller: App\Controller\DossierController::ApiCompar
+    
+dossier_api_absence:
+    path: /api/absence
+    controller: App\Controller\DossierController::ApiAbsence
+    
+dosier_api_absence_test:
+    path: /api/absence/test
+    controller: App\Controller\DossierController::ApiAbsenceTest
+    
+test_api_file:
+    path: /test/api
+    controller: App\Controller\DossierController::fileContent
+    
+test_export_word:
+    path: /test/word
+    controller: App\Controller\TestController::apiWord
+    
+test_sqlite:
+    path: /test/sqlite
+    controller: App\Controller\TestController::sqlite
+#rh   
+heure_manquant:
+    path: /rh/heure/manquant
+    controller: App\Controller\RhController::heureManquantProductionNormal
+    
+#transmission_search_fast
+transmission_fast_search:
+    path: /transmission/search
+    controller: App\Controller\TransmissionController::fast_search
+    
+analyse_dossier:
+    path: /dossier/analyse
+    controller: App\Controller\DossierController::analyse
+
+historique_fichiers:
+    path: /dossier/fichierHistoriqueModif
+    controller: App\Controller\DossierController::fichierHistoriqueModif
+
+attribution_dossier:
+    path: /dossier/attributionDossier
+    controller: App\Controller\DossierController::attributionDossier
+
+app_gestion_demande:
+    path: /rh/gestion/demande/supplementaire
+    controller: App\Controller\RhController::gestionDemande
+
+
+    

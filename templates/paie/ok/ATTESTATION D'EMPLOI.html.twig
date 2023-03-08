@@ -1,0 +1,218 @@
+{% extends "base.html.twig" %}
+{% block stylesheets %}
+    
+{% endblock %}
+{% block body %}
+
+<div style="width: 100%;
+padding-right: 15px;
+padding-left: 15px;
+margin-right: auto;
+margin-left: auto;
+        display: block;
+        margin: 0 auto;
+        margin-bottom: 0.5cm;
+        box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+        background:white;width: 21cm;
+        height: 0px;
+        ">
+       
+<div>
+    <div style="max-width: 50%;margin-top: 1rem !important;">
+    </div>
+    <div style="max-width: 50%;margin-top: 1rem !important;">
+    </div>
+    <div style="position: relative;
+                width: 100%;
+                min-height: 1px;
+                padding-right: 15px;
+                padding-left: 15px;">
+        <div style="display: -ms-flexbox;
+                display: flex;
+                -ms-flex-wrap: wrap;
+                flex-wrap: wrap;
+                margin-right: -15px;
+                margin-left: -15px;">
+                        <!--Colone1 page-->
+                        <div style="flex: 0 0 8.333333%;
+                                    max-width: 8.333333%;position: relative;
+                                    width: 100%;
+                                    min-height: 1px;
+                                    padding-right: 15px;
+                                    padding-left: 15px;">
+                        
+                        </div>
+                        <!--Fin Colone1 page-->
+
+                        <!--Colone2 page-->
+                        <div style="flex: 0 0 83.333333%;
+                                    max-width: 83.333333%;position: relative;
+                                    width: 100%;
+                                    min-height: 1px;
+                                    padding-right: 15px;
+                                    padding-left: 15px;">
+                        <section>
+                                <div style="max-width: 1320px;">
+                                <div style="display: -ms-flexbox;
+                                            display: flex;
+                                            -ms-flex-wrap: wrap;
+                                            flex-wrap: wrap;
+                                            margin-right: -15px;
+                                            margin-left: -15px;">
+                                    <div style="margin-top: 1rem !important;flex: 0 0 100%;
+                                            max-width: 100%;position: relative;
+                                            width: 100%;
+                                            min-height: 1px;
+                                            padding-right: 15px;
+                                            padding-left: 15px;">
+                                    </div>
+                                        <div style="margin-top: 1rem !important;flex: 0 0 100%;
+                                            max-width: 100%;position: relative;
+                                            width: 100%;
+                                            min-height: 1px;
+                                            padding-right: 15px;
+                                            ">
+                                            <img src="{{absolute_url(asset("images/logo-eline-large.png"))}}" alt="ELINE" />
+                                        </div>
+                                </div>
+                                <div style="display: -ms-flexbox;
+                                            display: flex;
+                                            -ms-flex-wrap: wrap;
+                                            flex-wrap: wrap;
+                                            margin-right: -15px;
+                                            margin-left: -15px;
+                                        }">
+                                    <div style="margin-top: 1rem !important;flex: 0 0 50%;
+                                                max-width: 50%;">
+                                            <p>ELINE SOFT & DATA</p>
+                                            <p>21 Rue Andriambelomasina, Amparibe<br> Immeuble Akany Rainimamonjy</p>
+                                            <p>NIF : 4001693087</p>
+                                            <p>STAT : 63113120114010603</p>
+                                            <p>RCS : 2014B00553</p>
+                                            <p>Tél : +261349074605</p>
+                                    </div>
+                                    
+                                </div>
+                                
+                                
+
+                                <div style="margin: 0;
+                                            padding: 0;
+                                            margin-left:360px;
+                                            -webkit-box-sizing: border-box;
+                                            -moz-box-sizing: border-box;
+                                            box-sizing: border-box;">
+                                            <label>Antananarivo, le {{ date.date|date("d/m/Y") }}</label>
+
+                                </div>
+                                    
+                               
+                                
+                                <div style="margin: 0;
+                                                padding: 0;
+                                                margin-top:70px;
+                                                margin-left:200px;
+                                                -webkit-box-sizing: border-box;
+                                                -moz-box-sizing: border-box;
+                                                box-sizing: border-box;">
+                                                <label style="font-weight:bold;">ATTESTATION D'EMPLOI</label>
+
+                                </div>
+                                
+                                <div style="display: -ms-flexbox;
+                                            display: flex;
+                                            -ms-flex-wrap: wrap;
+                                            flex-wrap: wrap;
+                                            margin-right: -15px;
+                                            margin-left: -15px;">
+                                           
+
+                                    <div style="align-self: center !important;flex: 0 0 100%;
+                                                max-width: 100%;">
+                                                
+                                    </div>
+                                    
+                                    
+                                    
+                                    <div style="margin-top: 1rem !important;flex: 0 0 100%;
+                                                max-width: 100%;">
+                                   
+                                    <p>
+                                    <div style="align-self: center !important;flex: 0 0 100%;
+                                                max-width: 100%;">
+                                                
+                                    </div>
+
+
+                                    <div style="margin: 0;
+                                                padding: 0;
+                                                margin-top:10px;
+                                                margin-left:50px;
+                                                -webkit-box-sizing: border-box;
+                                                -moz-box-sizing: border-box;
+                                                box-sizing: border-box;">
+                                                <p>Nous soussignés ELINE SOFT&DATA certifions que :</p>
+
+                                    </div>
+
+                                    <div style="margin: 0;
+                                                padding: 0;
+                                                margin-top:10px;
+                                                -webkit-box-sizing: border-box;
+                                                -moz-box-sizing: border-box;
+                                                box-sizing: border-box;
+                                                ">
+                                            <p>
+                                                
+                                                Mlle/Mme/Mr  matricule {{user.id_personnel}} a été employé(e) dans notre société comme {{user.nom_fonction}}.depuis le {{user.date_embauche|date("d/m/Y") }} .jusqu’à ce jour dans le cadre d’un contrat à durée indéterminée.
+                                            </p>  
+
+                                    </div>
+                                    
+                                    
+                                    
+                                    <div style="margin-top: 1rem !important;flex: 0 0 100%;
+                                                max-width: 100%;">
+                                   
+                                    
+
+                                    <div style="margin-left:50px;                                            ">
+                                        <p>En foi de quoi, cet attestation lui est délivrée pour servir et faire valoir ce que de droit.
+                                    </p>
+
+                                    </div>  
+                                    
+                                    </div>
+
+                                    <div style="margin: 0;
+                                                padding: 0;
+                                                margin-top:70px;
+                                                margin-left:470px;
+                                                -webkit-box-sizing: border-box;
+                                                -moz-box-sizing: border-box;
+                                                box-sizing: border-box;">
+                                                <label style="font-weight:bold;">LA DIRECTION</label>
+                                                
+
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            </section>
+                        </div>
+                        <!--Fin Colone2 page-->
+                        <!--Colone3 page-->
+                        <div style="flex: 0 0 8.333333%;
+                                    max-width: 8.333333%;position: relative;
+                                    width: 100%;
+                                    min-height: 1px;
+                                    padding-right: 15px;
+                                    padding-left: 15px;">
+                        </div>
+                        <!--Fin Colone3 page-->
+            </div>
+    </div>
+    
+</div>
+</div>
+{% endblock %}

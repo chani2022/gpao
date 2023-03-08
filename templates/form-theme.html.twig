@@ -1,0 +1,18 @@
+{% block form_errors %}
+    {% if errors|length > 0 %}
+        {% if compound %}
+            {# ... display the global form errors #}
+            <ul class="list-group">
+                {% for error in errors %}
+                    <li class="list-group-item list-group-item-danger">{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <ul class="list-group">
+                {% for error in errors %}
+                    <li class="list-group-item list-group-item-danger">{{ error.message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+{% endblock form_errors %}

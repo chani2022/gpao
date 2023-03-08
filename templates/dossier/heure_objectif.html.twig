@@ -1,0 +1,272 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Absence extra{% endblock %}
+{% block pageTitle %}Absence extra{% endblock %}
+{% block body %}
+<style>
+.table {
+    table-layout:fixed;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+ul {
+  list-style: none;
+}
+.tbl_scroll{
+    display: block;height: 400px;overflow-y: scroll;
+}
+.tbl_scroll_1{
+    display: block;
+    height: 249px;
+    overflow-y: scroll;
+}
+
+.thead{
+  display:inline-block;
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+</style>
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_row(form.matricule,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.dates,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.equipe, {'label': 'Equipe','attr': {'class': 'form-control'}}) }}    
+            </div>
+            <div class="form-group">
+                {{ form_row(form.export) }}    
+            </div>
+           
+            <button id="enregistrer" type="submit" class="btn btn-primary">
+                <span class="fa fa-eye"></span> Afficher
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+<div class="card-deck">
+    <div class="container-fluid gedf-wrapper">
+        <div class="row" id="places">
+           {% if statistique!=null %}
+           	<div class="col-md-12" >
+            <br/>
+                <div class="card">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-12">
+                        <div class="card">
+                          <div class="card-body">
+                                {% if equipe=='Matin 6h' %}
+                                    <h1 style="color:crimson">Equipe matin</h1>
+                                {% elseif equipe=='APM 6h' %}
+                                    <h1 style="color:crimson">Equipe APM</h1>
+                                {% elseif equipe=='Extra' %}
+                                    <h1 style="color:crimson">Extra</h1>
+                                {% elseif equipe=='Complement' %}
+                                    <h1 style="color:crimson">Complement</h1>
+                                {% endif %}
+                                <div id="moyenne"></div>
+                                 <br/>
+                              <canvas class="test" id="canvas_objectif" width="400" height="200"></canvas>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>  
+        	{% endif %}
+    </div>
+  </div>             
+</div>
+{% endblock %}
+{% block javascripts %}
+{{ parent() }}
+<script>
+$(function(){  
+
+    $("#form_dates").daterangepicker({
+                //autoUpdateInput:false,
+                ranges: {
+                    'Aujourd\'hui': [moment(), moment()],
+                    'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                    'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                    'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                    'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Compte actuel': [moment().startOf('month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').format('20-MM-YYYY')],
+                     'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').subtract(1, 'month').format('20-MM-YYYY')],
+          
+                // 'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(10, 'days'), moment().endOf('month').subtract(1, 'month').subtract(10, 'days')],
+                },
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+            });
+    })
+
+    $(document).ready(function () {
+    
+   
+      /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+      $('select#form_equipe').select2({matcher: select2matchCustomUser});
+      $('select#form_matricule').select2({matcher: select2matchCustomUser});
+      /*initialisation de 'laffichage des champs*/
+   
+  });
+  
+  /*On va utiliser le système de recherche classique du plugin select2*/
+  var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+  function select2matchCustomUser(params, data) {
+      /* Si l'option est "Autre" on l'affiche toujours */
+      if (params.term && data.id == "autre") {
+          return data;
+      }
+      /* Sinon utilisation de la recherche classique */
+      return defaultMatcher(params, data);
+  }
+</script>
+
+<script>
+       
+         
+$(document).ready(function () {
+    
+    var data2 = {{statistique|json_encode()|raw}};
+
+    var datasets_objectif_reference_reel = [];
+    var dataChart_entre_objectif_reel_reference=[]
+    var dataChart_reel=[]
+    
+
+    var labels_objectif_reference =[];
+
+    
+    var labels_objectif =[];
+    var labels_reference =[];
+    var labels_reel = []
+
+    var labels_=[]
+    var montant_ =[];
+    var valeur_dul_labels=[]
+
+    var data_value_objectif=[]
+    var data_value_reference=[]
+    var data_value_reel = []
+       
+                
+          
+function numAverage(a) {
+  var b = a.length,
+      c = 0, i;
+  for (i = 0; i < b; i++){
+    c += Number(a[i]);
+  }
+  return c/b;
+}
+    Object.entries(data2).forEach(([key, value]) => {
+      
+        data_value_objectif.push(value.heure_objectif.toFixed(2))
+        data_value_reference.push(value.heure_reference.toFixed(2))
+        data_value_reel.push(value.heure_reel.toFixed(2))
+        valeur_dul_labels.push(key)
+      
+    });
+
+var moyenne_objectif = document.getElementById('moyenne');
+var moyenne_reference = document.getElementById('moyenne');
+var moyenne_reel = document.getElementById('moyenne')
+moyenne_objectif.insertAdjacentHTML('beforeend', '<p><h6>Moyenne sur objectif:</h6>'+numAverage(data_value_objectif).toFixed(2)+'</p>');
+moyenne_reference.insertAdjacentHTML('beforeend', '<p><h6>Moyenne référence:</h6>'+numAverage(data_value_reference).toFixed(2)+'</p>');
+moyenne_reel.insertAdjacentHTML('beforeend', '<p><h6>Moyenne réel:</h6>'+numAverage(data_value_reel).toFixed(2)+'</p>');
+    var obj2 = {
+        label: "Heure sur objectif",
+        data: data_value_objectif,
+        borderWidth: 3,
+        fill: false,
+        backgroundColor: "rgb(63, 216, 146)",
+        borderColor: "rgb(63, 216, 146)"
+    };
+    var obj3 = {
+        label: "Heure de référence ",
+        data: data_value_reference,
+        borderWidth: 3,
+        fill: false,
+        backgroundColor: "rgb(242, 34, 103)",
+        borderColor: "rgb(242, 34, 103)",
+    };
+    var obj4 = {
+        label: "Heure réel ",
+        data: data_value_reel,
+        borderWidth: 3,
+        fill: false,
+        backgroundColor: "rgb(100, 34, 103)",
+        borderColor: "rgb(100, 34, 103)",
+    };
+    datasets_objectif_reference_reel.push(obj2,obj3,obj4);      
+               
+            var ctx = document.getElementById("canvas_objectif").getContext('2d');
+            dataChart_entre_objectif_reel_reference.datasets = datasets_objectif_reference_reel;
+            dataChart_entre_objectif_reel_reference.labels = valeur_dul_labels;
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: dataChart_entre_objectif_reel_reference,
+                options: {
+                    scales: {
+                        yAxes: [{
+                            barPercentage: 1,
+                            categoryPercentage: 1 / 10 * dataChart_entre_objectif_reel_reference.datasets[0].data.length,
+                            ticks: {
+                                beginAtZero: true
+                            },
+                            scaleLabel: {
+                            display: true,
+                            labelString: "Heure sur objectif & Réel & référence",
+                            fontSize: 20 
+                            }
+                        }]
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgb(255, 99, 132)',
+                                fontColor: "#000080",
+                            }
+                        }
+        }
+                }
+            });        
+           
+          
+    }); 
+           </script>
+    
+{% endblock %}
+

@@ -1,0 +1,196 @@
+
+<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+<link href="public/cooladmin/vendor/font-awesome-4.7/css/font-awesome.min.css"
+        rel="stylesheet" media="all">
+<link href="public/cooladmin/vendor/font-awesome-5/css/fontawesome-all.min.css"
+        rel="stylesheet" media="all">
+<link href="public/cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css"
+        rel="stylesheet" media="all">
+<link href="public/cooladmin/vendor/bootstrap-4.1/bootstrap.min.css" rel="stylesheet"
+        media="all">
+<link href="public/cooladmin/css/styles.css" rel="stylesheet" media="all">
+<link href="public/cooladmin/vendor/font-awesome-4.7/css/font-awesome.min.css" rel="stylesheet" media="all">
+
+<style>
+    .active{background:dimgray;}
+</style>
+<?php
+//require __DIR__.'/src/Model/Esd.php';
+//$esd = new Esd();
+//$datas = $esd->fetchAll("cdc");
+require __DIR__.'/src/Controller/CdcController.php';
+$cdc = new CdcController();
+$datas = $cdc->getCdcs();
+?>
+
+<div class='dashboard'>
+    <div class="dashboard-nav">
+        <header><a href="#!" class="menu-toggle"><i class="fas fa-bars"></i></a>
+        <a href="#"   class="brand-logo"><i class="fas fa-bars"></i> <span>MENU</span></a></header>
+        <nav class="dashboard-nav-list">
+            <?php
+                foreach ($datas as $ligne) {
+                    ?>
+                        <a href='src/Dispatch/masque/show_masques_by_cdc.php?id_cdc=<?=$ligne["Id_cdc"]?>&remarques=<?=$ligne["Remarques"]?>' class='dashboard-nav-item cdcs'><i class='fas fa-copy'></i>
+                            <br /><?= $ligne["Nom_cdc"]?>
+                            
+                        </a>
+                    <?php
+                        //}        
+                
+                }
+           ?>
+            <!--<a href="#" class="dashboard-nav-item"><i class="fas fa-file-upload"></i>test</a>-->
+        </nav>
+    </div>
+    
+        <div class='dashboard-app'>
+                <div class='dashboard-content'>
+                        <div class='container'>
+                        <div class="card-group">
+                                <div class="card">
+                                        <div class='card-header'>
+                                        </div>
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="card-group">
+                                <div class="card">
+                                        <h4 class="card-title"></h4>
+                                        <div class="card-body">
+                                            
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div class="card-group">
+                                <div class="card">
+                                    
+                                        <div class="card-body">
+                                            <form action="src/Dispatch/cdc/insert_cdc.php" method="post" id="myForm">
+                                                <label>Nom cdc</label>
+                                                <input type="text" name="Nom_cdc" />
+                                                <label>Version cdc</label>
+                                                <input type="text" name="Version_cdc" />
+                                                <label>Remarque</label>
+                                                <input type="text" name="Remarques" />
+                                                <input type="submit" name="submit" value="Soumettre le formulaire ajax" />
+                                                <div id="res"></div>
+                                            </form>
+                                            
+                                        </div>
+                                </div>
+                            </div>
+
+                        </div>
+                </div>
+        </div>
+</div>
+
+
+
+
+
+<script src="public/cooladmin/vendor/jquery-3.2.1.min.js"></script>
+<script src="public/cooladmin/vendor/bootstrap-4.1/popper.min.js"></script>
+<script src="public/cooladmin/vendor/bootstrap-4.1/bootstrap.min.js"></script>
+<script src="public/cooladmin/vendor/select2/select2.min.js"></script>
+
+
+<script>
+$("#myForm").submit(function(e){
+  e.preventDefault(); //empêcher une action par défaut
+  var form_url = $(this).attr("action"); //récupérer l'URL du formulaire
+  var form_method = $(this).attr("method"); //récupérer la méthode GET/POST du formulaire
+  var form_data = $(this).serialize(); //Encoder les éléments du formulaire pour la soumission
+  console.log(form_url);
+  console.log(form_method);
+  console.log(form_data);
+  $.ajax({
+    url : form_url,
+    type: form_method,
+    data : form_data
+  }).done(function(response){ 
+    $("#res").html(response);
+  });
+});
+</script>
+
+
+
+<script>
+
+$('.cdcs').click(function(event){
+    event.preventDefault(); 
+    
+    if($(this).attr('href')){ 
+        $('.active').removeClass('active');
+    $(this).addClass("active");
+    }else{
+
+    }
+
+    var current=$(this);
+    console.log(current);
+    console.log("Valeur du lien",$(current).attr("href"));
+    $.ajax({
+            url: $(current).attr("href"),
+                type:'GET',
+                dataType: 'json',
+                error: function(){
+                    console.log("erreur ajax");
+                },
+                success: function(results){
+                    console.log(results.id_cdc);
+                    $(".card-header").html('<strong>'+results.remarques+'</strong>');
+                    //console.log(<a href="src/Dispatch/cdc/get_data_to_update_form_cdc.php?id_cdc='"+results.id_cdc+"' class="btn btn-primary">test</a>);
+                    $(".card-title").html('<br/>&nbsp&nbsp&nbsp<a href="src/Dispatch/cdc/get_data_to_create_form_cdc.php" class="btn btn-primary ajouter_cdcs"><span class="fas fa-plus"></span> Ajouter un nouveau cdc</a>&nbsp<a href="src/Dispatch/cdc/get_data_to_update_form_cdc.php?id_cdc="'+results.id_cdc+'"" class="btn btn-primary"><span class="fas fa-plus"></span> Modifier un cdc</a>&nbsp<a href="src/Dispatch/masque/get_data_to_create_form_masque.php" class="btn btn-primary"><span class="fas fa-plus"></span> Ajouter un masque</a>&nbsp<a href="src/Dispatch/masque/get_data_to_create_form_masque.php" class="btn btn-primary"><span class="fas fa-plus"></span> Dupliquer un cdc</a>');
+                    $('.card-body').html('<table id="1" class="table"><thead style="background:#4272d7;color:#fff;"><tr><th>Nom masque</th><th>Type secondaire</th></tr></thead></table>');
+                    var table = $('.card-body').children();
+                    console.log("YYYY",results.masques);
+                        for (const [key, value] of Object.entries(results.masques)) {
+
+                            //var elements = "<div>";
+                            if(value.Type_secondaire == null) {    
+                                value.Type_secondaire = "";
+                            }
+                            //elements += "</div>";
+                            
+                               table.append( '<tr><td>'+value.Nom_masque+'</td><td>'+value.Type_secondaire+'</td><td><a href="#" class="btn btn-primary"><span class="fas fa-edit"></span> Modifier</a></td><td><a href="#" class="btn btn-primary"><span class="fas fa-plus"></span> Ajouter un champ</a></td></tr>' );
+                            
+                        }
+                    
+                
+                       /** for (var item in results.masques) {
+                                toggleid_affiche($(".card-body"));
+                                $(".card-body").change(function(){
+                                    toggleid_affiche($(this));
+                                });
+                                function toggleid_affiche(obj){
+                                   
+                                    //$(".card-body").remove('<li class="test">'+item+':'+results[item]+ '</li>');
+                                }   
+                                
+
+                        }      
+                           */         
+
+                } //End of success function of ajax form
+                }); //End of ajax call
+
+        });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+    
+     

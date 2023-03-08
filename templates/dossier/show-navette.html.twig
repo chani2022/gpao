@@ -1,0 +1,22 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Navette{% endblock %}
+
+{% block pageTitle %}
+    <i class="zmdi zmdi-view-subtitles"></i> {{messages.getObjet}}
+{% endblock %}
+{% block body %}
+
+<div class="col-lg-8 col-md-8">
+    <div class="card card-default">
+        <div class="card-header">
+            <b>Envoyé le&nbsp;:</b> {{messages.getDateEnvoie()|date("d/m/Y H:i:s")}}<br>
+        </div>
+        <div class="card-body">
+            {{messages.getContenu()|raw}}
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

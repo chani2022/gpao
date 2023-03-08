@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}App{% endblock %}</title>
+        {% block stylesheets %}
+        <link href="{{absolute_url(asset("cooladmin/vendor/bootstrap-4.1/bootstrap.min.css"))}}" rel="stylesheet" media="all">
+        {% endblock %}
+    </head>
+    <body>
+        <div class="container-fluid">
+            {% block body %}{% endblock %}
+        </div>
+        
+        {% block javascripts %}{% endblock %}
+        <script>
+
+        </script>
+    </body>
+</html>

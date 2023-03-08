@@ -1,0 +1,197 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Historique des fichiers{% endblock %}
+
+{% block pageTitle %}<i class="zmdi zmdi-folder-star"></i> Historique des fichiers{% endblock %}
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+                    <div class="card-body">
+                    {% form_theme form 'form-theme.html.twig' %}
+                        
+                    {{ form_start(form) }}
+                        <div class="form-group">
+                            {{ form_row(form.date, {
+                                'label': false,
+                                'attr': {'class': 'form-control','placeholder': 'Date','autocomplete':'off','readonly':'readonly'}
+                            }) }}
+                            <br/>
+                            {{ form_row(form.dossier, {
+                                'label': false,
+                                'attr': {'class': 'form-control','placeholder': 'Dossier','autocomplete':'off'}
+                            }) }}
+                            <br/>
+                            {{ form_row(form.matricule, {
+                                'label': false,
+                                'attr': {'class': 'form-control','placeholder': 'Matricule','autocomplete':'off'}
+                            }) }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="fas fa-search"></span> Rechercher
+                        </button>
+                    {{ form_end(form) }}
+                    </div>
+                </div>
+        </div>
+        
+    </div>
+</div>
+<br/>
+
+
+<div class="col-lg-12 col-md-12">
+    <div class="row" style="overflow: scroll;height: 300px;">
+        <table id="dtVerticalScrollExample" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                <th class="th-sm">Matricule
+                </th>
+                <th class="th-sm">Ligne modifié
+                </th>
+                </tr>
+            </thead>
+                <tbody>
+                    {% for key2,value2 in info_modif %}
+                            <tr>
+                                <td>{{key2}}</td>
+                                <td>{{value2}}</td>
+                            </tr>
+                    {% endfor %}
+            </tbody>
+        </table>
+        
+    </div>
+
+</div>
+
+<div class="col-lg-12 col-md-12">
+    <div class="row">
+        {% for key,value in fichiers %}
+            <div class="col-lg-4 col-md-4">
+             <br/>
+                    <div class="card card-default">
+                        <div class="card-header">
+                            <h5>
+                                <i class="fas fa-folder"></i>Dossier: {{value.nom_dossier}}  
+                            </h5>
+                        </div>
+                        <div class="card-body" style="height: 200px;overflow-y: auto">
+                            <span class="text-muted">
+                                <strong>Nom</strong>&nbsp;: <span style="color:green">{{value.nom}}</span><br>
+                                <strong>Prénom</strong>&nbsp;: <span style="color:green">{{value.prenom}}</span><br>
+                                <strong>Matricule</strong>&nbsp;: <span style="color:green">{{value.id_personnel}}</span><br>
+                                <strong>Fichier</strong>&nbsp;: <span style="color:green">{{value.nom_fichiers}}</span><br>
+                                <strong>Etape</strong>&nbsp;: <span style="color:green">{{value.nom_etape}}</span><br>
+                                <strong>Ancien etat</strong>&nbsp;: <span style="color:green">{{value.ancien_etat}}</span><br>
+                                <strong>Nouveau etat</strong>&nbsp;: <span style="color:green">{{value.nouveau_etat}}</span><br>
+                                <strong>Attribution</strong>&nbsp;: <span style="color:green">{{value.nouvelle_attribution}}</span><br>
+                                <strong>Heure modification</strong>&nbsp;: <span style="color:green">{{value.heure_modification}}</span><br>
+                            </span>
+                           
+                        </div>
+                        
+                    </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+
+
+
+    
+{%endblock%}
+{% block javascripts %}
+{{parent()}}
+<script>
+    $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_date").daterangepicker({
+            autoUpdateInput:false,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_date').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+
+    });
+
+$(document).ready(function () {
+
+  /*au changement du champs user on met à jour l'affichage des champs*/
+
+  /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+  $('select#form_matricule').select2({matcher: select2matchCustomUser});
+  /*initialisation de 'laffichage des champs*/
+
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+  /* Si l'option est "Autre" on l'affiche toujours */
+  if (params.term && data.id == "autre") {
+      return data;
+  }
+  /* Sinon utilisation de la recherche classique */
+  return defaultMatcher(params, data);
+}
+</script>
+{% endblock%}

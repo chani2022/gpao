@@ -1,0 +1,42 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Importation et exportation RIBs{% endblock %}
+
+{% block pageTitle %}Importation et exportation RIB{% endblock %}
+{% block body %}
+
+<div class="container">    
+    <div class="row" >
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+                {% if message != null %}
+                    <p class="btn btn-success">{{ message }}</p>
+                {% endif %}
+                <div class="card-body">
+                        {% form_theme form 'form-theme.html.twig' %}
+                            {{ form_start(form) }}
+                            <div class="form-group">
+                                {{ form_errors(form.file) }}
+                                {{ form_row(form.file, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <button id="btn_click" type="submit" class="btn btn-primary">
+                                        <span class="fa fa-adn"></span> Importation Rib
+                                    </button>
+                                </div>
+                                <div class="col-md-2">
+                                </div>
+                                <div class="col-md-8">
+                                    <a href="{{ path('rh_importation_exportation_rib', {'slug':'exportation'}) }}" class="btn btn-warning col-md-12">Exportation Rib</a>
+                                </div>
+                            </div>
+                        {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    
+</div>
+<br/>
+
+
+{% endblock %}

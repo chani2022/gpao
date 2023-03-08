@@ -1,0 +1,174 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Suivi rejet{% endblock %}
+{% block pageTitle %}Suivi rejet{% endblock %}
+{% block body %}
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+   
+            <div class="form-group">
+                {{ form_row(form.dossier,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.operateur,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.date,{'attr':{'class':'form-control','autocomplete':'off'}}) }}
+            </div>
+           
+            <button id="enregistrer" type="submit" class="btn btn-primary">
+                <span class="fa fa-eye"></span> Afficher
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+
+<div class="col-lg-12 col-md-12">
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                                {% if(fichier_traites!=0) %}
+                                <span style="font-size:17px!important;font-weight: 700;">Total de prod:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{fichier_traites}}</span>
+                                {% endif %}
+                                {% if(fautes!=0) %}
+                                <span style="font-size:17px!important;font-weight: 700;">Total rejet:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{fautes}}</span>
+                                {% endif %}
+                                {% if(taux_general_fautes!=0) %}
+                                <span style="font-size:17px!important;font-weight: 700;">Taux général:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{taux_general_fautes}}</span>
+                                {% endif %}
+        	            <table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Nom et prénom(s)</th>
+                                    <th>Nombre de prod</th>
+                                    <th>Rejet</th>
+                                    <th>Taux</th>
+                                </tr>
+                            </thead>
+                  
+                             <tbody> 
+                                {% for x in datas %}
+                                <tr>
+                                    <td>{{x.id_personnel}}</td>
+                                    <td>{{x.nom}}</td>
+                                    <td>{{x.nb_fichier_traite}}</td>
+                                    <td>{{x.nb_rejet}}</td>
+                                    <td>{{x.taux}}%</td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{parent()}}
+<script>
+    $(document).ready(function(){
+        
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_date").daterangepicker({
+            autoUpdateInput:true,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                'Compte actuel': [moment().startOf('month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').format('20-MM-YYYY')],
+                     'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').subtract(1, 'month').format('20-MM-YYYY')],
+           },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_date').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+        
+    });
+
+
+
+$(document).ready(function () {
+    
+  //$("select#form_user").css({"title": "Recherche"});
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_dossier').select2({matcher: select2matchCustomUser});
+    $('select#form_operateur').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+</script>
+{% endblock%}

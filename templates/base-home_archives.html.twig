@@ -1,0 +1,1931 @@
+{% set ROUTES_ACTIVE = app.request.attributes.get('_route') %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}App{% endblock %}</title>
+
+    <link href="{{ absolute_url(asset("cooladmin/vendor/font-awesome-4.7/css/font-awesome.min.css")) }}"
+          rel="stylesheet" media="all">
+    <link href="{{ absolute_url(asset("cooladmin/vendor/font-awesome-5/css/fontawesome-all.min.css")) }}"
+          rel="stylesheet" media="all">
+    <link href="{{ absolute_url(asset("cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css")) }}"
+          rel="stylesheet" media="all">
+    {% block stylesheets %}
+
+    {% endblock %}
+    <link href="{{ absolute_url(asset("cooladmin/vendor/bootstrap-4.1/bootstrap.min.css")) }}" rel="stylesheet"
+          media="all">
+
+    <link href="{{ absolute_url(asset("cooladmin/vendor/select2/select2.min.css")) }}" rel="stylesheet" media="all">
+
+    <link href="{{ absolute_url(asset("cooladmin/css/theme.css")) }}" rel="stylesheet" media="all">
+
+    <link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/summernote/summernote-bs4.css')) }}">
+
+    <link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/dropzone/dist/dropzone.css')) }}">
+
+    <link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/daterangepicker/daterangepicker.css')) }}">
+
+    <link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('messagebox/style.css')) }}">
+
+    <style>
+	.couleur_pannel{
+		background:red!important;
+	}
+	/* Let's get this party started */
+::-webkit-scrollbar {
+    width: 12px;
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    background: rgba(255,0,0,0.8); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+::-webkit-scrollbar-thumb:window-inactive {
+	background: rgba(255,0,0,0.4); 
+}
+
+        .boiteConversation {
+            display: none;
+        }
+
+        .chatbox {
+            position: fixed;
+            bottom: -25px;
+            left: 1%;
+            right: 8%;
+            width: 21%;
+            z-index: 1000;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+			scrollbar-color: #4272d7 cornflowerblue;
+
+        }
+		.chatboxdiscut {
+            position: fixed;
+            bottom: 0px;
+            left: 94%;
+            right: 8%;
+            width: 5%;
+            z-index: 1000;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+			background-color: black!important;
+			scrollbar-color: #4272d7 cornflowerblue;
+
+        }
+
+
+        .chatbox2 {
+            position: fixed;
+            bottom: 0px;
+            left: 55%;
+            right: 8%;
+            width: 25%;
+            z-index: 100;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+			scrollbar-color: #4272d7 cornflowerblue;
+        }
+
+        .chatbox3 {
+            position: fixed;
+            bottom: 0px;
+            left: 27%;
+            right: 8%;
+            width: 25%;
+            z-index: 100;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+			scrollbar-color: #4272d7 cornflowerblue;
+
+        }
+
+        .chatbox:focus {
+            height: 300px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+			scrollbar-color: #4272d7 cornflowerblue;
+        }
+
+
+    </style>
+
+    <style>
+
+        .chat {
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+
+        .card.chatbox {
+
+            /**border-radius: 15px !important;**/
+            background-color: #4272d7 !important;
+        }
+
+        .contacts_body {
+            padding: 0.75rem 0 !important;
+            overflow-y: auto;
+            white-space: nowrap;
+            height: 290px;
+        }
+
+        .msg_card_body {
+            overflow-y: auto;
+        }
+
+        .card-header {
+            /**border-radius: 15px 15px 0 0 !important;**/
+            border-bottom: 0 !important;
+        }
+
+        .card-footer {
+            border-radius: 0 0 15px 15px !important;
+            border-top: 0 !important;
+        }
+
+        .container {
+            align-content: center;
+        }
+
+        .search {
+            border-radius: 15px 0 0 15px !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 0 !important;
+            color: white !important;
+        }
+
+        .search:focus {
+            box-shadow: none !important;
+            outline: 0px !important;
+        }
+
+        .type_msg {
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 0 !important;
+            color: white !important;
+            height: 60px !important;
+            overflow-y: auto;
+        }
+
+        .type_msg:focus {
+            box-shadow: none !important;
+            outline: 0px !important;
+        }
+
+        .attach_btn {
+            border-radius: 15px 0 0 15px !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 0 !important;
+            color: white !important;
+            cursor: pointer;
+        }
+
+        .send_btn {
+            border-radius: 0 15px 15px 0 !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 0 !important;
+            color: white !important;
+            cursor: pointer;
+        }
+
+        .search_btn {
+            border-radius: 0 15px 15px 0 !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 0 !important;
+            color: white !important;
+            cursor: pointer;
+        }
+
+        .contacts {
+            list-style: none;
+            padding: 0;
+        }
+
+        .contacts li {
+            width: 100% !important;
+            padding: 5px 10px;
+            margin-bottom: 15px !important;
+        }
+
+        .active {
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .user_img {
+            height: 50px;
+            width: 50px;
+            border: 1.5px solid cornflowerblue;
+            box-shadow: 0px 1px 2px black;
+
+        }
+
+        .user_img_msg {
+            height: 40px;
+            width: 40px;
+            border: 1.5px solid #f5f6fa;
+
+        }
+
+        .img_cont {
+            position: relative;
+            height: 50px;
+            width: 50px;
+        }
+
+        .img_cont_msg {
+            height: 40px;
+            width: 40px;
+        }
+
+        .online_icon {
+            position: absolute;
+            height: 15px;
+            width: 15px;
+            background-color: #4cd137;
+            border-radius: 50%;
+            bottom: 0.2em;
+            right: 0.4em;
+            border: 1.5px solid white;
+        }
+
+        .offline_icon {
+            position: absolute;
+            height: 15px;
+            width: 15px;
+            background-color: crimson;
+            border-radius: 50%;
+            bottom: 0.2em;
+            right: 0.4em;
+            border: 1.5px solid white;
+        }
+
+        .offline {
+            background-color: #c23616 !important;
+        }
+
+        .user_info {
+            margin-top: auto;
+            margin-bottom: auto;
+            margin-left: 15px;
+        }
+
+        .user_info span {
+            font-size: 12px;
+            color: white;
+        }
+
+        .user_info p {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .video_cam {
+            margin-left: 50px;
+            margin-top: 5px;
+        }
+
+        .video_cam span {
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 20px;
+        }
+
+        .msg_cotainer {
+            margin-top: auto;
+            margin-bottom: auto;
+            margin-right: 150px;
+            border-radius: 25px;
+            background-color: cornflowerblue;
+            padding: 10px;
+            position: relative;
+            color: black;
+            box-shadow: 0px 1px 2px black;
+            text-align: justify;
+        }
+
+        .msg_cotainer_send {
+            text-align: justify;
+            color: black;
+            margin-top: auto;
+            margin-bottom: auto;
+            margin-left: 140px;
+            border-radius: 25px;
+            background-color: #f1fbdd;
+            padding: 10px;
+            position: relative;
+            box-shadow: 0px 1px 2px black;
+			overflow:auto;
+        }
+
+        .msg_time {
+            position: absolute;
+            left: 0;
+            bottom: -15px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 10px;
+        }
+
+        .msg_time_send {
+            position: absolute;
+            right: 0;
+            bottom: -15px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 10px;
+        }
+
+        .msg_head {
+            position: relative;
+        }
+
+        #action_menu_btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .action_menu {
+            z-index: 1;
+            position: absolute;
+            padding: 15px 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 15px;
+            top: 30px;
+            right: 15px;
+            display: none;
+        }
+
+        /**a:focus {
+            margin-top:300px;
+        }
+        **/
+    </style>
+
+</head>
+<body style="background: #f7f7f7">
+<div class="page-wrapper">
+    <div id="{{ app.session.get('me') }}" class="me"></div>
+    <!-- HEADER MOBILE-->
+    <header class="header-mobile d-block d-lg-none">
+        <div class="header-mobile__bar">
+            <div class="container-fluid">
+                <div class="header-mobile-inner">
+                    <a class="logo" href="index.html">
+                        <img src="images/icon/logo.png" alt="CoolAdmin"/>
+                    </a>
+                    <button class="hamburger hamburger--slider" type="button">
+                                <span class="hamburger-box">
+                                    <span class="hamburger-inner"></span>
+                                </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <nav class="navbar-mobile">
+            <div class="container-fluid">
+                <ul class="navbar-mobile__list list-unstyled">
+                    <li class="has-sub">
+                        <a class="js-arrow" href="#">
+                            <i class="fas fa-tachometer-alt"></i>Dashboard</a>
+                        <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
+                            <li>
+                                <a href="index.html">Dashboard 1</a>
+                            </li>
+                            <li>
+                                <a href="index2.html">Dashboard 2</a>
+                            </li>
+                            <li>
+                                <a href="index3.html">Dashboard 3</a>
+                            </li>
+                            <li>
+                                <a href="index4.html">Dashboard 4</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="chart.html">
+                            <i class="fas fa-chart-bar"></i>Charts</a>
+                    </li>
+                    <li>
+                        <a href="table.html">
+                            <i class="fas fa-table"></i>Tables</a>
+                    </li>
+                    <li>
+                        <a href="form.html">
+                            <i class="far fa-check-square"></i>Forms</a>
+                    </li>
+                    <li>
+                        <a href="calendar.html">
+                            <i class="fas fa-calendar-alt"></i>Calendar</a>
+                    </li>
+                    <li>
+                        <a href="map.html">
+                            <i class="fas fa-map-marker-alt"></i>Maps</a>
+                    </li>
+                    <li class="has-sub">
+                        <a class="js-arrow" href="#">
+                            <i class="fas fa-copy"></i>Pages</a>
+                        <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
+                            <li>
+                                <a href="login.html">Login</a>
+                            </li>
+                            <li>
+                                <a href="register.html">Register</a>
+                            </li>
+                            <li>
+                                <a href="forget-pass.html">Forget Password</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="has-sub">
+                        <a class="js-arrow" href="#">
+                            <i class="fas fa-desktop"></i>UI Elements</a>
+                        <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
+                            <li>
+                                <a href="button.html">Button</a>
+                            </li>
+                            <li>
+                                <a href="badge.html">Badges</a>
+                            </li>
+                            <li>
+                                <a href="tab.html">Tabs</a>
+                            </li>
+                            <li>
+                                <a href="card.html">Cards</a>
+                            </li>
+                            <li>
+                                <a href="alert.html">Alerts</a>
+                            </li>
+                            <li>
+                                <a href="progress-bar.html">Progress Bars</a>
+                            </li>
+                            <li>
+                                <a href="modal.html">Modals</a>
+                            </li>
+                            <li>
+                                <a href="switch.html">Switchs</a>
+                            </li>
+                            <li>
+                                <a href="grid.html">Grids</a>
+                            </li>
+                            <li>
+                                <a href="fontawesome.html">Fontawesome Icon</a>
+                            </li>
+                            <li>
+                                <a href="typo.html">Typography</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- END HEADER MOBILE-->
+
+    <!-- MENU SIDEBAR-->
+    <aside class="menu-sidebar2 js-right-sidebar d-none d-lg-block">
+        <div class="logo">
+            <a href="#">
+                <img src="{{ absolute_url(asset("images/logo-eline-small-archives.png")) }}" alt="ELINE"/>
+            </a>
+        </div>
+        {{ render(controller('App\\Controller\\MainController::getMenus', {activeRoutes:ROUTES_ACTIVE})) }}
+    </aside>
+    <!-- END MENU SIDEBAR-->
+
+    <!-- PAGE CONTAINER-->
+    <div class="page-container2">
+        <!--chani-->
+        {#{ dump(app.session.get('list_user')) }#}
+        <!--fin-->
+        <!-- HEADER DESKTOP-->
+        <header class="header-desktop2">
+            <div class="section__content section__content--p30">
+                <div class="container-fluid">
+                    <div class="header-wrap">
+                        <form class="form-header" action="" method="POST">
+                            <input class="au-input au-input--xl" type="text" name="search"
+                                   placeholder="Recherche rapide..."/>
+                            <button class="au-btn--submit" type="submit">
+                                <i class="zmdi zmdi-search"></i>
+                            </button>
+                        </form>
+                        <div class="header-button2">
+                            <div class="noti-wrap">
+                                <div class="noti__item js-item-menu">
+                                    <i class="zmdi zmdi-comment-more"></i>
+                                    {{ render(controller('App\\Controller\\TransmissionController::getMyUnreadMessage')) }}
+
+                                </div>
+                            </div>
+
+
+                            <div class="account-wrap">
+                                <div class="account-item clearfix js-item-menu">
+                                    <div class="image">
+                                        <img src="http://192.168.8.3/public/user_photo/{{ app.user.userdetails["photo"] }}"
+                                             alt="{{ app.user.userdetails['login'] }}"/>
+                                    </div>
+                                    {#<div class="content">
+                                        <a class="js-acc-btn" href="#">{{ app.user.userdetails['login'] }}</a>
+                                    </div>#}
+                                    <div class="account-dropdown js-dropdown">
+                                        <div class="info clearfix">
+                                            <div class="image">
+                                                <a href="#">
+                                                    <img src="http://192.168.8.3/public/user_photo/{{ app.user.userdetails["photo"] }}"
+                                                         alt="{{ app.user.userdetails['login'] }}"/>
+                                                </a>
+                                            </div>
+                                            <div class="content">
+                                                <h5 class="name">
+                                                    <a href="#">{{ app.user.userdetails['login'] }}</a>
+                                                </h5>
+                                                <span class="email"></span>
+                                            </div>
+                                        </div>
+                                        <div class="account-dropdown__body">
+                                            <div class="account-dropdown__item">
+                                                <a href="#">
+                                                    <i class="zmdi zmdi-account"></i>Profil</a>
+                                            </div>
+
+                                        </div>
+                                        <div class="account-dropdown__footer">
+                                            <a href="{{ path("logout") }}">
+                                                <i class="zmdi zmdi-power"></i>Quitter</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- HEADER DESKTOP-->
+
+        <!-- MAIN CONTENT-->
+        <div class="main-content">
+            <div class="section__content section__content--p30">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="overview-wrap">
+                                <h2 class="title-1"><a href="{{ app.request.headers.get('referer') }}"
+                                                       title="Retour à la page précédente" class="btn btn-primary"><i
+                                                class="fas fa-arrow-left"></i></a> {% block pageTitle %}Accueil{% endblock %}
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="pageContentWrapper">
+                        <div class="col-lg-12 col-md-12" style="height:20px;"></div>
+                        <div class="col-lg-12 col-md-12" style="font-size:12pt;">
+                            {% if app.request.hasPreviousSession %}
+                                {% for type, messages in app.session.flashbag.all() %}
+                                    {% for message in messages %}
+                                        <div style="" class="alert alert-{{ type }} alert-dismissible fade show">
+                                            <i class="zmdi zmdi-info"></i>
+                                            <span>{{ message|raw }}</span>
+                                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                        </div>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+
+                        {% block body %}{% endblock %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="copyright">
+                                <p>ELINE © 2020.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--Debut textebox user I-->
+        <div class="col-md-10">
+            <div id="couleur_pannel" class="chatbox card chatbox mb-sm-3 mb-md-0 contacts_card minimize">
+                <div id="minimize_messagerie" class="card-header">
+                    <div class="input-group">
+                        <input type="text" placeholder="Recherche..." name="" class="form-control search">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text search_btn"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body contacts_body">
+                    {% for list_u in app.session.get('list_user') %}
+                        <ui class="contacts" id="contacts{{ list_u.id_personnel }}" data-id="{{ list_u.login }}">
+                            <li class="">
+                                <a href="#" id="{{ list_u.id_personnel }}" class="lienbox">
+                                    <div class="d-flex bd-highlight">
+                                        <div class="img_cont">
+                                            <img src="http://192.168.8.3/public/user_photo/{{ list_u.photo }}"
+                                                 class="rounded-circle user_img">
+                                            <span class="online_icon offline"></span>
+                                        </div>
+
+                                        <div class="user_info">
+                                            <span><strong>{{ list_u.id_personnel }}</strong> - {{ list_u.login }}</span>
+                                            <p>{{ list_u.nom_fonction }}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                        </ui>
+                    {% endfor %}
+                </div>
+                <div class="card-footer"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- Fin textebox user I-->
+
+<!--Debut textebox user II-->
+        <div class="col-md-10" >
+            <div id="message_not_view" class="chatboxdiscut card chatbox mb-sm-3 mb-md-0 contacts_card">
+                <div class="card-header">
+                    <div class="input-group">
+                        
+                    </div>
+                </div>
+
+                <div class="card-body contacts_body">
+				<!--F
+				<li class="">
+                                <a href="#"  class="lienbox">
+                                    <div class="d-flex bd-highlight">
+                                        <div class="img_cont">
+                                            <img src="#"
+                                                 class="rounded-circle user_img">
+                                            <span class="online_icon offline"></span>
+                                        </div>
+
+                                        <div class="user_info">
+                                           
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+				--F-->
+                    
+                </div>
+                <div class="card-footer"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- Fin textebox user II-->
+
+
+<!-- Debut messagebox user-->
+
+<div class="col-md-10">
+    <div id="element2" name="Rakoto" class="chatbox2 card chatbox boiteConversation mb-sm-3 mb-md-0 contacts_card">
+        <div class="card-header">
+            <div class="msg_head">
+                <div class="pull-right" style="margin-left: 20px;">
+                    <button type="button" class="close close_conversation"><i style="font-size: 13px; z-index: 500;"
+                                                                              class='fa fa-times'></i></button>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close minimize"><i style="font-size: 13px;" class='fa fa-minus'></i>
+                    </button>
+                </div>
+                <div class="d-flex bd-highlight">
+                    <div class="img_cont">
+                        <img src="{{ absolute_url(asset("public/images/profil.png")) }}"
+                             class="rounded-circle user_img">
+                        <span class="online_icon offline"></span>
+                    </div>
+                    <div class="user_info">
+                        <span>Conversation avec Rakoto</span>
+                        <p>5 Messages</p>
+                    </div>
+                    
+                </div>
+                <!--<span id="action_menu_btn"><i class="fa fa-times"></i></span>-->
+            </div>
+        </div>
+        <div id="msg_card_body_00" class="card-body msg_card_body" style="display:none">
+            <!--femeture 0-->
+            <div class="msg_content container_message" style="height: 300px;overflow: auto;">
+               
+            </div>
+            <!--fin femeture 0-->
+
+            <!-- fermeture 01-->
+            <div class="msg_content" style="padding: .75rem 1.25rem;background:#3B5998;">
+                <div class="input-group">
+                    <div class="input-group-append">
+                            <span class="input-group-text attach_btn">
+                    </div>
+                    <textarea id="type_msg_00" name="" class="form-control type_msg"
+                              placeholder="Taper votre message..."></textarea>
+                    <div class="input-group-append">
+                        <span id="send_btn_00" class="input-group-text send_btn"><i
+                                    class="fas fa-location-arrow"></i></span>
+                    </div>
+                </div>
+            </div>
+            <!--femeture 01-->
+        </div>
+
+    </div>
+</div>
+
+</div>
+</div>
+
+<!-- Fin messagebox user-->
+
+<!-- Debut messagebox2 user-->
+
+<div class="col-md-10">
+    <div name="Alain José" style="background:green;"
+         class="chatbox3 card chatbox boiteConversation mb-sm-3 mb-md-0 contacts_card">
+        <div class="card-header">
+            <div class="msg_head">
+                <div class="pull-right" style="margin-left: 20px; z-index:1500;">
+                    <button type="button" class="close close_conversation"><i style="font-size: 13px;z-index:500;"
+                                                                              class='fa fa-times'></i></button>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close minimize"><i style="font-size: 13px;" class='fa fa-minus'></i>
+                    </button>
+                </div>
+                <div class="d-flex bd-highlight">
+                    <div class="img_cont">
+                        <img src="{{ absolute_url(asset("public/images/profil.png")) }}"
+                             class="rounded-circle user_img">
+                        <span class="online_icon offline"></span>
+                    </div>
+                    <div class="user_info">
+                        <span>Conversation avec Alain José</span>
+                        <p>5 Messages</p>
+                    </div>
+                  
+                </div>
+
+            </div>
+        </div>
+
+        <div id="msg_card_body_01" class="card-body msg_card_body">
+            <!-- fermeture 2-->
+            <div class="msg_content container_message" style="height: 300px;overflow: auto;">
+             
+
+            </div>
+            <!--fin fermeture 1-->
+            <!--fermeture 2-->
+            <div style="padding: .75rem 1.25rem;background: #3B5998;">
+                <div class="input-group">
+                    <div class="input-group-append">
+								<span class="input-group-text attach_btn">
+                    </div>
+                    <textarea id="type_msg_01" class="form-control type_msg"
+                              placeholder="Taper votre message..."></textarea>
+                    <div class="input-group-append">
+                        <span id="send_btn_01" class="input-group-text send_btn"><i
+                                    class="fas fa-location-arrow"></i></span>
+                    </div>
+                </div>
+            </div>
+            <!--fin fermeture 2-->
+        </div>
+		
+    </div>
+	
+
+</div>
+
+
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Fin messagebox2 user-->
+
+<!-- Debut messagebox3 user-->
+
+
+
+<!-- Fin messagebox3 user-->
+
+
+<script src="{{ absolute_url(asset("cooladmin/vendor/jquery-3.2.1.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/bootstrap-4.1/popper.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/bootstrap-4.1/bootstrap.min.js")) }}"></script>
+
+<!-- Vendor JS       -->
+<script src="{{ absolute_url(asset("cooladmin/vendor/slick/slick.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/wow/wow.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/animsition/animsition.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/bootstrap-progressbar/bootstrap-progressbar.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/counter-up/jquery.waypoints.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/counter-up/jquery.counterup.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/circle-progress/circle-progress.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/perfect-scrollbar/perfect-scrollbar.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/chartjs/Chart.bundle.min.js")) }}"></script>
+<script src="{{ absolute_url(asset("cooladmin/vendor/select2/select2.min.js")) }}"></script>
+
+<script src="{{ absolute_url(asset("cooladmin/js/main.js")) }}"></script>
+
+<script type="text/javascript" src="{{ absolute_url(asset('js/dropzone/dist/min/dropzone.min.js')) }}"></script>
+<script type="text/javascript" src="{{ absolute_url(asset('js/summernote/summernote-bs4.min.js')) }}"></script>
+
+<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment.min.js')) }}"></script>
+<script type="text/javascript"
+        src="{{ absolute_url(asset('js/daterangepicker/moment-with-locales.min.js')) }}"></script>
+<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/daterangepicker.js')) }}"></script>
+
+<script src="{{ absolute_url(asset("js/lib.js")) }}"></script>
+
+<script src="{{ absolute_url(asset('bundles/fosjsrouting/js/router.min.js')) }}"></script>
+<script src="{{ url('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+<script>
+    var data_socket = [];
+    var timeOutMsg;
+    var titleInit = "";
+    var msgReceving = false;
+    var compteurMsgRecev = 0;
+    var panelConversationSlideUp = false;
+    var oneMsg = 0;
+    var twoMsg = 0;
+    var animation;
+    var Color;
+    var animationColor;
+    var msg1 = false;
+    var newMsg = false;
+    var nbPanelShow = 0;
+    var isIdPanelEqual = false;
+    var animRun = true;
+    //var list_message_serveur = [];
+    
+    var list_panel_default = [];
+    var list_final_msg_not_view = [];
+    moment.locale('fr');
+    var me = $('.me').attr("id");
+    //socket
+    //var ws = new WebSocket("ws://192.168.8.9:8765");
+    
+    $(document).ready(function () {
+		
+        $("label.required").addClass("text-danger");
+        titleInit = $('title').text();
+    });
+    //messagerie
+    $(function () {
+		
+		//Couleur du panneaux de messagerie
+		
+		
+		
+		//Lorsque la souris entre dans le div...
+    $(".couleur_pannel").mouseenter(function(){
+        //...On ajoute une couleur de fond au div
+        $(this).addClass('couleur_pannel');
+		
+    });
+
+    //Lorsque la souris ressort du div...
+    $(".couleur_pannel").mouseleave(function(){
+        //...On remet un fond blanc
+        $(this).addClass('couleur_pannel');
+    });
+		
+        //mise a jour de donnees socket
+        function updateAndSendData(data, $textarea, destinataire) {
+            if ($textarea.val() !== "") {
+                data["type"] = "message";
+                data["data"]["destinataire"] = destinataire;
+                data["data"]["text"] = $textarea.val();
+                ws.send(JSON.stringify(data));
+
+                $textarea.val("");
+                $textarea.focus();
+            }
+        }
+
+        var list_user_to_create_dialog = [];
+        var info_destinataire = {};
+        var list_message_not_view = [];
+        var list_not_view = [];
+        var list_users = {{ app.session.get('list_user')|json_encode|raw }};
+        var user_clicked = true;
+        var active_msg_not_view = false;
+        var tab_temp_old_data_delete = [];
+        var msgsNotView = [];
+        //console.log(list_users);
+        //socket
+        var ws = new WebSocket("ws://192.168.9.253:8765");
+        //me
+        
+        var isKeyDown = false;
+
+        //donnee socket
+        var data = {
+            "type": "connexion",
+            "me": me,
+            "data": {
+                "listeUser": [],
+                "destinataire": 0,
+                "text": "",
+                "date": moment().startOf('hour').fromNow()//date moment,
+            }
+        };
+        //ouverture de la connexion
+            ws.onopen = function (event) {
+                ws.send(JSON.stringify(data));
+                var destinataire = "";
+                var id_textarea = "";
+
+                /**
+                 * keyup no apesain fa raha tsizan de azon le panel faharo ilay \n
+                 **/
+                $('textarea.type_msg').keyup(function (e) {
+                    //touche entrer du clavier
+                    if (e.keyCode == 13) {
+                        isKeyDown = true;
+                        if($(this).val().trim() !== ""){
+                            $(this).parents('.boiteConversation').find('.send_btn').trigger('click', [$(this).attr("id")]);
+                        }
+                    }
+                });
+
+                $('.send_btn').click(function (e, id_destinataire) {
+                    var textarea = $(this).parents('.boiteConversation').find('.type_msg');
+                    if(id_destinataire){
+                        if($(this).attr("id") == id_destinataire){
+                            destinataire = id_destinataire;    
+                        }
+                    }else{
+                        destinataire = textarea.attr("id");
+                    }
+                    updateAndSendData(data, textarea, destinataire);                        
+                    /**
+                    console.log(id);
+                    $('textarea.type_msg').each(function () {
+                        //var textArea = $(this);
+                        id_textarea = $(this).attr("id");
+                        $(this).parents('.boiteConversation').find('.msg_content').each(function () {
+                            if ($(this).attr("id") == id_textarea) {
+                                destinataire = id_textarea;
+                            }
+                        });
+
+                        updateAndSendData(data, $(this), destinataire);
+                    });**/
+                });
+
+            };
+            ws.onmessage = function (event) {
+                var data = JSON.parse(event.data);
+                //console.log(data);
+
+                /**
+                 * créér une element dans la panel de conversation
+                 *
+                 * @param isMeRecevingMsg (boolean si message est recu par un utilisateur)
+                 * @param containerMsg
+                 * @param user (utilisateur qui est clique par jquery lors de renvoye de message)
+                */
+                 function createElementsNode(isMeRecevingMsg, containerMsg, user){
+                    containerMsg.html("");
+                    var styleContainer = "d-flex mb-4 justify-content-";
+                    
+                    if(isMeRecevingMsg){
+
+                        
+                        //if(data["me"] == data["data"]["destinataire"]){}
+                        for(var i in data["messageData"]){
+                            for(var j in data["messageData"][i]){
+                                var container = $('<div></div>');
+                                var vue = "";
+                                if(data["messageData"][i][j]["pour"] != me){
+                                    if(data["messageData"][i][j]["lu"] == 1){
+                                            vue = "lu, ";
+                                        }
+                                    container.addClass(styleContainer +"end mb-4");
+                                    
+                                    var subElement = $('<div class="msg_cotainer_send">' +
+                                    '<p>' +
+                                        data["messageData"][i][j]["texte"]+
+                                    '</p><p style="color:darkslategrey">' + 
+                                        vue +""+data["messageData"][i][j]["heure"] +
+                                        //data["messageData"][i][j]["heure"] +
+                                    '</p>'+
+                                    '</div>');
+                                    container.append(subElement);
+                                    containerMsg.append(container); 
+									//containerMsg.scrollTop(containerMsg[0].scrollHeight);   
+                                }else{
+                                    
+                                    if(data["messageData"][i][j]["lu"] == 1){
+                                                                    vue = "lu, ";
+                                                                }
+                                    container.addClass(styleContainer +"start mb-4");    
+                                    subElement = $('<div class="col-md-12">' +
+                                                    '<div class="img_cont_msg">' +
+                                                        '<img class="rounded-circle user_img_msg" src="'+containerMsg.parents('.boiteConversation').find('.img_cont').find('img').attr("src")+'">'+
+                                                    '</div>'+
+                                                    '<div class="msg_cotainer">' +
+                                                            '<p>' +
+                                                                 data["messageData"][i][j]["texte"]+
+                                                            '</p><p style="color:darkslategrey">' +
+                                                                
+                                                               vue +""+ data["messageData"][i][j]["heure"] +
+                                                               //data["messageData"][i][j]["heure"] +
+                                                            '</p>'+
+                                                    '</div>'+
+                                            '</div>');
+                                
+                                container.append(subElement);
+                                containerMsg.append(container);  
+                            }     
+                        }
+                    
+                        }
+                    }
+                    else{
+                        
+                        for(var i in data["messageData"]){
+                                for(var j in data["messageData"][i]){
+                                    var container = $('<div></div>');
+                                    if(data["messageData"][i][j]["de"] == me){
+                                        var msgLu = "";
+                                        if(data["messageData"][i][j]["lu"] == 1){
+                                            msgLu = "lu, ";
+                                        }
+                                        container.addClass(styleContainer +"end mb-4");
+                                        var subElement = $('<div class="msg_cotainer_send">' +
+                                        '<p>' +
+                                            data["messageData"][i][j]["texte"]+
+                                        '</p><p style="color:darkslategrey">' +
+                                            msgLu+""+data["messageData"][i][j]["heure"] +
+                                        '</p>'+
+                                        '</div>');
+                                        
+                                        container.append(subElement);
+                                        containerMsg.append(container);   
+                                    }
+                                    /**
+                                    if(data["messageData"][i][j]["pour"] == data["data"]["destinataire"]){**/
+                                    else{
+                                        container.addClass(styleContainer +"start mb-4");    
+                                    
+                                    //container.addClass(styleContainer +"start mb-4");
+                                        subElement = $('<div class="col-md-12">' +
+                                                        '<div class="img_cont_msg">' +
+                                                            '<img class="rounded-circle user_img_msg" src="'+/**user.find('.img_cont').find('img').attr("src")**/containerMsg.parents('.boiteConversation').find('.img_cont').find('img').attr("src")+'">'+
+                                                        '</div>'+
+                                                        '<div class="msg_cotainer">' +
+                                                                '<p>' +
+                                                                     data["messageData"][i][j]["texte"]+
+                                                                '</p><p style="color:darkslategrey">' +
+                                                                    data["messageData"][i][j]["heure"] +
+                                                                '</p>'+
+                                                        '</div>'+
+                                                '</div>');
+                                        
+                                    container.append(subElement);
+                                    containerMsg.append(container);
+                                    
+                                    //containerMsg.scrollTop(containerMsg[0].scrollHeight);
+                                }     
+                            }
+
+                        }
+                    }
+                    containerMsg.scrollTop(containerMsg[0].scrollHeight);
+                }
+
+
+                if (data["data"] !== undefined) {
+                    switch (data["type"]) {
+                        /**
+                         * lu des msg
+                        */
+                        case 'messageLu':
+                            //console.log(data);
+                            /**
+                            $('body').find('.boiteConversation').each(function(){
+                                if($(this).attr("id") == data["data"]["destinataire"]){
+                                    var container = $(this).find('.container_message');
+                                    createElementsNode(true, container);        
+                                }
+                            });**/
+                            
+                        /**
+                         * activation de la status du personnel connecté
+                         ***/
+                        case 'connexion':
+                            
+                            /**
+                             * chargement des donnees ato
+                             */
+                            data_socket = data;
+
+                            for (var i = 0; i < data["data"]["listeUser"].length; i++) {
+                                $('.lienbox').each(function () {
+                                    if ($(this).attr("id") == data["data"]["listeUser"][i]) {
+                                        $(this).find('.online_icon').removeClass('offline');
+                                    }
+                                });
+                            }
+                        case "message":
+
+                            newMsg = true;
+                            /**
+                             * remettre le curseur de la souris d'un texteareo au début lors de l'évènement entrer du clavier
+                            */
+                            if (isKeyDown) {
+                                var textarea = document.getElementsByClassName('type_msg');
+                                for (var i = 0; i < textarea.length; i++) {
+                                    textarea[i].setSelectionRange(1, 2);
+                                }
+                                isKeyDown = false;
+                            }
+                            if ((data["data"]["destinataire"] == me) || (data["me"] == me)) {
+                                /**
+                                 * lors de l'envoyer du message
+                                 * on cherche la panel de conversation du destinataire
+                                 **/
+                                if (data["me"] == me) {
+                                        var $container_msg = $('.container_message');
+                                        var cnt = "";
+                                        $container_msg.each(function () {
+                                            if (parseInt($(this).attr("id")) == parseInt(data["data"]["destinataire"])) {
+                                                cnt = $(this);
+                                                //$(this).html("");
+                                                
+                                                //var dataMsg = data["messageData"];
+
+                                            }
+                                        });
+                                        if (cnt.length > 0) {
+                                            createElementsNode(false, cnt);
+                                        }
+                                    }
+
+                                /**
+                                 * reception du message d'un utilisateur
+                                 **/
+                                else if (parseInt(data["data"]["destinataire"]) == parseInt(me)) {
+                                    if(data["type"] == "messageLu"){
+                                        //console.log(list_user_to_create_dialog);
+                                        console.log(data);
+                                        //eto za zo refveo chargement msg
+                                        $('.lienbox').each(function(){
+                                            if($(this).attr("id") == data["me"] && data["data"]["destinataire"] == me){
+                                                $(this).trigger('click');
+                                            }
+                                        });
+                                    }else{
+                                        
+                                        msgReceving = true;
+                                        compteurMsgRecev++;
+                                        twoMsg ++;
+                                        oneMsg ++;
+                                        
+                                        function createListMessageNotView(container, message_not_view){
+                                            
+                                            for(var i=0; i< message_not_view.length; i++){
+                                                var ui = $('<ui id="'+message_not_view[i]["id"]+'" class="contacts">' +
+                                                            '<li class="">' +
+                                                                '<a id="'+message_not_view[i]["id"]+'"class="notViewMsg" href="#">' +
+                                                                    '<div class="d-flex bd-highlight">' +
+                                                                        '<div class="img_cont">' +
+                                                                            '<img class="rounded-circle user_img" src="'+message_not_view[i]["img"]+'">'+
+                                                                        '</div>'+
+                                                                    '</div>'+
+                                                                '</a>'+
+                                                            '</li>'+
+                                                        '</ui>');
+                                                container.append(ui);
+                                            }
+                                            /**
+                                            *affichage des avatars des personnel des message non lu
+                                            **/
+                                            container.delegate('.notViewMsg', 'click', function(event) {
+                                                var id_msg_not_view = $(this).attr("id");
+                                                $('.lienbox').each(function(){
+                                                    if($(this).attr("id") == id_msg_not_view){
+                                                        var id_lienbox = $(this).attr("id");
+                                                        $(this).trigger('click');
+                                                        $('.boiteConversation').each(function(){
+                                                            if($(this).attr("id") == id_lienbox){
+                                                                $(this).find('.type_msg').trigger('click');
+                                                            }
+                                                        });
+                                                        
+                                                        for(var i=0; i<list_message_not_view.length; i++){
+                                                            if(id_msg_not_view == list_message_not_view[i]["id"]){
+                                                                list_message_not_view.splice(i,1);
+                                                            }    
+                                                        } 
+                                                    }
+                                                });        
+                                            });
+                                        }
+                                        
+                                        /**
+                                         * notification de nouveau message si il y a 2 panel de conversation
+                                         */
+                                        function animClr(id_destinataire){
+                                            $('.boiteConversation').each(function(index, item){
+                                                if(id_destinataire == $(this).attr("id")){
+                                                    //var info_user = $(item).find('.user_info p').last().text("nouveau message").css("color","red");
+                                                    $(item).find('.user_info p').last().text("Nouveau message").css("color","red");
+        											/**couleur modif**/
+        											$(this).children( ".card-header" ).css({ 'background': 'crimson' });
+                                                }
+                                            })
+                                        }
+                                        /**
+                                         * animation du titre de l'app
+                                         */
+                                        animation = function recurs(){
+                                            timeOutMsg = setTimeout(function(){
+                                                var msg = "Vous avez un nouveau message";
+                                                var title = $('title').text();
+
+                                                if(title == msg){
+                                                    $('title').text(titleInit);
+                                                }else{
+                                                    $('title').text(msg);
+                                                }
+                                                recurs();
+                                            },500);
+                                        }
+                                        if(animRun){
+                                            animation();
+                                        }
+                                        /**
+                                         * rehefa mahazo focus le window dia mial ilay animation le titre
+                                        */
+                                        $(window).focus(function () {
+                                            clearTimeout(timeOutMsg);
+                                            $('title').text(titleInit);
+                                            animRun = true;
+                                        });
+                                        /**
+                                         * rehefa mahazo focus le textarea mcorrespondre dia mial ilay soratra oe nouveau message de atw vue le msg
+                                         **/
+                                        $('textarea.type_msg').each(function () {
+                                            $(this).click(function () {
+                                                //console.log(data);
+                                                if ($(this).attr("id") == data["me"]) {
+                                                    $(this).parents('.boiteConversation').find('.user_info p').last().text("");
+        											
+        											$(this).parents('.boiteConversation').children( ".card-header" ).css({ 'background': 'rgba(0,0,0,.03)' });
+        											
+        											
+                                                    clearTimeout(timeOutMsg);
+                                                    $('title').text(titleInit);
+                                                    animRun = true;
+                                                    
+                                                    //data["type"] = "messageLu";
+                                                    
+                                                    
+                                                    if(data["data"]["destinataire"] == me && $(this).attr("id") == data["me"]){
+                                                        var isAllMsgView = true;
+                                                        data["type"] = "messageLu";
+                                                        for(var i in data["messageData"]){
+                                                            for(var j in data["messageData"][i]){
+                                                                    //data["type"] = "messageLu";
+                                                                    //if(data["messageData"][i][j] == 1){
+                                                                        if(data["messageData"][i][j]["lu"] == 0){
+                                                                            data["messageData"][i][j]["lu"] = 1;   
+                                                                            isAllMsgView = false;
+                                                                        }
+                                                                    //}
+                                                            }
+                                                        }
+                                                       //ws.send(JSON.stringify(data));
+                                                        //console.log(data);
+                                                        if(!isAllMsgView){
+                                                            ws.send(JSON.stringify(data));
+                                                        }
+                                                    }
+
+                                                }
+                                            });
+                                        });
+
+                                        animRun = false;
+                                        compteurMsgRecev = 0;
+
+                                        /**
+                                         * manokatra ny panel de conversation
+                                         */
+                                         list_message_not_view.push(data);
+                                        $classUser.each(function () {
+                                            if (parseInt($(this).attr("id")) == parseInt(data["me"]) && data["data"]["destinataire"] == me) {
+                                                var id_user = $(this).attr("id");
+                                                var container_conversation = [];//liste de panel de conversation
+
+                                                user_clicked = false;
+                                                $(this).trigger('click');
+                                                user_clicked = true;
+
+                                                
+                                                $('.boiteConversation').each(function (index,item) {
+                                                var img = $(this).find('.img_cont').children('img').attr("src");
+                                                var id_container = $(this).attr("id");
+                                                        $(this).find('.container_message').each(function () {
+                                                            if ($(this).attr("id") == parseInt(data["me"]) && data["data"]["destinataire"]== me) {
+                                                                $(this).html("");
+                                                                /**
+                                                                var us = {
+                                                                    id:id_user,
+                                                                    img:img,
+                                                                    msgNotView: true,
+                                                                    msg: data["data"]["text"]
+                                                                };
+                                                                list_message_not_view.push(us);
+                                                                
+                                                                **/
+                                                                container_conversation.push($(this));
+                                                            }
+                                                        });
+                                                });
+                                                   
+                                                
+                                                if (container_conversation.length > 0) {
+                                                    /**
+                                                     * infectation de message pour chaque panel de conversation
+                                                     **/
+                                                    for (var i = 0; i < container_conversation.length; i++) {
+                                                        if (container_conversation[i].attr("id") == data["me"]) {
+                                                            createElementsNode(true, container_conversation[i]);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        });
+                                        //});
+
+                                        /**
+                                         * notification des panel qui vient de recevoir un message
+                                         **/
+                                         var panel_block = [];
+                                        $('.boiteConversation').each(function(){
+                                            if($(this).css("display") == "block"){
+                                                
+                                                var user = {
+                                                    "id":$(this).attr("id"),
+                                                    "img":$(this).find('.img_cont').find('img').attr("src"),
+                                                    "msgNotView":true,
+                                                    //"data": data
+                                                };
+                                                panel_block.push(user);
+                                                
+                                                
+                                                if(nbPanelShow > 0){
+                                                    animClr(data["me"]);   
+                                                } 
+                                            }
+                                        });
+                                        
+                                        /**
+
+                                        if(list_message_not_view.length > 2){
+                                            for(var j=0; j< list_message_not_view.length;j++){
+                                                var userFound = true;
+                                                var userMsgNotView = "";
+                                                for(var i=0; i<panel_block.length; i++){
+                                                    if(panel_block[i].id != list_message_not_view[j]["me"]){
+                                                        userFound = false;
+                                                        //userMsgNotView = list_message_not_view[j];
+                                                    }
+                                                }
+                                                if(!userFound){
+                                                    list_not_view.push(list_message_not_view[j]);
+                                                }
+                                            }
+                                            console.log(list_not_view);
+
+                                            if(list_not_view.length > 0){
+                                                for(var i=0; i<list_not_view.length; i++){
+                                                    $('.lienbox').each(function(){
+                                                        if($(this).attr("id") == list_not_view[i]["me"]){
+                                                            var user = {
+                                                                    "id":$(this).attr("id"),
+                                                                    "img":$(this).find('.img_cont').find('img').attr("src"),
+                                                                    //"msgNotView":true,
+                                                                    "data": list_not_view[i]
+                                                                }; 
+                                                            list_final_msg_not_view.push(user);
+                                                        }
+                                                    });
+                                                }
+                                            }
+
+                                            if(list_final_msg_not_view.length > 0){
+                                                createListMessageNotView($('#message_not_view'), list_final_msg_not_view);
+                                            }
+                                        }
+                                        **/
+                                        
+                                        function updateMsgNotView(){
+                                            
+                                            var list_msg = [];
+                                            for(var i=0; i<panel_block.length; i++){
+                                                    for(var j=0; j<list_message_not_view.length; j++){
+                                                        if(panel_block[i].id == list_message_not_view[j]["me"]){
+                                                            tab_temp_old_data_delete.push(list_message_not_view[j]);
+                                                            list_message_not_view.splice(j,1);
+                                                        }
+                                                }
+                                            }
+                                            /**
+                                            if(active_msg_not_view){
+                                                for(var j=0; j<list_message_not_view.length; j++){
+                                                    console.log(j, list_message_not_view[j]);
+                                                }
+                                                console.log("block",panel_block);
+                                            }
+                                                 
+                                            if(list_message_not_view.length > 0){
+                                                /**
+                                                for(var i=0; i<msg_list_not_view.length-1; i++){
+                                                    var nbMsg = 0;
+                                                    for(var j=i+1; j<msg_list_not_view.length;j++){
+                                                        if((msg_list_not_view[i]["destinataire"] == me 
+                                                            && msg_list_not_view[j]["destinataire"] == me)
+                                                            && (msg_list_not_view[i]["me"] == msg_list_not_view[j]["me"])){
+                                                            //console.log("miditra ato");
+                                                            for(var k in msg_list_not_view[j]["messageData"]){
+                                                                //console.log(msg_list_not_view[j]["messageData"]);
+                                                                if(msg_list_not_view[j]["messageData"][k]["lu"] == 0){
+                                                                    nbMsg ++;
+                                                                    msg_list_not_view.splice(i,1);
+                                                                    msg_list_not_view[i]["nbMsg"] = nbMsg;        
+                                                                }
+                                                            }  
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                for(var i=0; i<list_message_not_view.length;i++){
+                                                    $('.lienbox').each(function(){
+                                                        if($(this).attr("id") == list_message_not_view[i]["me"]){
+                                                            var user_msg_not_view = {
+                                                                        "id":$(this).attr("id"),
+                                                                        "img":$(this).find('.img_cont').find('img').attr("src"),
+                                                                        "data": list_message_not_view[i]
+                                                                };
+                                                                list_msg.push(user_msg_not_view);
+                                                        }
+                                                    });
+                                                }
+                                                //console.log(list_msg);
+                                                return list_msg;   
+                                            }**/
+                                        }
+                                        
+                                        if(!active_msg_not_view){
+                                            
+                                            if(panel_block.length == 2 && list_message_not_view.length > 2){
+                                                
+                                                //msgsNotView = getListMsgNotView(panel_block, list_message_not_view);
+                                                //msgsNotView = getListMsgNotView();
+                                                updateMsgNotView();
+                                                //console.log(msgsNotView);
+                                                //console.log(tab_temp_old_data_delete);
+                                                
+                                                if(msgsNotView.length > 0){
+                                                    var list_msg = [];
+                                                    for(var i=0; i<list_message_not_view.length; i++){
+                                                        $('.lienbox').each(function(){
+                                                        if($(this).attr("id") == list_message_not_view[i]["me"]){
+                                                            var user_msg_not_view = {
+                                                                        "id":$(this).attr("id"),
+                                                                        "img":$(this).find('.img_cont').find('img').attr("src"),
+                                                                        "data": list_message_not_view[i]
+                                                                };
+                                                                list_msg.push(user_msg_not_view);
+                                                            }
+                                                        });
+                                                    }
+                                                    createListMessageNotView($('#message_not_view'), list_msg);
+                                                }
+                                                active_msg_not_view = true;
+                                            }
+                                        }else{
+                                            //if(panel_block.length == 2){
+                                            
+                                                //console.log("temp",tab_temp_old_data_delete);
+                                                //console.log("debut msgNtView", msgsNotView);
+                                                if(list_message_not_view.length > 0){
+                                                    list_message_not_view = list_message_not_view.concat(tab_temp_old_data_delete);
+                                                    //tab_temp_old_data_delete = [];
+                                                }
+                                                //console.log(list_message_not_view);
+                                                //console.log("fin msgNtView", msgsNotView);
+                                                console.log("tab_temp + list_message_not_view",list_message_not_view);
+                                                //msgsNotView = getListMsgNotView(panel_block, list_message_not_view);
+                                                updateMsgNotView();
+                                                //console.log("faharo",msgsNotView);
+                                                
+                                                if(list_message_not_view.length > 0){
+                                                    //createListMessageNotView($('#message_not_view'), msgsNotView);
+                                                    for(var i=0; i<list_message_not_view.length; i++){
+                                                        var userFound = false;
+                                                        var userMsgNotView ="";
+                                                        $('#message_not_view').find('ui > a').each(function(){
+                                                            if($(this).attr("id") == list_message_not_view[i]["me"]){
+                                                                    userFound = true;
+                                                                    userMsgNotView = list_message_not_view[i];
+
+                                                            }
+                                                        });
+                                                        if(!userFound){
+                                                            $('.lienbox').each(function(){
+                                                                if($(this).attr("id") == userMsgNotView["data"]["me"]){
+                                                                    var id_destinataire = $(this).attr("id");
+                                                                    var img_destinataire = $(this).find('.img_cont').find('img').attr("src");
+                                                                     var elm = $('<ui id="'+id_destinataire+'" class="contacts">' +
+                                                                    '<li class="">' +
+                                                                        '<a id="'+id_destinataire+'"class="notViewMsg" href="#">' +
+                                                                            '<div class="d-flex bd-highlight">' +
+                                                                                '<div class="img_cont">' +
+                                                                                    '<img class="rounded-circle user_img" src="'+img_destinataire+'">'+
+                                                                                '</div>'+
+                                                                            '</div>'+
+                                                                        '</a>'+
+                                                                    '</li>'+
+                                                                '</ui>');
+                                                            }
+                                                                $('#message_not_view').append(elm);
+                                                              });
+                                                        };
+                                                          
+                                                    }
+                                                }
+                                            }
+                                            
+                                        //}
+                                        
+                                    }
+                                }
+                            }
+                            
+                        case "chargementMessage":
+                            /**
+                            raha mitovy ny tompon le session sy ilay panel msokatra de ze atw ajour ilay msg
+                            */
+                            $('body').find('.boiteConversation').each(function(){
+                                if($(this).attr("id") == data["data"]["destinataire"] && me == data["me"]){
+                                    var container = $(this).find('.container_message');
+                                    createElementsNode(true, container); 
+                                    
+                                    //createElementsNode(false, container);        
+                                }
+                            });
+                                  
+                }
+            }
+        };
+
+        /**
+         * affichage de liste de panel de conversation
+         * @param list_user
+         **/
+        function showPanelConversation(list_user_to_create_dialog, User, isNbPanelDecrement) {
+            
+            /**
+             * affichage de boite de conversation
+             */
+            if (list_user_to_create_dialog.length == 1) {
+                /**
+                 * premier boite de conversation
+                 **/
+                $('.boiteConversation:last').attr({
+                    "id": User.to
+                });
+                conversationOneShow = true;
+                $('.boiteConversation:last').find('.user_img').attr({
+                    "src": list_user_to_create_dialog[0].img
+                });
+                $('.boiteConversation:last').find('.user_info').children('span').text("Conversation avec " + list_user_to_create_dialog[0].login);
+                $('.boiteConversation:last').find('.user_info').children('span').attr({
+                    "id": list_user_to_create_dialog[0].to
+                });
+                $('.boiteConversation:last').find('.img_cont').children('span').removeClass().addClass(list_user_to_create_dialog[0].status);
+
+                $('textarea:last').attr({
+                    "id": User.to
+                });
+                $('.msg_content:last').attr({
+                    "id": User.to
+                });
+                //$('.msg_content:last').html("");
+
+                $('.boiteConversation:last').find('.content_msg').attr({
+                    "id": User.to
+                });
+                $('.boiteConversation:last').css({
+                    "display":"block"
+                });
+
+                
+                /**
+                 * ato ny chargen ny conversation reetra tany alu
+                 */
+                $('.boiteConversation:last').children('.card-body').show();
+                $('.boiteConversation:last').find('.container_message').html("");
+            
+                $('.boiteConversation:last').find('.send_btn').attr({
+                    "id":User.to
+                })
+                
+                // data["type"] = "chargementMessage";
+                // data["data"]["destinataire"] = User.to;
+                // //data["me"] = me;
+                // ws.send(JSON.stringify(data));
+                // console.log(data);      
+
+                
+
+            } else {
+
+                if (conversationOneShow) {
+
+                    $('.boiteConversation:first').find('.send_btn').attr({
+                        "id":User.to
+                    })
+                    $('.boiteConversation:first').attr({
+                        "id": User.to
+                    });
+                    /**
+                     * deuxième boite de conversation
+                     */
+                    if (list_user_to_create_dialog[0] != list_user_to_create_dialog[1]) {
+                        $('.boiteConversation:first').find('.user_img').attr({
+                            "src": list_user_to_create_dialog[1].img
+                        });
+                        $('.boiteConversation:first').find('.user_info').children('span').text("Conversation avec " + list_user_to_create_dialog[1].login);
+                        $('.boiteConversation:first').find('.user_info').children('span').attr({
+                            "id": list_user_to_create_dialog[1].to
+                        });
+                        $('.boiteConversation:first').find('.img_cont').children('span').removeClass().addClass(list_user_to_create_dialog[1].status);
+                        $('.boiteConversation:first').css({
+                            "display": "block"
+                        });
+                        $('.msg_content:first').attr({
+                            "id": User.to
+                        });
+                        //$('.msg_content:first').html("");
+                        $('textarea:first').attr({
+                            "id": User.to
+                        });
+                        
+                        /**
+                         * ato ny chargen ny conversation reetra tany alu le deuxième panel
+                         */
+                        $('.boiteConversation:first').children('.card-body').show();
+                        $('.boiteConversation:first').find('.container_message').html("");
+                        
+
+                        // data["type"] = "chargementMessage";
+                        // data["data"]["destinataire"] = User.to;
+                        // data["me"] = me;
+                        // ws.send(JSON.stringify(data));
+                           
+                    }
+                }
+            }
+            nbPanelShow ++;
+            if(nbPanelShow >1){
+                nbPanelShow = 1;
+            }
+            if(isNbPanelDecrement){
+                if(nbPanelShow >1){
+                    nbPanelShow = 1;
+                }
+            }
+            if(user_clicked){
+                data["type"] = "chargementMessage";
+                data["data"]["destinataire"] = User.to;
+                data["me"] = me;
+                ws.send(JSON.stringify(data));
+                list_message_not_view.push(data);
+                console.log(list_message_not_view);
+            }
+            
+        }
+
+        var $classUser = $('.lienbox');
+
+        var isEntryHere = false;
+        var conversationOneShow = false;
+        //click sur une destinataire de messagerie
+        //$classUser.on('click', function (e) {
+        $('body').delegate('.lienbox', 'click', function (e) {
+            /**
+             * si la list_user est vide, on initialise isEntryHere
+             */
+            if (list_user_to_create_dialog.length == 0) {
+                isEntryHere = false;
+            }
+            e.preventDefault();
+
+            var User = {
+                to: $(this).attr("id"),
+                img: $(this).find('img').attr("src"),
+                login: $(this).find('.user_info').find('span').text().split(" - ")[1],
+                status: $(this).find('.img_cont > span').attr("class"),
+            };
+
+            
+
+            info_destinataire = User;
+            //2 no maximum ilay discussion instantanée
+            if (list_user_to_create_dialog.length < 2) {
+                //ato ny faharoa
+                if (isEntryHere) {
+                    //ka raha tsy mtovy ilay ul de apina
+                    if (list_user_to_create_dialog[0].to != User.to) {
+                        list_user_to_create_dialog.push(User);
+                    }
+                }
+                //miditra ato alu volo mameno ilay ol volo
+                if (!isEntryHere) {
+                    //list_user_to_create_dialog.push(user_id);
+                    list_user_to_create_dialog.push(User);
+                    isEntryHere = true;
+                }
+            }
+
+            //raha ef 2 ilay olona
+            if (list_user_to_create_dialog.length == 2) {
+                //ka ilay olona vao2 tsy mtovy @ ilay olona teo aloha, ovaina anin ul in ilay faha2
+                if (list_user_to_create_dialog[1].to != User.to) {
+                    list_user_to_create_dialog[1] = User;
+                }
+                //raha ef ao ilay olona de videna dul ilay liste de in ul in ian no atao ao anatin ilay liste
+                if (list_user_to_create_dialog[0].to == User.to) {
+                    list_user_to_create_dialog = [];
+                    list_user_to_create_dialog.push(User);
+                    //list_user_to_create_dialog[0] = User;
+                }
+            }
+            list_panel_default = list_user_to_create_dialog;
+            
+            /**
+             * affichage de panel de conversation
+             */
+            showPanelConversation(list_user_to_create_dialog, User);
+        });
+
+        /**
+         * minimize messagerie
+         */
+        $('.minimize').click(function () {
+			
+            var $card_body = $(this).parents('.boiteConversation').children('.card-body');
+            $card_body.slideToggle();
+            /**
+            if(msgReceving) {
+                clearTimeout(timeOutMsg);
+                $('title').text(titleInit);
+                panelConversationSlideUp = true;
+
+                //clearTimeout(Color);
+                $(this).parents('.boiteConversation').find('.card-header').css({
+                    "backgroundColor":'rgba(0,0,0,.03)'
+                });
+
+                /**
+                var data = {
+                    "type": "connexion",
+                    "me": me,
+                    "data": {
+                        "listeUser": [],
+                        "destinataire": 0,
+                        "text": "",
+                        "date": moment().startOf('hour').fromNow()//date moment,
+                    }
+                };
+                if(newMsg) {
+                    data["type"] = "lu";
+                    data["me"] = me;
+                    data["data"]["destinataire"] = $(this).parents('.boiteConversation').attr("id");
+                    data["data"]["date"] = $(this).parents('.boiteConversation').find('.msg_cotainer p').last().text();
+                    //data["data"]["text"] = $(this).parents('.boiteConversation').find('.msg_cotainer p').first();
+                    console.log(data);
+                    ws.send(JSON.stringify(data));
+                    newMsg = false;
+                }
+                //console.log($(this).parents('.boiteConversation').find('.msg_cotainer').find('p').first());
+            }**/
+        });
+		
+		$('#minimize_messagerie').click(function () {
+		    var $card_body = $(this).parents('.chatbox ').children('.card-body');
+            $card_body.slideToggle();
+           
+        });
+
+
+        /**
+         * fermeture messagerie
+         */
+        var $close_messagerie = $('.close_conversation');
+        $close_messagerie.click(function () {
+            var $parent = $(this).parents('.boiteConversation').hide();
+
+            //nbPanelShow --;
+            var User = {
+                to: $parent.find('.user_info').children('span').attr("id"),
+                img: $parent.find('.user_img').attr("src")
+            }
+            var array_temp = [];
+            for (var i = 0; i < list_user_to_create_dialog.length; i++) {
+                if (list_user_to_create_dialog[i].to != User.to) {
+                    array_temp.push(list_user_to_create_dialog[i]);
+                }
+            }
+
+            list_user_to_create_dialog = array_temp;
+
+            $('.boiteConversation').css({
+                "display": "none"
+            })
+
+            if (list_user_to_create_dialog.length == 0) {
+                return;
+            }
+            /**
+             * affichage de conversation
+             */
+
+            showPanelConversation(list_user_to_create_dialog, list_user_to_create_dialog[0], true);
+        });
+    });
+
+    /**
+     * recherche d'utilisateurs dans la messagerie
+     */
+    $(function () {
+        $('input.search').keyup(function (e) {
+            var value = $(this).val();
+
+            var reg = / /;
+            var expression = reg.compile(value,"i");
+
+            $('ui').each(function(){
+                if(value != ""){
+                    $(this).css({"display":"block"});//d'abord on reaffiche cette element
+                    if(!expression.test($(this).attr("id")) && !expression.test($(this).attr("data-id"))){
+                        $(this).css({
+                           "display":'none'
+                        });
+                    }
+                }else{
+                    $('ui').css({
+                        "display":'block'
+                    })
+                }
+            });
+        });
+    });
+
+</script>
+
+
+{% block javascripts %}{% endblock %}
+</body>
+</html>
+                        

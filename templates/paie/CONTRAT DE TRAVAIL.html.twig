@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+    </head>
+    <body style="font-family:Arial;word-wrap:break-word">
+        {% if infos is not defined %}
+        {% set infos = app.session.get('infos') %}
+        {% endif %}
+
+        {% if infos is not null %}
+        <page>
+            <div style="position: relative;
+                        width: 100%;
+                        min-height: 1px;
+                        padding-right: 15px;
+                        padding-left: 15px;">
+                <div style="display: -ms-flexbox;
+                        display: flex;
+                        -ms-flex-wrap: wrap;
+                        flex-wrap: wrap;
+                        margin-right: -15px;
+                        margin-left: -15px;">
+               
+
+                
+                <section>
+                        <div>
+                            <center><strong>CONTRAT DE TRAVAIL N°{{infos.user.id_personnel}}</strong></center>
+                        </div>
+                    
+
+                    
+                    </section>
+               
+                <!--Colone3 page-->
+                <div style="flex: 0 0 8.333333%;
+                            max-width: 8.333333%;position: relative;
+                            width: 100%;
+                            min-height: 1px;
+                            padding-right: 15px;
+                            padding-left: 15px;">
+                </div>
+                <!--Fin Colone3 page-->
+                    </div>
+            </div>
+            
+        </page>
+        {% endif %}
+    </body>
+</html>

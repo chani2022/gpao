@@ -1,0 +1,134 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Exception Connection{% endblock %}
+
+{% block pageTitle %}<i class="fas fa-check"></i> Insertion Exception connection{% endblock %}
+{% block body %}
+    <div class="row">
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4>Édition</h4>
+                    <hr>
+                    {% form_theme form 'form-theme.html.twig' %}
+                    {{ form_start(form) }}
+                    <div class="form-group">
+                        {{ form_row(form.Matricule) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(form.DateException) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_row(form.Motif) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="">
+                        Enregistrer
+                    </button>
+                    {{ form_end(form) }}
+
+
+                </div>
+            </div>
+        </div>
+
+        <!--champ de recherche--->
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form name="form" method="post">
+                    <div class="form-group">
+                            <input class="au-input au-input--xl form-control" name="keyword" type="text" placeholder="Matricule" value="{{value_search}}">
+                    </div>
+                    <div class="form-group">
+                        <div>
+                            <input type="text" readonly="readonly" name="date" value="{{value_date}}" class="DateException_avec_interval form-control">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        Valider
+                    </button>
+
+                </form>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Fin-->
+
+
+
+
+<div class="col-lg-12 col-md-6">
+	<div class="card">
+		<div class="card-body">
+			<table class="table">
+
+			  <thead style="background:#4272d7;color:#fff;">
+			    <tr>
+			      <th scope="col">Date</th>
+			      <th scope="col">Matricule</th>
+			      <th scope="col">Motif</th>
+			    </tr>
+			  </thead>
+
+			  <tbody>
+			  	{% for list in list_exception %}
+			    <tr>
+			      <th scope="row">{{list.date_exception|date("d/m/Y") }}</th>
+			      <td>{{list.id_personnel}}</td>
+			      <td>{{list.motif}}</td>
+			      <td><a href="{{url('rh_exceptionConnexion', {delete:list.id_personnel})}}" type ="submit" title="Supprimer" class="btn btn-primary"><i class="fas fa-trash-alt"></i></a></td>
+			      <!--<td><a href="{{app.request.request.get('rh_exceptionConnexion')}}">Supprimer</a></td>-->
+			    </tr>
+			    {% endfor %}
+			  </tbody>
+			</table>
+			
+		</div>
+	</div>
+</div>
+
+
+{%endblock%}
+
+{% block javascripts %}
+    {{parent()}}
+    <script>
+        $('.Matricule').select2();
+        $('.DateException').daterangepicker({
+            singleDatePicker: true,
+            locale:{
+                format:'DD/MM/YYYY'
+            }
+        });
+    </script>
+
+    <script>
+        $(".DateException_avec_interval").daterangepicker({
+                //autoUpdateInput:false,
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                
+            });
+            
+            $('.DateException_avec_interval').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+    </script>
+
+
+{% endblock%}

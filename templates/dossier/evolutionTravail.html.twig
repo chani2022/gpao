@@ -1,0 +1,132 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Evolution travail{% endblock %}
+{% block pageTitle %}Evolution travail{% endblock %}
+{% block body %}
+
+
+<div class="container">
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="row">
+                <div class="col-md-6" >
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="card">
+                            <div class="card-body">
+                                {{form_start(form)}}
+                                  <div class="form-group">
+                                      {{ form_row(form.dossier) }}
+                                  </div>
+                                  <button type="submit" class="btn btn-primary">
+                                    <span class="fa fa-eye"></span> Afficher
+                                  </button>
+                                {{ form_end(form) }}
+                                
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+        </div>
+      </div>             
+    </div>
+</div>
+
+
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="row" id="places">
+            	{% if datas!=null %}
+            		<div class="col-md-12" >
+                <br/>
+	                  <div class="card">
+	                    <div class="card-body">
+	                      <div class="row">
+	                        <div class="col-12">
+	                          <div class="card">
+	                            <div class="card-body">
+	                                <canvas class="test" id="canvas" width="400" height="400"></canvas>
+	                                <!--<canvas id="chart"></canvas>-->
+	                            </div>
+	                          </div>
+	                        </div>
+	                      </div>
+	                    </div>
+	                  </div>
+	                </div>  
+            	{% endif %}
+        </div>
+      </div>             
+    </div>
+
+
+{% endblock %}
+
+{% block javascripts %}
+
+<script>
+var data = {{datas|json_encode()|raw}};
+var datasets = [];
+var dataChart = {
+    labels: {{labels|json_encode()|raw}},
+    datasets: null
+};
+console.log("my data",data);
+            
+            for(var dossier in data){
+            	for(etapeTravail in data[dossier]){
+            		console.log("Dossier:",dossier);
+                var clr = "rgba("+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", 1)";
+                console.log("LABELS",etapeTravail);
+                var obj = {
+                    label: "",
+                    data: data[dossier][etapeTravail]["vitesse_y"],
+                    borderWidth: 3,
+                    fill: false,
+                    backgroundColor: clr,
+                    borderColor: clr
+                };
+                datasets.push(obj);
+            }
+        }
+            
+            var ctx = document.getElementById("canvas").getContext('2d');
+            dataChart.datasets = datasets;
+            
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: dataChart,
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            },
+		            		scaleLabel: {
+		                    display: true,
+		                    labelString: dossier,
+		                    fontSize: 20 
+		                  }
+                        }]
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgb(255, 99, 132)',
+                                fontColor: "#000080",
+                            }
+                        }
+        }
+                }
+            });
+
+      
+</script>
+
+{% endblock %}

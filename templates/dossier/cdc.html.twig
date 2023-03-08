@@ -1,0 +1,62 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Transmission{% endblock %}
+
+{% block pageTitle %}<i class="fas fa-pen-square"></i> Gestion des CDC{% endblock %}
+{% block body %}
+<div class="row">
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+            
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_row(form.nom_cdc) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.version) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.observations) }}
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <span class="fa fa-save"></span> Enregistrer
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+            <form method="post" action="{{url('cdc_gestion')}}" class="form-inline">
+                <input type="text" name="keywords" placeholder="Recherche...." class="form-control col-md-8" value="{{app.request.request.get('keywords')}}">
+                <button type="submit" class="btn btn-primary ml-2">
+                    Rechercher
+                </button>
+            </form>
+            <hr>
+            <ul class="list-group">
+            {% for c in liste_cdc %}
+                <li class="list-group-item list-group-item-light">
+                    <i class="zmdi zmdi-file"></i> {{c.getNomCdc()}} <a href="{{url('cdc_gestion', {idCdc:c.getId()})}}" class="btn btn-sm btn-link" title="Modifier"><i class="fa fa-edit"></i></a><br>
+                    <span class="text-muted">
+                        Version&nbsp;: {{c.getVersion()}}<br>
+                        Obsérvations&nbsp;: {{c.getObservations()}}
+                    </span>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
+    
+{%endblock%}
+{% block javascripts %}
+{{parent()}}
+<script>
+   
+</script>
+{% endblock%}

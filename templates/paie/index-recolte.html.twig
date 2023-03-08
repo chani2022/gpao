@@ -1,0 +1,105 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Récolte d'heure{% endblock %}
+
+{% block pageTitle %}Récolte d'heure{% endblock %}
+{% block stylesheets %}
+    <style>
+        .table th{
+            font-size: 8pt;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <div class="col-lg-12 col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4>Choisissez les dates et passer à l'étape suivante</h4>
+                <form method="post" action="" name="recolteSearch" class="form form-inline">
+                    <input type="text" name="date" id="searchDate" class="form-control col-md-6">
+                    <button class="btn btn-primary ml-2">
+                        Charger
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            var DatePickerLocal = {
+                        "direction": "ltr",
+                        "format": "DD/MM/YYYY",
+                        "separator": " -",
+                        "applyLabel": "Appliquer",
+                        "cancelLabel": "Annuler",
+                        "fromLabel": "Da",
+                        "toLabel": "A",
+                        "customRangeLabel": "Plage personnalisée",
+                        "daysOfWeek": [
+                            "Di",
+                            "Lu",
+                            "Ma",
+                            "Me",
+                            "Jeu",
+                            "Ve",
+                            "Sa"
+                        ],
+                        "monthNames": [
+                            "Janvier",
+                            "Février",
+                            "Mars",
+                            "Avril",
+                            "Mai",
+                            "Juin",
+                            "Juillet",
+                            "Août",
+                            "Septembre",
+                            "Octobre",
+                            "Novembre",
+                            "Décembre"
+                        ],
+                        "firstDay": 1
+                    };
+            $("#searchDate").daterangepicker({
+                //autoUpdateInput:false,
+                ranges: {
+                    'Compte actuel': [moment().set('date',21).subtract(1, 'month'), moment().set('date',20)],
+                    'Compte précédent': [moment().set('date',21).subtract(2, 'month'), moment().set('date',20).subtract(1, 'month')],
+                    'Compte 2 mois passé': [moment().set('date',21).subtract(3, 'month'), moment().set('date',20).subtract(2, 'month')]
+                    /*'Aujourd\'hui': [moment(), moment()],
+                    'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                    'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                    'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                    'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]*/
+                },
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                {%if dateDebut != "" %}
+                    startDate: "{{dateDebut}}",
+                    endDate: "{{dateFin}}"
+                {%endif%}
+            });
+            
+            $('#searchDate').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+            
+       
+        });
+ 
+    </script>
+{% endblock %}

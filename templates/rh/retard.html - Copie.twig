@@ -1,0 +1,286 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Retard{% endblock %}
+{% block style %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}
+{% block pageTitle %} Retard {% endblock %}
+
+{% block body %}
+   
+    <div class="container">
+        <div class="col-lg-6 col-md-6">
+
+            <div class="card">
+
+                <div class="card-body">
+                {% form_theme form 'form-theme.html.twig' %}
+
+                    {{ form_start(form) }}
+
+                    {{ form_errors(form) }}
+
+                        <div class="form-group">
+                        {{ form_row(form.date_interval, {'attr': {'class': 'form-control date', 'readonly': true}}) }}
+                        </div>
+                        <div class="form-group">
+                        {{ form_row(form.fonction, {'attr': {'class': 'form-control fonction'}}) }}
+                        </div>
+                        <div class="form-group">
+                        {{ form_row(form.matricule, {'attr': {'class': 'form-control matricule'}}) }}
+                        </div>
+                        <div class="form-group">
+                        {{ form_row(form.equipe, {'attr': {'class': 'form-control matricule'}}) }}
+                        </div>
+                        <div class="form-group">
+                        {{ form_row(form.signe, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+                        <div class="form-group">
+                        {{ form_row(form.nombre, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <span class="fa fa-eye"></span> Afficher
+                        </button>
+                    {{ form_end(form) }}
+                    </div>
+                </div>
+
+        </div>
+
+{% if data!=null %}
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="col-md-12">
+            <br/>
+                <div class="card">
+                    <div class="card-body">
+                        <span id="apetraka"></span>
+                        <canvas id="retard" width="400" height="400" class="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="col-md-12">
+            <br/>
+                <div class="card">
+                    <div class="card-body">
+                        <span id="apetraka2"></span>
+                        <canvas id="retard2" width="400" height="400" class="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+ </div>
+
+
+
+{% endblock %}
+
+{% block javascripts %}
+    <script defer>
+        $(function(){
+            /**
+             * 
+             * statistique retard
+             **/
+            var data = {{data|json_encode()|raw}};
+
+            console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",data);
+            
+            var datasets = [];
+            
+            var dataChart = {
+                labels: {{label|json_encode()|raw}},
+                datasets: null
+            };
+            
+            for(var tache in data){
+
+                var somearray = ["20.21040","40.5120","80","400"];
+
+                let x=eval(data[tache].y.join("+"));
+                let res = x.toFixed(2);
+
+                $( "#apetraka" ).append( '<span><strong>Tache</strong>&nbsp;: <span style="color:green">'+ tache +'</span></span><span><strong> Retard</strong>: <span style="color:red"><strong>' + res + '</strong></span> Heure(s)</span><br/>');
+                var clr = "rgba("+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", 1)";
+                var obj = {
+                    label: tache,
+                    data: data[tache]["y"],
+                    borderWidth: 3,
+                    fill: false,
+                    backgroundColor: clr,
+                    borderColor: clr
+                };
+                datasets.push(obj);
+            }
+            
+            var ctx = document.getElementById('retard').getContext('2d');
+            dataChart.datasets = datasets;
+            
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: dataChart,
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgb(255, 99, 132)',
+                                fontColor: "#000080",
+                            }
+                        }
+        }
+                }
+            });
+            
+            
+            /**
+             * 
+             * autre champs
+             */
+
+            $('.fonction').select2({
+                multiple: true
+            });
+
+            $('.matricule').select2();
+
+            $('.date').daterangepicker({
+                locale: {
+                    format: 'DD-MM-YYYY'
+                }
+            });
+    });
+
+//deuxieme graphe
+
+ $(function(){
+            /**
+             * 
+             * statistique retard
+             **/
+            var data2 = {{data1|json_encode()|raw}};
+            
+            var datasets = [];
+            
+            var dataChart = {
+                labels: {{label|json_encode()|raw}},
+                datasets: null
+            };
+           
+            
+            for(var tache in data2){
+                var somearray = ["20.21040","40.5120","80","400"];
+                let x=eval(data2[tache].y.join("+"));
+                let res = x.toFixed(2);
+
+                $( "#apetraka2" ).append( '<span><strong>Tache</strong>&nbsp;: <span style="color:green">'+ tache +'</span></span><span><strong> Retard</strong>: <span style="color:red"><strong>' + res + '</strong></span> Heure(s)</span><br/>');
+                var clr = "rgba("+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", 1)";
+                var obj = {
+                    label: tache,
+                    data: data2[tache]["y"],
+                    borderWidth: 3,
+                    fill: false,
+                    backgroundColor: clr,
+                    borderColor: clr
+                };
+                datasets.push(obj);
+            }
+            
+            var ctx = document.getElementById('retard2').getContext('2d');
+            dataChart.datasets = datasets;
+            
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: dataChart,
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgb(255, 99, 132)',
+                                fontColor: "#000080",
+                            }
+                        }
+        }
+                }
+            });
+            
+            
+            /**
+             * 
+             * autre champs
+             */
+
+            $('.fonction').select2({
+                multiple: true
+            });
+
+            $('.matricule').select2();
+
+            $('.date').daterangepicker({
+                locale: {
+                    format: 'DD-MM-YYYY'
+                }
+            });
+    });
+//Fin deuxieme graphe
+
+$(document).ready(function () {
+
+  //$("select#form_user").css({"title": "Recherche"});
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_equipe').select2({matcher: select2matchCustomUser});
+    $('select#form_retard').select2({matcher: select2matchCustomUser});
+    $('select#form_fonction').select2({matcher: select2matchCustomUser});
+    //$('select#form_nombre').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+ </script>
+
+    
+{% endblock %}

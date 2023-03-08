@@ -1,0 +1,329 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Suivi extra{% endblock %}
+{% block pageTitle %}Suivi extra{% endblock %}
+{% block body %}
+<style>
+.table {
+    table-layout:fixed;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+ul {
+  list-style: none;
+}
+.tbl_scroll{
+    display: block;height: 400px;overflow-y: scroll;
+}
+.tbl_scroll_1{
+    display: block;
+    height: 249px;
+    overflow-y: scroll;
+}
+
+.thead{
+  display:inline-block;
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+</style>
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+   
+            <div class="form-group">
+                {{ form_row(form.matricule,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group" style="display:none">
+                {{ form_row(form.heure_extra_manquant,{'attr':{'autocomplete':'off'}}) }}
+            </div>
+            <div class="form-group" style="display:none">
+                {{ form_row(form.nombre_extra_effectie,{'attr':{'autocomplete':'off'}}) }}
+            </div>
+            <div class="form-group" style="display:none">
+                {{ form_row(form.absence_extra,{'attr':{'autocomplete':'off'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.interval_date_extra, {'label': 'Date','attr': {'class': 'form-control'}}) }}    
+            </div>
+           
+            <button id="enregistrer" type="submit" class="btn btn-primary">
+                <span class="fa fa-eye"></span> Afficher
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% if(data!=null) %}
+<div class="col-lg-12 col-md-12">
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                        <span style="font-size:20px!important;font-weight: 700;">Absence extra&nbsp:</span> 
+                        <table class="table tbl_scroll_1">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Login</th>
+                                    <th>Nom</th>
+                                    <th>Equipe</th>
+                                    <th>Heure début(supplémentaire)</th>
+                                    <th>Heure Fin</th>
+                                    <th>Date(Absence)</th>
+                                </tr>
+                            </thead>
+                   <div class="show_details"></div>
+                             <tbody class="value_data_absence_extra"> 
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+<div class="col-lg-12 col-md-12">
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                    <span style="font-size:20px!important;font-weight: 700;">Extra effectuer&nbsp:</span> 
+                        <table class="table tbl_scroll_1">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Login</th>
+                                    <th>Nom</th>
+                                    <th>Nombre d'extra</th>
+                                </tr>
+                            </thead>
+                             <tbody class="value_data_extra_effectuer"> 
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+<div class="col-lg-12 col-md-12">
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                    <span style="font-size:20px!important;font-weight: 700;">Heure d'extra manquante&nbsp:</span> 
+                        <table class="table tbl_scroll_1">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Login</th>
+                                    <th>Nom</th>
+                                    <th>Equipe</th>
+                                    <th>Heure début(supplémentaire)</th>
+                                    <th>Heure Fin</th>
+                                    <th>Date extra</th>
+                                    <th>Heure manquante</th>
+                                </tr>
+                            </thead>
+                             <tbody class="value_data_heure_manquant_extras"> 
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+{% endif %}
+{% endblock%}
+
+{% block javascripts %}
+{{parent()}}
+<script>
+    $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_interval_date_extra").daterangepicker({
+            autoUpdateInput:true,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_interval_date_extra').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+    });
+
+
+$(document).ready(function () {
+
+  //$("select#form_user").css({"title": "Recherche"});
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_matricule').select2({matcher: select2matchCustomUser});
+    $('select#form_operateur').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+var x1=[];
+var datax = {{data|json_encode()|raw}};
+//console.log("valeur: ",datax);
+var tab_data=[];
+for(var x in datax){
+    for(key in datax[x]){
+        var value = datax[x][key];
+        if(x=="absence_extra"){
+             //convertir le date en string
+             const conversion_date = value.date.toString().split(',');
+             //Convertir la date en string 
+             var strArr = conversion_date.map(function(e){return e.toString()});
+             //Récupération du date dans un nouveau variable afin de le convertir en fr
+              var myDatex = isNaN(new Date(value.date));
+              //Dynamic permet d'afficher dans le resultat du boucle dans append
+              var dynamic = "";
+              //Boucle permettange de convertir chaque date en fr
+                for (var i=0;i<value.date.length;i++) { 
+                var myDate = new Date(strArr[i]);
+                //Formatage du date en fr
+                var formatted = ("0" + (myDate.getDate())).slice(-2) + "/" + ("0" + (myDate.getMonth() + 1)).slice(-2) + "/" + myDate.getFullYear();
+                //console.log("MY FORMAT:",formatted);
+                    dynamic +=formatted+'<br/>';
+                };
+            if(value.id_type_pointage!=1){
+                //Affichage du date equipe matin si 1
+            $(".value_data_absence_extra").append("<tr><td>"+value.id_personnel+"</td><td>"+value.login+"</td><td>"+value.nom+"</td><td>"+"Equipe APM"+"</td><td>"+value.heure_debut+"</td><td>"+value.heure_fin+"</td><td>"+dynamic+"</td></tr>");
+            }else{
+                //Affichage du date equipe AMP si 24
+             $(".value_data_absence_extra").append("<tr><td>"+value.id_personnel+"</td><td>"+value.login+"</td><td>"+value.nom+"</td><td>"+"Equipe Matin"+"</td><td>"+value.heure_debut+"</td><td>"+value.heure_fin+"</td><td>"+dynamic+"</td></tr>");
+           }
+        }
+          
+        if(x=="extra_effectuer"){
+            $('.value_data_extra_effectuer').append("<tr><td>"+value.id_personnel+"</td><td>"+value.login+"</td><td>"+value.nom+"</td><td>"+value.nb_extra+"</td></tr>");
+        }
+        if(x=="heure_manquant_extras"){
+           // console.log("DAT DAT: ",value);
+                    for(key2 in value){
+                        var valuex = datax[x][key][key2];
+                        console.log("VALEUR VALEUR VALEUR X",valuex);
+                        //convertir le date en string
+                        const conversion_date_manquant_extras = valuex.date.toString().split(',');
+                        var strArr_manquant_extras = conversion_date_manquant_extras.map(function(e){return e.toString()});
+                        var myDatex_manquant_extras = isNaN(new Date(valuex.date));
+                        //Variable dynamique qui contient tous les dates formatés
+                        var dynamic_manquant_extras = "";
+                            for (var y=0;y<valuex.date.length;y++) { 
+                                console.log("DATE MANQUANTE",strArr_manquant_extras);
+                                var myDate_manquant_extras = new Date(strArr_manquant_extras[y]);
+
+                                //Convertir date d/m/y en dd/mm/yyyy
+                                var formatted_manquant_extras = ("0" + (myDate_manquant_extras.getDate())).slice(-2) + "/" + ("0" + (myDate_manquant_extras.getMonth() + 1)).slice(-2) + "/" + myDate_manquant_extras.getFullYear();
+                                dynamic_manquant_extras +=formatted_manquant_extras+'<br/>';
+                            };
+                        //Formatage de l'heure
+                        const conversion_heure_x = valuex.heure_manquant.toString(':').split(',');
+                        var heure_string = conversion_heure_x.map(function(e){return e.toString()});
+                                //Convertir l'heure manquant extras en hh/mm/ss
+                                function formatHMS(arrDatas){
+                                    var newArr = arrDatas.map(item => {
+                                    let explodeItem = item.split(' : ');
+                                    let newItem = explodeItem.map(elm=>{
+                                        return parseInt(elm)<10 ? "0"+elm : elm;
+                                    });
+                                    return newItem.join(':');
+                                    });
+                                    return newArr;
+                                }
+                                formatHMS(conversion_heure_x);
+                                console.log(formatHMS(conversion_heure_x));
+                        //Si pointage est 1 alors equipe matin sinon equipe APM
+                        if(valuex.id_type_pointage!=1){
+                            //Equipe Matin
+                            $(".value_data_heure_manquant_extras").append("<tr><td>"+valuex.id_personnel+"</td><td>"+valuex.login+"</td><td>"+valuex.nom+"</td><td>"+"Equipe APM"+"</td><td>"+valuex.heure_debut+"</td><td>"+valuex.heure_fin+"</td><td>"+dynamic_manquant_extras+"</td><td>"+formatHMS(conversion_heure_x)+"</td></tr>");
+                            }else{
+                            //Equipe APM
+                            $(".value_data_heure_manquant_extras").append("<tr><td>"+valuex.id_personnel+"</td><td>"+valuex.login+"</td><td>"+valuex.nom+"</td><td>"+"Equipe Matin"+"</td><td>"+valuex.heure_debut+"</td><td>"+valuex.heure_fin+"</td><td>"+dynamic_manquant_extras+"</td><td>"+formatHMS(conversion_heure_x)+"</td></tr>");
+                    }    
+            }
+        }
+    }
+}
+
+</script>
+{% endblock%}

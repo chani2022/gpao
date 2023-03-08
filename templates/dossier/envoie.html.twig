@@ -1,0 +1,74 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Ajout Navette{% endblock %}
+
+{% block pageTitle %}<i class="fas fa-pen-square"></i> Nouvelle Note pour : {{dossier.getNomDossier()}} {% endblock %}
+{% block body %}
+    <div class="col-lg-8 col-md-6">
+        
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+            
+            <div class="form-group">
+                {{ form_row(form.objet) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.contenu) }}
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <span class="zmdi zmdi-save"></span> Enregistrer
+            </button>
+        {{ form_end(form) }}
+    </div>
+    </br>
+    <div class="col-lg-4 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h4>
+                <i class="zmdi zmdi-notifications"></i> Notes ajoutées récemments</a>
+                </h4>
+                <hr>
+                <ul class="list-group">
+                {% set nbNote = 0 %}
+                {% for c in recent %}
+                    {% set nbNote = nbNote+1 %}
+                    <li class="list-group-item list-group-item-light">
+                        <h4>
+                        <i class="zmdi zmdi-notifications"></i> {{c.getObjet()}}</a>
+                        </h4>
+                        <span class="text-muted">
+                            Ajouté le&nbsp;: {{c.getDateEnvoie()|date("d/m/Y")}}<br>
+                            Contenu&nbsp;: {{c.getContenu()|striptags|substr}}...<br>
+                        </span>
+                        <br>
+                        <a href="{{ url('navette_consulter', {id: c.getId()}) }}" class="btn btn-secondary btn-sm btn-block"><i class="zmdi zmdi-view-list"></i> Consulter</a>
+                    </li>
+                {% endfor %}
+                </ul>
+                <br>
+            {% if nbNote >5 %}
+                <a href="{{ url('navette_consulter_pour_dossiers', {id: dossier.getId()}) }}" class="btn btn-primary btn-block"><i class="zmdi zmdi-plus-box"></i> Voir tous les historiques</a>
+            {%endif%}
+            </div>
+        </div>
+    </div>
+{%endblock%}
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            $('textarea.navetteNote').summernote({
+                height:350,
+                minHeight:350,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    //['insert', ['link', 'picture', 'video']],
+                    ['view', ['codeview', 'help']]
+                  ]
+            });
+        });
+    </script>
+{% endblock%}

@@ -1,0 +1,117 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Progression dossier{% endblock %}
+{% block pageTitle %}Progression dossier{% endblock %}
+{% block body %}
+
+<div class="container">
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="row">
+                <div class="col-md-6" >
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="card">
+                            <div class="card-body">
+                              <div id="test"></div>
+                                {{form_start(form, {'attr': {'id': 'myform'}}) }}
+                                  <div class="form-group" id="Form_insertion">
+                                      {{ form_row(form.dossier, {'attr': {'class': 'form-control'}} ) }} 
+                                      <br/>
+                                  </div>
+                                  <button type="submit" class="btn btn-primary">
+                                    <span class="fa fa-eye"></span> Afficher
+                                  </button>
+                                {{ form_end(form) }}
+                                <img style="display:none" width="100" height="100" id="imgSpinner1" src="{{ absolute_url(asset('images/loading.gif')) }}" alt="Loading..." />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+        </div>
+      </div>             
+    </div>
+</div>
+
+
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+          
+            <div class="row" id="places">
+            	{% if datas==null %}
+            	{% else %}
+	            	<div class="col-md-12" >
+                <br/>
+	                  <div class="card">
+	                    <div class="card-body">
+	                      <div class="row">
+	                        <div class="col-12">
+	                          <div class="card">
+	                            <div id="1" class="card-body">
+                                     <table class="table">
+                                      <thead>
+                                        <tr>
+                                          <th scope="col"></th>
+                                          <th></th>
+                                          <th scope="col" id="sub"></th>
+                                          {% set tab=['PREPARATION','DECOUPE','CQ_DECOUPE','SAISIE1','SAISIE1_ACTE','SAISIE1_MENTION','SAISIE2_CALE','SAISIE2_CALE_MENTION','ECHANTILLONNAGE'] %}
+                                            {% for t in tab %}
+                                              <th scope="col">{{t}}</th>
+                                            {% endfor %}
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                          <th>Volume</th>
+                                          <th></th>
+                                          <th id="td_sub"></th>
+                                          {% for t in tab %}
+                                            {% if datas[t] is defined %}
+                                            <th scope="col">{{datas[t]['volume']}}</th>
+                                            {% else %}
+                                            <th></th>
+                                            {% endif %}
+                                          {% endfor %}
+                                        </tr>
+                                        <tr>
+                                          <th>Temps de traitement</th>
+                                          <th></th>
+                                          <th id="td_sub_temps"></th>
+                                          {% for t in tab %}
+                                            {% if datas[t] is defined %}
+                                            <th scope="col">{{datas[t]['temps_realisation']}}</th>
+                                            {% else %}
+                                            <th></th>
+                                            {% endif %}
+                                          {% endfor %}
+                                        </tr>
+                                       
+                                      </tbody>
+                                    </table>
+	                               <!---- <canvas class="test" id="canvas" width="400" height="400"></canvas>-->
+	                                <!--<canvas id="chart"></canvas>-->
+	                            </div>
+	                          </div>
+	                        </div>
+	                      </div>
+	                    </div>
+	                  </div>
+	                </div>  
+            	{% endif %}
+        </div>
+      </div>             
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+  var data = {{datas|json_encode()|raw}};
+</script>
+<script src="{{ absolute_url(asset('js/progressionDossier.js')) }}"></script>
+
+{% endblock %}

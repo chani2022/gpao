@@ -1,0 +1,2 @@
+'Compte actuel': [moment().startOf('month').subtract(1, 'days').format('21-MM-YYYY'), moment().endOf('month').format('20-MM-YYYY')],
+                'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(1, 'days').format('21-MM-YYYY'), moment().endOf('month').subtract(1, 'month').format('20-MM-YYYY')],

@@ -1,0 +1,109 @@
+{% extends 'base-home.twig' %}
+{% block title %}Visiteur{% endblock %}
+
+{% block pageTitle %} Visiteur {% endblock %}
+
+{% block body %}
+
+<div class="row" id="pageContentWrapper">
+    <div class="col-lg-12 col-md-12" style="height:20px;"></div>
+    <div class="col-lg-12 col-md-12" style="font-size:12pt;">
+
+        </div>
+                                
+                                
+<div class="col-lg-4 col-md-4">
+    <div class="card">
+
+        <div class="card-body">
+
+       {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+            <div class="form-group">
+            {{ form_row(form.nom, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                 {{ form_row(form.prenom, {'attr': {'class': 'form-control'}}) }}
+            
+            </div>
+            <div class="form-group">
+                 {{ form_row(form.motif, {'attr': {'class': 'form-control'}}) }}
+            
+            </div>
+            <div class="form-group">
+                 {{ form_row(form.cin, {'attr': {'class': 'form-control'}}) }}
+            
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <span class="fa fa-save"></span> Enregistrer
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+<div class="col-lg-8 col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Motif</th>
+                                    <th>CIN</th>
+                                    <th>Heure entrée</th>
+                                    <th>Heure sortie</th>
+                                    
+
+                                </tr>
+                            </thead>
+                        <tbody>
+                            {% for tabl in list_visiteur %}
+                            
+
+                                <div class="form-group">
+                                    <tr>
+                                        <td>{{tabl.nom}}</td>
+                                        <td>{{tabl.prenom}}</td>
+                                        <td>{{tabl.motif}}</td>
+                                        <td>{{tabl.cin}}</td>
+                                        <td>{{tabl.heureentrer|date('H:i:s')}}</td>
+                                     
+                                        {% if tabl.heuresortie is empty  %}
+                                            <td>
+                                                <a  title="Sortie"
+                                                    href="{{ path('visiteur', {'id': tabl.id, paramDefaults:1}) }}" >
+                                                    <i class="fas fa-power-off"></i>
+                                                </a>
+                                            </td>
+                                        {% else %}
+                                            <td>
+                                                {{tabl.heuresortie|date('H:i:s')}}
+                                            </td>
+                                         {% endif %}
+                                       
+                                        <td> 
+                                            <a title="Supprimer" href="{{ path('visiteur', {'id': tabl.id, paramDefaults:2}) }}" >
+                                                    <i class="fas fa-trash alt"></i>
+                                            </a>
+                                        </td>
+
+                                    </tr>
+                                </div>
+                                
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+

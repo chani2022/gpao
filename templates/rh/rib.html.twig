@@ -1,0 +1,137 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Importation et exportation Rib{% endblock %}
+
+{% block pageTitle %}Importation et exportation Rib{% endblock %}
+{% block body %}
+
+<div class="row">
+    <div class="col-sm-5">
+            <div class="row mt-3">
+                <div class="col-sm-12">
+<div class="card">
+<div class="card-header">
+   
+    <div class="col-lg-12 col-md-12">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+        <div class="form-group">
+            {{ form_errors(form.file) }}
+            {{ form_row(form.file, {'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="row">
+            <div class="col-md-5">
+                <button id="btn_click" type="submit" class="btn btn-primary">
+                    <span class="fa fa-adn"></span> Importation Rib
+                </button>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ path('rh_importation_exportation_rib', {'slug':'exportation'}) }}" class="btn btn-warning ">Exportation Rib</a>
+            </div>
+        </div>
+    {{ form_end(form) }}
+    </div>
+    
+</div>
+<div class="card-body" style="background: ghostwhite;">
+    <h5>Liste des personnes qui n'ont pas de RIB.</h5>
+        <table class="table">
+            {% if users_not_rib|length > 0 %}
+        <table class="table">
+            <thead>
+                <tr style="font-size: 0.8em;">
+                    <th>Matricule</th>
+                    <th>Nom et prénom(s)</th>
+                    <th>Actif</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users_not_rib %}
+                    <tr style="font-size: 0.8em;">
+                        <td>{{ user.matricule }}</td>
+                        <td>{{ user.login }}</td>
+                        <td>{{ user.status }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% endif %}
+</table>
+</div>
+</div><br>
+</div>
+</div>
+
+
+</div>
+<div class="col-sm-7">
+    {% for message in app.flashes('success') %}
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+        {% endfor %}
+        {% for message in app.flashes('erreur') %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <div class="card">
+            <div class="card-header">
+                {% for key,value in info_banques %}
+                <span><strong>{{key}}</strong>&nbsp: {{value}}</span><br/>
+                {% endfor %}
+            </div>
+        <div class="card">
+            <div class="card-header">
+                    <h4>RIB des personnes</h4>
+                    <form  action="{{ path('rh_importation_exportation_rib', { 'slug' : 'search' }) }}"  method="post"  class="form-search form-inline">
+                        <div class="input-group">
+                    <div>
+                    <input name="keyword" type="text" class="form-control" placeholder="Matricule, domiciliation"  value="{{keyword}}">
+                    </div>&nbsp; &nbsp;
+                    <span class="input-group-btn">
+                    <button type="submit" class="btn btn-primary" style="background: rgb(13, 202, 240); border-color: rgb(28, 199, 255); border-radius: 4px;"> Recherche</button></span></div>
+                    </form>
+                </div>
+        <table class="table">
+            <thead>
+                <tr style="font-size: 0.8em;">
+                    <th scope="col">Matricule</th>
+                    <th>Nom et prénom(s)</th>
+                    <th>Code banque</th>
+                    <th>Code agence</th>
+                    <th>Rib</th>
+                    <th>Clef</th>
+                    <th>domiciliation</th>
+                    <th>Actif</th>
+                </tr>
+            </thead>
+        <tbody>
+            {% for user in ribs %}
+            <tr style="font-size: 0.8em;">
+               
+                <td>{{ user.id_personnel }}</td>
+                <td>{{ user.nom }} {{ user.prenom }}</td>
+                <td >{{ user.code_banque }}</td>
+                <td >{{ user.code_agence }}</td>
+                <td >{{ user.rib }}</td>
+                <td >{{ user.clef }}</td>
+                <td >{{ user.domiciliation }}</td>
+                <td >{{ user.actif }}</td>
+               
+            </tr>
+            {% endfor %}
+</tbody>
+
+</table>
+</div>
+
+</div>
+</div>
+<br/>
+
+
+{% endblock %}

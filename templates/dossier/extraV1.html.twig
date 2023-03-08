@@ -1,0 +1,319 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Extra{% endblock %}
+{% block pageTitle %}Extra{% endblock %}
+{% block body %}
+<style>
+.table {
+    table-layout:fixed;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+ul {
+  list-style: none;
+}
+.tbl_scroll{
+    display: block;height: 400px;overflow-y: scroll;
+}
+.tbl_scroll_1{
+    display: block;
+    height: 249px;
+    overflow-y: scroll;
+}
+
+.thead{
+  display:inline-block;
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+
+
+</style>
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+            <div class="form-group">
+                {{ form_row(form.operateur,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.dates,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.isFacturable,{'label':'Facturable : '}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.export,{'label':'Exporter en excel : '}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.pointage_normal,{'label':'Pointage normal : '}) }}
+            </div>
+            <div class="form-group">
+              
+                {{ form_row(form.type_pointage, {'label': 'Types de pointage','attr': {'class': 'form-control'}}) }}
+            </div>
+            <button id="enregistrer" type="submit" class="btn btn-primary">
+                <span class="fa fa-eye"></span> Afficher
+            </button>
+        {{ form_end(form) }}
+        <br/>
+       {% if excel.isExportToExcel==true %}
+            <div class="form-group">
+                <a id="download" class="btn btn-primary" href="{{ asset('upload/temp'~ excel.fileName) }}"><span class="fa fa-download"></span> Cliquer ici pour télécharger le fichier excel</a><br/>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+ {% if prods!=null %}
+<div class="col-lg-12 col-md-12">
+<br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table>
+                           <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col">
+                                               <h1>Facturable</h1>
+                                            </div>
+                                            <div class="col">
+                                                <h1>Non facturable</h1>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </thead>
+                             <tbody> 
+                                <tr>
+                                    <div class="container">       
+                                        <div class="row">
+                                            <div class="col">
+                                                {% for var_facturable in comptablise %}
+                                                    <span style="color:green">{{var_facturable}}</span><br/>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col">
+                                                {% for var_non_facturable in nonComptablise %}
+                                                        <span style="color:red">{{var_non_facturable}}</span><br/>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </tbody>
+                    </table> 
+                    {% endif %}  
+                    <br/>
+                    {% if prods!=null %}
+                    <table class="table tbl_scroll">
+                        <span style="font-size:20px">
+                                    <strong>Taux général&nbsp;: </strong>
+                                    </span>
+                                    <span style="color:red;font-size:20px">{{taux_generale|number_format(2, ',', ' ')}}%</span><br/>
+                            <span style="font-size:15px"><strong>Total des prix&nbsp;: </strong></span> <span style="color:red;font-size:15">{{total_prix|number_format(2, ',', ' ')}}</span>
+                                <br/>    
+                                <span style="font-size:15px">
+                                    <strong>Prix total dossier facturable&nbsp;: </strong>
+                                    </span>
+                                <span style="color:red">{{total_facturable|number_format(2, ',', ' ')}}</span>
+                                <br/>                
+                                <span style="font-size:15px">
+                                    <strong>Dossier dont le prix ne sont pas indiqués&nbsp;: </strong>
+                                </span>
+                                <div class="value_data"></div>
+                                <span style="font-size:15px">
+                                    <strong>Nombre de ligne&nbsp;: </strong>
+                                    {{nb_lignes}}
+                                </span>
+                            <br/>
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Date de traitement</th>
+                                    <th>Login</th>
+                                    <th>Heure début</th>
+                                    <th>Heure Fin</th>
+                                    <th>Dossier</th>
+                                    <th>Fichier</th>
+                                    <th>Etat</th>
+                                    <th>Etape</th>
+                                    <th>Volume</th>
+                                    <th>Temps</th>
+                                    <th>Taux</th>
+                                    <th>Prix Unitaire</th>
+                                    <th>Coût(Ar)</th>
+                                    <th>Facturé</th>
+                                    <th>Date de livraison</th>
+                                </tr>
+                            </thead>
+                  
+                             <tbody> 
+                                 {% for var_prod in prods %}
+                                    {% if prods!=null %}
+                                        <tr>
+                                            <td title="{{var_prod.matricule}}">{{var_prod.matricule}}</td>
+                                            <td title="{{var_prod.date_traitement}}"><p>{{var_prod.date_traitement|date("d/m/Y")}}</p></td>
+                                            <td>{{var_prod.login|capitalize }}</td>
+                                            <td title="{{var_prod.heure_debut}}"><p>{{var_prod.heure_debut}}</p></td>
+                                            <td title="{{var_prod.heure_fin}}"><p>{{var_prod.heure_fin}}</p></td>
+                                            <td title="{{var_prod.dossier}}"><p>{{var_prod.dossier}}</p></td>
+                                            <td title="{{var_prod.fichier}}">{{var_prod.fichier}}</td>
+                                            <td>{{var_prod.etat}}</td>
+                                            <td title="{{var_prod.etape}}">{{var_prod.etape}}</td>
+                                            <td>{{var_prod.volume}}</td>
+                                            <td>{{var_prod.temps}}</td>
+                                            <td>{{var_prod.taux|number_format(2, ',', ' ') }}%</td>
+                                            <td>{{var_prod.prix_unitaire|number_format(2, ',', ' ') }}</td>
+                                            <td>{{var_prod.prix|number_format(2, ',', ' ') }}</td>
+                                            {% if var_prod.facturable!=0 %}
+                                                <td>Ok</td>
+                                            {% else %}
+                                                <td title="En attente...">En attente...</td>
+                                            {% endif %}
+                                             <td>{{var_prod.date_livraison|date("d/m/Y")}}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                          
+                           
+                    </table>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+{{parent()}}
+<script>
+    $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_dates").daterangepicker({
+            autoUpdateInput:false,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_dates').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+    });
+
+ 
+$('#form_dates').daterangepicker({
+    locale: {
+            format: 'DD/MM/YYYY'
+            }
+});
+
+
+$(document).ready(function () {
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_operateur').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+$('#download').click(function() {
+    var x = document.getElementById('download');
+    x.style.display = 'none';
+    document.getElementById("form_export").checked = false;
+});
+
+var data = {{prods|json_encode()|raw}};
+var Dossier_prix_non_indique = data.reduce(function(result, item) {
+    if(item.prix_unitaire==0 && item.etat!="Rejet"  ){
+        var filtre_doublons=Array.from(new Set(result[item.dossier]));
+        result[item.dossier] = filtre_doublons || [];
+            var names = [item.etape];
+            var uniqueNames = [];
+            $.each(names, function(i, el){
+                if($.inArray(el, filtre_doublons) === -1) filtre_doublons.push(el);
+            });
+    }
+  return result;
+}, {});
+$.each( Dossier_prix_non_indique, function( key, value ) {  
+  $('.value_data').append("<span style='color:green'>"+key+"</span>"+ "&nbsp;: "+"("+value+")"+"<br/>");
+});
+</script>
+{% endblock %}

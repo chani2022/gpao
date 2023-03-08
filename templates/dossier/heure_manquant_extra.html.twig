@@ -1,0 +1,291 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Heure manquante extra{% endblock %}
+{% block pageTitle %}Heure manquante extra{% endblock %}
+{% block body %}
+<style>
+.table {
+    table-layout:fixed;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+ul {
+  list-style: none;
+}
+.tbl_scroll{
+    display: block;height: 400px;overflow-y: scroll;
+}
+.tbl_scroll_1{
+    display: block;
+    height: 249px;
+    overflow-y: scroll;
+}
+
+.thead{
+  display:inline-block;
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+</style>
+
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+   
+            <div class="form-group">
+                {{ form_row(form.matricule,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_row(form.interval_date_extra, {'label': 'Date','attr': {'class': 'form-control'}}) }}    
+            </div>
+           
+            <button id="enregistrer" type="submit" class="btn btn-primary">
+                <span class="fa fa-eye"></span> Afficher
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+{% if(data!=null) %}
+<div class="col-lg-12 col-md-12">
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                    <span style="font-size:20px!important;font-weight: 700;">Heure d'extra manquante&nbsp:</span> 
+                        <table class="table tbl_scroll_1">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Login</th>
+                                    <th>Nom</th>
+                                    <th>Equipe</th>
+                                    <th>Heure début extra</th>
+                                    <th>Heure Fin extra</th>
+                                    <th>Date extra</th>
+                                    <th>
+                                        <div class="container">
+                                                    <div class="row">
+                                                        <div class="col-sm-10">
+                                                            <span style="font-size:38px">Heure demandée</span>
+                                                            <div class="row">
+                                                                <div class="col-md-5">
+                                                                    <div class="panel panel-purple">Heure extra</div>
+                                                                </div>
+                                                                <div class="col-md-7">
+                                                                    <div class="panel panel-purple">Heure extra manquante</div>   
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                                    
+                                                    </div>   
+                                                </div>
+                                            </div>
+                                    
+                                    </th>
+                                </tr>
+                            </thead>
+                            <!--<tbody class="value_data_heure_manquant_extras"> -->
+                             <tbody> 
+                              	{% for x in data %}
+	                            <tr>
+                                    <td>{{x.id_personnel}}</td>
+                                    <td>{{x.login}}</td>
+                                    <td>{{x.nom}}</td>
+                                    <td>
+                                    {% if x.id_type_pointage!=1 %}
+                                        <span>Equipe APM</span>
+                                    {% else %}
+                                        <span>Equipe Matin</span>
+                                    {% endif %}
+                                    </td>
+                                    <td>
+                                    {% for key,value in x.heure_debut_supplementaire %}
+                                            {{x.heure_debut_supplementaire[key]}}<br/>
+                                    {% endfor %}
+                                    </td>
+                                    <td>
+                                    {% for key,value in x.heure_fin_supplementaire %}
+                                            {{x.heure_fin_supplementaire[key]}}<br/>
+                                    {% endfor %}
+                                    </td>
+                                   <!-- { for temporaire in x.date_suplementaire %}
+                                        <td>{dump(x.date_suplementaire)}}</td>
+                                    { endfor %} -->
+                                    <td>
+                                        {% for key,value in x.date_suplementaire %}
+                                            {{ key|date('d/m/Y')  }}<br/>
+                                        {% endfor %}
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="container">
+                                                <div class="row">
+                                                    <div class="col-sm-10">
+                                                            <div class="row">
+                                                                {% for key,value in x.date_suplementaire %}
+                                                                    <div class="col-md-5">
+                                                                        {% for keys in x.date_suplementaire[key]|keys %}
+                                                                            {{keys}} &nbsp
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    <div class="col-md-7">
+                                                                        {% for key2 in x.date_suplementaire[key] %}
+                                                                        {% set hours = key2|replace({' ': ''}) %}
+                                                                            {{ hours|date('H:i:s') }}<br/>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                    </div>
+                                                </div>   
+                                            </div>
+                                         </div>
+                                        
+                                        
+                                    </td>
+                                </tr>
+                               
+	                            {% endfor %}
+	                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block javascripts %}
+{{parent()}}
+<script>
+
+
+    $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_interval_date_extra").daterangepicker({
+            autoUpdateInput:true,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                'Compte actuel': [moment().startOf('month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').format('20-MM-YYYY')],
+                     'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').subtract(1, 'month').format('20-MM-YYYY')],
+          
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_interval_date_extra').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+    });
+
+
+$(document).ready(function () {
+
+  //$("select#form_user").css({"title": "Recherche"});
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_matricule').select2({matcher: select2matchCustomUser});
+    $('select#form_operateur').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+/**
+var x1=[];
+var datax = {{data|json_encode()|raw}};
+//console.log("valeur: ",datax);
+var tab_data=[];
+for(var x in datax){
+    for(key in datax[x].date_suplementaire){
+        console.log("My key",key);
+       
+  
+    }
+}
+ $(".demo").append("<td>"+key+"</td>");
+
+**/
+
+  //$(".value_data_heure_manquant_extras").append("<tr><td>"+datax[x].id_personnel+"</td><td>"+datax[x].login+"</td><td>"+datax[x].nom+"</td><td>"+"Equipe Matin"+"</td><td>"+datax[x].heure_debut_supplementaire+"</td><td>"+datax[x].heure_fin_supplementaire+"</td><td>"+date_apres_filtre+"</td><td>"+monArray_value+"</td></tr>");
+          
+
+</script>
+
+{% endblock %}

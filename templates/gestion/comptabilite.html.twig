@@ -1,0 +1,594 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Gestion{% endblock %}
+
+{% block pageTitle %} Gestion {% endblock %}
+
+{% block body %}
+
+<div class="col-lg-12 col-md-12">
+    <div class="row">
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    {% form_theme form 'form-theme.html.twig' %}
+                        {{ form_start(form) }}
+                        {{ form_errors(form) }}
+                            <div class="form-group">
+                                {{ form_row(form.date, {'label': 'Date','attr': {'class': 'form-control','readonly':'readonly'}}) }} 
+                            </div>
+                            <div class="form-group">
+                                {{ form_row(form.type, {'label': 'Type','attr': {'class': 'form-control'}}) }} 
+                            </div>
+                            <div class="form-group">
+                                {{ form_row(form.categorie, {'label': 'Catégorie','attr': {'class': 'form-control'}}) }} 
+                            </div>
+                            <div class="form-group">
+                                {{ form_row(form.observation, {'label': 'Observation','attr': {'class': 'form-control'}}) }} 
+                            </div>
+                            <div class="form-group">
+                                {{ form_row(form.prix_u, {'label': 'Prix unitaire','type':'number','attr': {'class': 'form-control'}}) }} 
+                            </div>
+                            <div class="form-group">
+                                {{ form_row(form.quantite, {'label': 'Quantité','type':'number','attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div class="form-group">
+                                {{ form_row(form.piece, {'label': 'Pièce','attr': {'class': 'form-control'}}) }}
+                            </div>
+                        <button type="submit" class="btn btn-primary">
+                            <span class="fa fa-save"></span> Enregistrer
+                        </button>
+                        {{ form_end(form) }}
+                        
+                </div>
+            </div>
+            
+        </div>
+        
+        
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" action="" class="form">
+                        <div class="form-group">
+                            {% set categorie_ = app.session.get('categorie') %}
+                             <select id="recherche_categories"   name="categorie"  class="form-control">
+                                <option style="background:yellow" id="cata" hidden default class="form-control">
+                                    {{categorie_}}
+                                </option>
+                                {% for key,value in categories %}
+                                    <option value="{{key}}" readonly="readonly"   class="form-control" >{{key}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            {% set varname = app.session.get('dates') %}
+                            {% if varname!=null %}
+                            <input style="background:gainsboro" placeholder="Date" value="{{varname[0]}} - {{varname[1]}}" name="dates" id="date_search" autocomplete="off"   class="form-control">
+                            {% else %}
+                             <input style="background:gainsboro" placeholder="Date" value="" name="dates" id="date_search" autocomplete="off"   class="form-control">
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary ml-2" >
+                            Rechercher
+                        </button>
+                        
+                    </form>
+                </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+   
+</div>
+
+<br/>
+
+    <div class="col-lg-12 col-md-12">
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                               <div class="form-group">
+                                     <canvas class="test" id="canvas_montant"></canvas>
+                                </div>
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <div class="col-lg-6 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                            <div class="form-group">
+                                <div class="card-body">
+	                                <canvas id="canvas_entre_sortie" ></canvas>
+	                                <!--<canvas id="chart"></canvas>-->
+	                            </div>
+                            </div>
+                        </form>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    <div class="col-lg-12 col-md-12">
+        
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Date du mouvement</th>
+                                    <th>Type</th>
+                                    <th>Catégorie</th>
+                                    <th>Observation</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Quantité</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                            {% for tabl in mouvements %}
+                            
+                                <div class="form-group">
+                                    <tr>
+                                        <td>{{tabl.date_mouvement|date("d/m/Y") }}</td>
+                                        {% if tabl.type_mouvement!=1 %}
+                                            <td>Sortie</td>
+                                        {% else %}
+                                            <td>Entrée</td>
+                                        {% endif %} 
+                                        <td>{{tabl.nom_categorie}}</td>
+                                        <td>{{tabl.observation}}</td>
+                                        <td>{{tabl.pu}} Ar</td>
+                                        <td>{{tabl.quantite}}</td>
+                                        <td>{{tabl.montant}}</td>
+                                        <td>
+                                            <a href="{{ path('app_gestion', {'id': tabl.id_mouvement_comptabilite,'action':'update'}) }}" >
+                                                <span class="fa fa-edit"></span> 
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('app_gestion', {'id': tabl.id_mouvement_comptabilite,'action':'delete'}) }}" >
+                                                <span class="fa fa-trash"></span> 
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+       
+    <div class="col-lg-12 col-md-12">
+        
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Total entrée</th>
+                                    <th>Total sortie</th>
+                                    <th>Différence</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                            
+                                <div class="form-group">
+                                        <td>{{total_entree}}</td>
+                                        <td>{{total_sortie}}</td>
+                                        <td>{{difference}}</td>
+                                    </tr>
+                                </div>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+{% endblock %}
+
+{% block javascripts %}
+
+<script>
+    $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+       
+        $("#date_search").daterangepicker({
+            autoUpdateInput:false,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            locale:{
+                format: "YYYY/MM/DD",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#date_search').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+        });
+    });
+</script>
+
+
+
+
+
+<script>
+    $(document).ready(function(){
+        var DatePickerLocal = {
+                    "direction": "ltr",
+                    "format": "YYYY-MM-DD",
+                    "separator": " -",
+                    "applyLabel": "Appliquer",
+                    "cancelLabel": "Annuler",
+                    "fromLabel": "Da",
+                    "toLabel": "A",
+                    "customRangeLabel": "Plage personnalisée",
+                    "daysOfWeek": [
+                        "Di",
+                        "Lu",
+                        "Ma",
+                        "Me",
+                        "Jeu",
+                        "Ve",
+                        "Sa"
+                    ],
+                    "monthNames": [
+                        "Janvier",
+                        "Février",
+                        "Mars",
+                        "Avril",
+                        "Mai",
+                        "Juin",
+                        "Juillet",
+                        "Août",
+                        "Septembre",
+                        "Octobre",
+                        "Novembre",
+                        "Décembre"
+                    ],
+                    "firstDay": 1
+                };
+        $("#form_date").daterangepicker({
+            //autoUpdateInput:false,
+            singleDatePicker: true,
+            locale:{
+                
+                format: "YYYY-MM-DD",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+          
+        });
+        
+        $('#form_date').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('YYYY-MM-DD'));
+        });
+
+       
+    });
+    
+
+
+    $(document).ready(function () {
+        $('select#form_type').select2({matcher: select2matchCustomUser});
+        $('select#form_categorie').select2({matcher: select2matchCustomUser});
+        $('select#recherche_categorie').select2({matcher: select2matchCustomUser});
+    //$('select#form_nombre').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+</script>
+
+
+<script>
+       
+         
+    $(document).ready(function () {
+        
+        var data2 = {{statistiques|json_encode()|raw}};
+           var datasets_entree = [];
+           var dataChart_entre_sortie=[]
+           var labels_entree_sortie =[];
+               var datasets_entree = [];
+               var datasets_sortie = [];
+               var labels_entree =[];
+               var labels_sortie =[];
+               var labels_=[]
+               var montant_ =[];
+         var valeur_dul_labels=[]
+         var data_value_entree=[]
+         var data_value_sortie=[]
+       
+                
+           data2['Janvier'] = data2[01];
+           data2['Février'] = data2[02];
+           data2['Mars'] = data2[03];
+           data2['Avril'] = data2[04];
+           data2['Mai'] = data2[05];
+           data2['Juin'] = data2[06];
+           data2['Juillet'] = data2[07];
+           data2['Aout'] = data2[08];
+           data2['Septembre'] = data2[09];
+           data2['Octobre'] = data2[10];
+           data2['Novembre'] = data2[11];
+           data2['Décembre'] = data2[12];
+           delete data2[01];
+           delete data2[02];
+           delete data2[03];
+           delete data2[04];
+           delete data2[05];
+           delete data2[06];
+           delete data2[07];
+           delete data2[08];
+           delete data2[09];
+           delete data2[10];
+           delete data2[11];
+           delete data2[12];
+        
+    Object.entries(data2).forEach(([key, value]) => {
+      
+      if(value!=undefined && value!="montant"){
+        console.log("Clé et valeur",key,value.entree); 
+    
+        data_value_entree.push(value.entree)
+        data_value_sortie.push(value.sortie)
+        valeur_dul_labels.push(key)
+        
+      }
+    
+    });
+    var obj2 = {
+        label: "Entrée",
+        data: data_value_entree,
+        borderWidth: 3,
+        fill: false,
+        backgroundColor: "rgb(63, 216, 146)",
+        borderColor: "rgb(63, 216, 146)"
+    };
+    var obj3 = {
+        label: "Sortie",
+        data: data_value_sortie,
+        borderWidth: 3,
+        fill: false,
+        backgroundColor: "rgb(242, 34, 103)",
+        borderColor: "rgb(242, 34, 103)",
+    };
+    datasets_entree.push(obj2,obj3);      
+      
+               
+            var ctx = document.getElementById("canvas_entre_sortie").getContext('2d');
+         
+            dataChart_entre_sortie.datasets = datasets_entree;
+            dataChart_entre_sortie.labels = valeur_dul_labels;
+            console.log("Data D",dataChart_entre_sortie)   
+            var myChart = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: dataChart_entre_sortie,
+                options: {
+                    scales: {
+                        yAxes: [{
+                            barPercentage: 1,
+                            categoryPercentage: 1 / 10 * dataChart_entre_sortie.datasets[0].data.length,
+                            ticks: {
+                                beginAtZero: true
+                            },
+                            scaleLabel: {
+                            display: true,
+                            labelString: "Entrée & Sortie",
+                            fontSize: 20 
+                            }
+                        }]
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgb(255, 99, 132)',
+                                fontColor: "#000080",
+                            }
+                        }
+        }
+                }
+            });        
+           
+           $("#recherche_categories").select2({
+                   placeholder: "Veuillez selectionner",
+                   allowClear: true
+               });
+       
+       
+               $('#recherche_categories').on('change', function () {
+                   //$("#recherche_categories option:first").remove();
+       
+               });
+    }); 
+           </script>
+
+<script>
+    var data = {{statistiques|json_encode()|raw}};
+    var datasets = [];
+    var labels =[];
+    var montant_ =[];
+    var dataChart = {
+        labels: null,
+        datasets: null
+    };
+    data['Janvier'] = data[01];
+    data['Février'] = data[02];
+    data['Mars'] = data[03];
+    data['Avril'] = data[04];
+    data['Mai'] = data[05];
+    data['Juin'] = data[06];
+    data['Juillet'] = data[07];
+    data['Aout'] = data[08];
+    data['Septembre'] = data[09];
+    data['Octobre'] = data[10];
+    data['Novembre'] = data[11];
+    data['Décembre'] = data[12];
+    delete data[01];
+    delete data[02];
+    delete data[03];
+    delete data[04];
+    delete data[05];
+    delete data[06];
+    delete data[07];
+    delete data[08];
+    delete data[09];
+    delete data[10];
+    delete data[11];
+    delete data[12];
+   // console.log("NEWS",data);
+                for(var dossier in data){
+                    for(etapeTravail in data[dossier]){
+                        //console.log("Dossier:",data[dossier].montant);
+                    var clr = "rgba("+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", 1)";
+                  
+                    if(etapeTravail=="montant"){
+                        montant_.push(data[dossier].montant)
+                        labels.push(dossier)
+                    var obj = {
+                        label: "",
+                        data: montant_,
+                        fill: false,
+                        backgroundColor: clr,
+                        borderColor: clr
+                    };
+                    datasets.push(obj);
+                    }
+                }
+            }
+                
+                var ctx = document.getElementById("canvas_montant").getContext('2d');
+                dataChart.datasets = datasets;
+                dataChart.labels = labels;
+                
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: dataChart,
+                    options: {
+                        legend: {
+                        display: false
+                    },
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                },
+                                scaleLabel: {
+                                display: true,
+                                labelString: "Montant",
+                                fontSize: 12 
+                              }
+                            }]
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgb(255, 99, 132)',
+                                    fontColor: "#000080",
+                                }
+                            }
+            }
+                    }
+                });
+
+               // console.log(myChart.data)
+    
+          
+    </script>
+    
+
+    
+
+
+
+{% endblock %}
+
+

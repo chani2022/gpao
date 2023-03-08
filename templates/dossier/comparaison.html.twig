@@ -1,0 +1,361 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Comparaison{% endblock %}
+{% block pageTitle %}Comparaison{% endblock %}
+{% block body %}
+<style>
+.table {
+    table-layout:fixed;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+ul {
+  list-style: none;
+}
+.tbl_scroll{
+    display: block;height: 400px;overflow-y: scroll;
+}
+.tbl_scroll_1{
+    display: block;
+    height: 249px;
+    overflow-y: scroll;
+}
+
+.thead{
+  display:inline-block;
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+  -webkit-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+
+</style>
+<div class="col-lg-6 col-md-6">
+    <div class="card">
+        <div class="card-body">
+        {% form_theme form 'form-theme.html.twig' %}
+        {{ form_start(form) }}
+   
+            <div class="form-group">
+                {{ form_row(form.operateur,{'attr':{'class':'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                 {{ form_row(form.dates, {'label': 'Date','attr': {'class': 'form-control'}}) }}    
+            </div>
+            <div class="form-group">
+                {{ form_row(form.equipe,{'attr':{'class':'form-control'}}) }}
+            </div>
+           
+            <button id="enregistrer" type="submit" class="btn btn-primary">
+                <span class="fa fa-eye"></span> Afficher
+            </button>
+        {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+
+{% if(listOperateurExtraProd!=null) %}
+<div class="col-lg-12 col-md-12">
+        <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                    <span style="font-size:20px!important;font-weight: 700;">Comparaison&nbsp:</span> <br/>
+                    <span style="font-size:20px!important;">Moyenne extra&nbsp:<span style="font-size:20px!important;font-weight: 700;color:red;">{{taux_extra|number_format(2, ',', '.')}}</span></span> </br>
+                    <span style="font-size:20px!important;">Moyenne heure normal:&nbsp:<span style="font-size:20px!important;font-weight: 700;color:red;">{{taux_production|number_format(2, ',', '.')}}</span></span> </br>
+                    <span style="font-size:20px!important;">Moyenne heure complémentaire:&nbsp:<span style="font-size:20px!important;font-weight: 700;color:red;">{{taux_complement|number_format(2, ',', '.')}}</span></span> 
+                    
+
+                        <table class="table tbl_scroll_1">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Login</th>
+                                    <th>Equipe</th>
+                                    <th>Taux extra</th>
+                                    <th>Taux heure normal</th>
+                                    <th>Taux heure complémentaire</th>
+                                    <th>Différence extra et heure normal</th>
+                                    
+                                </tr>
+                            </thead>
+                            <!--<tbody class="value_data_heure_manquant_extras"> -->
+                             <tbody> 
+                              	{% for x,value in listOperateurExtraProd %}
+	                            <tr>
+                                 <td>{{x}}</td>  
+                                 <td>{{value.login}}</td>
+                                 <td>
+                                    {% if value.equipe!=1 %}
+                                        <span>Equipe APM</span>
+                                    {% else %}
+                                        <span>Equipe Matin</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if value.taux.moyen_extra=="0,00" %}
+                                        {{value.taux.moyen_extra}}<br/>
+                                    {% else %}
+                                        {{value.taux.moyen_extra|number_format(2, ',', '.')}}<br/>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if value.taux.moyen_production=="0,00" %}
+                                        {{value.taux.moyen_production}}<br/>
+                                    {% else %}
+                                        {{value.taux.moyen_production|number_format(2, ',', '.')}}<br/>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if value.taux.moyen_complement=="0,00" %}
+                                        {{value.taux.moyen_complement}}<br/>
+                                    {% else %}
+                                        {{value.taux.moyen_complement|number_format(2, ',', '.')}}<br/>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% set counter = 0 %}
+                                    {% set counter = value.taux.moyen_extra - value.taux.moyen_production %}
+                                    {% if counter>0 %}
+                                        En baisse de <span style="color:red"><strong>{{counter|number_format(2, ',', '.')}}</strong></span>
+                                    {% endif %}
+                                </td>
+                                </tr>
+	                            {% endfor %}
+	                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+{% endif %}
+
+<div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="row" id="places">
+                <div class="col-md-12" >
+                <br/>
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="card">
+                            <div class="card-body">
+                                <canvas class="test" id="graph" width="400" height="400"></canvas>
+                                <!--<canvas id="chart"></canvas>-->
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+        </div>
+      </div>             
+    </div>
+
+
+{% endblock %}
+
+{% block javascripts %}
+{{parent()}}
+<script>
+//var clr = "rgba("+Math.round(Math.random() * (220 - 1) + 1) +", "+Math.round(Math.random() * (220 - 1) + 1) +", "+Math.round(Math.random() * (220 - 1) + 1) +", 1)";
+//var clr2 = "rgba("+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", 1)";
+
+var data = {{extrasParDate|json_encode()|raw}};
+var data_extra_apm = {{productionsParDate|json_encode()|raw}};
+var datasets = [];
+
+var mon_label={{label|json_encode()|raw}};
+console.log("LABEL LABEL",mon_label);
+var array = [];
+ for(var i=0;i<mon_label.length;i++){
+    var myDate = new Date(mon_label[i]);
+
+    
+    var dd = myDate.getDate();
+    var mm = myDate.getMonth() + 1;
+    var yyyy = myDate.getFullYear();
+
+
+    if(dd<10) 
+        {
+            dd='0'+dd;
+        } 
+    if(mm<10) 
+        {
+            mm='0'+mm;
+        } 
+    if(yyyy<10) 
+        {
+            yyyy='0'+yyyy;
+        } 
+
+    var formatted = dd + "/" + mm + "/" + yyyy;
+    array.push(formatted);   
+            
+    var ctx = document.getElementById("graph").getContext('2d');
+    //dataChart.datasets = datasets;
+    
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            
+            labels: array,
+            datasets: [{
+                label: 'Extra',
+                data: data,
+                backgroundColor: "red",
+                borderColor: "red",
+                borderWidth: 2,
+                fill: false
+            },
+
+// Production APM
+            {
+            label: 'Heure normal',
+            data: data_extra_apm,
+                backgroundColor: "green",
+                borderColor: "green",
+                borderWidth: 2,
+                fill: false
+                
+            }
+            
+            
+            ]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                    scaleLabel: {
+                    display: true,
+                    labelString: "Statistique",
+                    fontSize: 20 
+                    }
+                }]
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: 'rgb(255, 99, 132)',
+                        fontColor: "#000080",
+                    }
+                }
+            }
+        }
+    });
+}
+
+    $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_dates").daterangepicker({
+            autoUpdateInput:true,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                'Compte actuel': [moment().startOf('month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').format('20-MM-YYYY')],
+                     'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').subtract(1, 'month').format('20-MM-YYYY')],
+          
+               // 'Compte précédent': [moment().subtract(1, 'month').subtract(10, 'days'), moment().subtract(1, 'month').endOf('month').subtract(11, 'days')]
+                
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_interval_date_extra').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+    });
+
+
+$(document).ready(function () {
+
+  //$("select#form_user").css({"title": "Recherche"});
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_matricule').select2({matcher: select2matchCustomUser});
+    $('select#form_operateur').select2({matcher: select2matchCustomUser});
+    $('select#form_equipe').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+</script>
+
+{% endblock %}

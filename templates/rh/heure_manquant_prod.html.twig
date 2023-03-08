@@ -1,0 +1,384 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Absense imprévu{% endblock %}
+
+{% block pageTitle %}Absense imprévu{% endblock %}
+{% block body %}
+
+<div class="container">    
+    <div class="row" >
+            <div class="col-md-12 col-lg-12" >
+                <div class="card">
+                    <div class="col-lg-6 col-md-6">
+                        <div class="card-body">
+                            {% for message in app.flashes('danger') %}
+                                <div class="alert alert-danger">
+                                    <i class="fa fa-info-circle"></i> {{ message }}
+                                </div>
+                            {% endfor %}
+                                {% form_theme form 'form-theme.html.twig' %}
+                                    {{ form_start(form) }}
+                                    {{ form_errors(form) }}
+                                    <div class="form-group">
+                                        {{ form_errors(form.matricule) }}
+                                        {{ form_row(form.matricule, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_errors(form.equipe) }}
+                                        {{ form_row(form.equipe, {'attr': {'class': 'form-control'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_errors(form.dates) }}
+                                        {{ form_row(form.dates, {'attr': {'class': 'form-control','readonly':'readonly'}}) }}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_errors(form.dates) }}
+                                        {{ form_row(form.signe)}}
+                                    </div>
+                                    <div class="form-group">
+                                        {{ form_errors(form.dates) }}
+                                        {{ form_row(form.heure_sortie) }}
+                                    </div>
+                                   
+                                    <button id="btn_click" type="submit" class="btn btn-primary">
+                                        <span class="fa fa-save"></span> Valider
+                                    </button>
+                                {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+           
+    </div>
+</div>
+<br/>
+{#{dump(absence_frequent_par_semaines)}#}
+<div class="col-lg-12 col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                                        
+                                        </div>
+                                        <div class="form-group">
+                                                        <div class="table-responsive">
+                                                            <div class="form-group">
+                                                                <table class="table">
+                                                                    <thead style="background:#4272d7;color:#fff;">
+                                                                    
+                                                                        <tr>
+                                                                            <th>Matricule</th>
+                                                                            <th>Nom</th>
+                                                                            <th>Prénom</th>
+                                                                            <th>Equipe</th>
+                                                                            <th>Date</th>
+                                                                            <th>Jour</th>
+                                                                            <th>Heure de sortie</th>
+                                                                            <th>Heure manquant</th>
+                                                                            
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody> 
+                                                                     {% for key, user in data %}
+                                                                     <tr>
+                                                                     <td><strong>{{ key }}</strong></td>
+                                                                        <td><strong>{{ user.nom|e }}</strong></td>
+                                                                        <td><strong>{{ user.prenom|e }}</strong></td>
+                                                                        
+                                                                        <td>
+                                                                            {% if user.equipe==1 %}
+                                                                                    <span style="color:black"><strong>Matin</strong></span>
+                                                                            {% else %}
+                                                                                   <span style="color:black"><strong>APM</strong></span>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                        <td>
+                                                                        {% for key2,value2 in user.date %}
+                                                                             <span style="color:black"><strong>{{ value2|date("d/m/Y") }}</strong></span>
+                                                                             <br/>
+                                                                         {% endfor %}
+                                                                        </td>
+                                                                     <td>
+                                                                     
+                                                                            {% for key2,value2 in user.jour %}
+                                                                                        
+                                                                                            {% if value2=='Monday'  %}
+                                                                                                <span style="color:black"><strong>Lundi</strong></span>&nbsp
+                                                                                            {% elseif value2=='Tuesday'  %}
+                                                                                                <span style="color:black"><strong>Mardi</strong></span>&nbsp
+                                                                                            {% elseif value2=='Wednesday' %}
+                                                                                                <span style="color:black"><strong>Mercredi</strong></span>&nbsp
+                                                                                            {% elseif value2=='Thursday' %}
+                                                                                                <span style="color:black"><strong>Jeudi</strong></span>&nbsp
+                                                                                            {% elseif value2=='Friday' %}
+                                                                                                <span style="color:black"><strong>Vendredi</strong></span>&nbsp
+                                                                                            {% elseif value2=='Saturday' %}
+                                                                                               <span style="color:black"><strong>Samedi</strong></span>&nbsp
+                                                                                            {% elseif value2=='Sunday' %}
+                                                                                                <span style="color:black"><strong>Dimanche</strong></span>&nbsp
+                                                                                            {% endif %}
+                                                                                            <br/>
+                                                                                    
+                                                                            {% endfor %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% for key2,value2 in user.heure_sortie %}
+                                                                             <span style="color:black"><strong>{{ value2 }}</strong></span>
+                                                                             <br/>
+                                                                         {% endfor %}
+                                                                    </td>
+                                                                    <td>
+                                                                        {% for key2,value2 in user.heure_manquant %}
+                                                                             <span style="color:black"><strong>{{ value2 }}</strong></span>
+                                                                             <br/>
+                                                                         {% endfor %}
+                                                                        </td>
+                                                                    </tr>
+                                                                    {% endfor %}
+
+                                                                    
+                                                                    </tbody>
+                                                            </table>
+                                                        </div>
+
+                                        </div>
+                                        
+                                      <!--  <table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Nom et prénom(s)</th>
+                                    <th>Fonction</th>
+                                    <th>Date d'absence</th>
+                                    <th>Nombre de jours d'absence</th>
+                                </tr>
+                            </thead>
+	                         <tbody> 
+	                         	
+	                        </tbody>
+                    </table>-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+    <script>
+
+$(document).ready(function () {
+
+  //$("select#form_user").css({"title": "Recherche"});
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_matricule').select2({matcher: select2matchCustomUser});
+    $('select#form_equipe').select2({matcher: select2matchCustomUser});
+    $('select.signe').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+
+
+        $(document).ready(function(){
+            var DatePickerLocal = {
+                "direction": "ltr",
+                "format": "DD/MM/YYYY",
+                "separator": " -",
+                "applyLabel": "Appliquer",
+                "cancelLabel": "Annuler",
+                "fromLabel": "Da",
+                "toLabel": "A",
+                "customRangeLabel": "Plage personnalisée",
+                "daysOfWeek": [
+                    "Di",
+                    "Lu",
+                    "Ma",
+                    "Me",
+                    "Jeu",
+                    "Ve",
+                    "Sa"
+                ],
+                "monthNames": [
+                    "Janvier",
+                    "Février",
+                    "Mars",
+                    "Avril",
+                    "Mai",
+                    "Juin",
+                    "Juillet",
+                    "Août",
+                    "Septembre",
+                    "Octobre",
+                    "Novembre",
+                    "Décembre"
+                ],
+                "firstDay": 1
+            };
+            $("#form_Date").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker: true,
+                locale:{
+                    
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+              
+            });
+            
+            $('#form_Date').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD/MM/YYYY'));
+            });
+            
+            $("#form_dateFinM").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker: true,
+                locale:{
+                    
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+              
+            });
+            
+            $("#form_dateLicenciement").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker: true,
+                locale:{
+                    
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+              
+            });
+            
+            $('#form_dateFinM').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('DD-MM-YYYY'));
+            });
+        });
+
+    
+ $(document).ready(function(){
+        var DatePickerLocal = {
+            "direction": "ltr",
+            "format": "DD/MM/YYYY",
+            "separator": " -",
+            "applyLabel": "Appliquer",
+            "cancelLabel": "Annuler",
+            "fromLabel": "Da",
+            "toLabel": "A",
+            "customRangeLabel": "Plage personnalisée",
+            "daysOfWeek": [
+                "Di",
+                "Lu",
+                "Ma",
+                "Me",
+                "Jeu",
+                "Ve",
+                "Sa"
+            ],
+            "monthNames": [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre"
+            ],
+            "firstDay": 1,
+        };
+        $("#form_date").daterangepicker({
+            autoUpdateInput:false,
+            ranges: {
+                'Aujourd\'hui': [moment(), moment()],
+                'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                //'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                //'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                //'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                //'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                //'Compte actuel': [moment().startOf('month').subtract(10, 'days'), moment().endOf('month').subtract(11, 'days')],
+                //'Compte précédent': [moment().startOf('month').subtract(10, 'days').subtract(1, 'month'), moment().endOf('month').subtract(11, 'days').subtract(1, 'month')],
+               // 'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(10, 'days'), moment().endOf('month').subtract(1, 'month').subtract(10, 'days')],
+            },
+            locale:{
+                format: "DD/MM/YYYY",
+                separator: " - ",
+                applyLabel: "Appliquer",
+                cancelLabel: "Annuler",
+                fromLabel: "Da",
+                toLabel: "A",
+                customRangeLabel: "Plage personnalisée",
+                daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                firstDay: 1
+            },
+        });
+            
+        $('#form_dates').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD-MM-YYYY') + ' - ' + picker.endDate.format('DD-MM-YYYY'));
+        });
+    });
+
+
+ $('.fonction').select2({
+                multiple: true
+            });
+
+            $('.matricule').select2();
+            $('.signe').select2();
+            $('.nombre').select2();
+ 
+$('#form_dates').daterangepicker({
+    locale: {
+            format: 'DD-MM-YYYY'
+            }
+});
+
+
+
+   
+    </script>
+    
+{% endblock %}

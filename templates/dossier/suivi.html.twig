@@ -1,0 +1,90 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Suivi{% endblock %}
+{% block pageTitle %}Suivi{% endblock %}
+{% block body %}
+<div class="col-lg-12 col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="form-group">
+                    {% if(type_pointage!=1) %}
+                        <span style="font-size:17px!important;font-weight: 700;">Effectif après midi:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{effectif}}</span>
+                    {% else %}
+                        <span style="font-size:17px!important;font-weight: 700;">Effectif matin:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{effectif}}</span>
+                    {% endif %}
+                       <br/> 
+                    <span style="font-size:17px!important;font-weight: 700;">Total equipe 1:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{nb_equipe_one}}</span>
+                     <br/> 
+                        <span style="font-size:17px!important;font-weight: 700;">Total equipe 2:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{nb_equipe_two}}</span>
+                      
+                   <br/> 
+                        <span style="font-size:17px!important;font-weight: 700;">Total des personnes inactives :</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{pers_non_travaille}}</span>
+                     <br/>
+                        <span style="font-size:17px!important;font-weight: 700;">Equipe 1 inactives :</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{nb_equipe_one_inactif}}</span>
+                     <br/>
+                        <span style="font-size:17px!important;font-weight: 700;">Equipe 2 inactives :</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{nb_equipe_two_inactif}}</span>
+                     <br/><br/>
+                     {% set countNotEmpty = 0 %}
+                     {% set countNotEmpty_normal = 0 %}
+                     {% for nc in list_pers_not_work %}
+                         {% if nc.description=="Extra" or nc.description=="Extra Matin" or nc.description=="Extra APM" %}
+                                {% set countNotEmpty = countNotEmpty + 1 %}
+                        {% else %}
+                        
+                                {% set countNotEmpty_normal = countNotEmpty_normal + 1 %}
+                        {% endif %}
+                     {% endfor %}
+                        <table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule des personnes inactives</th>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Equipe</th>
+                                    <th>Type de pointage actuel</th>
+                                    <th>Heure dernière prod</th>
+                                </tr>
+                            </thead>
+	                         <tbody> 
+                               	{% for x in list_pers_not_work %}
+	                            <tr>
+                                    <td>{{x.id_personnel}}</td>
+                                    <td>{{x.nom}}</td>
+                                    <td>{{x.prenom}}</td>
+                                    <td>{{x.id_equipe_tache_operateur}}</td>
+                                    <td>{{x.description}}</td>
+                                    <td>{{x.heure_fin}}</td>
+                                </tr>
+                                {% endfor %}
+	                        </tbody>
+                    </table>
+                    <div style="text-align:end">
+                        <span style="font-size:17px!important;font-weight: 700;">Extra:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{ countNotEmpty }}</span>
+                        <br/>
+                        <span style="font-size:17px!important;font-weight: 700;">Prod normal:</span> <span style="font-size:17px!important;font-weight: 700;color:red"> {{ countNotEmpty_normal }}</span>
+                      
+                     </div>
+                    
+                   
+                        </div><table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Effectif</th>
+                                    <th>Nom dossier</th>
+                                </tr>
+                            </thead>
+	                         <tbody> 
+                             	{% for tabl_dossier in dossier %}
+	                            <tr>
+                                    <td>{{tabl_dossier.nb_dossier}}</td>
+                                    <td>{{tabl_dossier.nom_dossier}}</td>
+                                </tr>
+	                            {% endfor %}
+	                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Transmission{% endblock %}
+
+{% block pageTitle %}
+    <u>Objet&nbsp;:</u> {{messages.getObjet()}}<br>
+    <u>Dossier&nbsp;:</u>
+    {% if messages.getDossier() %}
+        <a href="{{ url('navette_consulter_pour_dossiers', {id: messages.getDossier().getId()}) }}"
+            title="Cliquer ici pour voir les navettes de ce dossier"
+        >
+            {{messages.getDossier().getNomDossier()}}
+        </a>
+    {% else %}
+        Non indiqué
+    {% endif %}
+
+{% endblock %}
+{% block body %}
+<div class="col-lg-8 col-md-8">
+    <div class="card card-default">
+        <div class="card-header" style="color:black">
+            <h5>
+        <a href="{{ url('navette_consulter_pour_dossiers', {id: messages.getDossier().getId()}) }}"
+            title="Cliquer ici pour voir les navettes de ce dossier"
+        >
+                <i class="fas fa-folder"></i> {{messages.getDossier().getNomDossier()}}
+                </a>
+            </h5>
+            <b>Objet&nbsp;:</b> {{messages.getObjet()}}<br>
+            <b>Envoyé le&nbsp;:</b> {{messages.getDateEnvoie()|date("d/m/Y H:i:s")}}<br>
+            <b>De&nbsp;:</b> <i class="fas fa-user"></i> {{ allUsers[messages.getExpediteur()]['login']|title }} ({{ allUsers[messages.getExpediteur()]['nom_fonction']|title }})<br>
+            <b>À&nbsp;:</b>
+            {% for d in messages.getDestinataires() %}
+                {% set rD = d|replace({"|":""})%}
+                <i class="fas fa-user"></i> {{ allUsers[rD]['login']|title }} ({{ allUsers[rD]['nom_fonction']|title }})
+            {% endfor %}
+            <br><br>
+            {% if app.user.getUserDetails()['id_personnel'] != messages.getExpediteur() %}
+            <br>
+                <a href="{{url('transmission_envoie')}}?replyTo={{messages.getId()}}" class="btn btn-outline-primary">
+                    <span class="fa fa-send"></span> Répondre
+                </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {{messages.getContenu()|raw}}
+        </div>
+    </div>
+</div>
+<br>
+<div class="col-lg-4 col-md-4">
+    <div class="card card-default">
+        <div class="card-header">
+            <i class="fas fa-file"></i> Pièce Jointe
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                {% for d in messages.getPieces() %}
+                    <li class="list-group-item list-group-item-light">
+                        {{ d.getNomOrigine() }} 
+                        <a href="{{url('transmission_download_piece', {id:d.getId()})}}" title="Télécharger ce fichier">
+                            <i class="fas fa-download"></i> 
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+                <hr size="1">
+{%for data in messages.getTransmissions() %}
+    <div class="col-lg-8 col-md-8">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <b>De&nbsp;:</b> <i class="fas fa-user"></i> {{ allUsers[data.getExpediteur()]['login']|title }} ({{ allUsers[data.getExpediteur()]['nom_fonction']|title }})<br>
+                <b>Envoyé le&nbsp;:</b> {{data.getDateEnvoie()|date("d/m/Y H:i:s")}}<br>
+                <b>Objet&nbsp;:</b> {{ data.getObjet()}}
+            </div>
+            <div class="card-body">
+                {{data.getContenu()|raw}}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4">
+        <div class="card card-default">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-file"></i> Pièce Jointe
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for d in data.getPieces() %}
+                        <li class="list-group-item list-group-item-light">
+                            {{ d.getNomOrigine() }} 
+                            <a href="{{url('transmission_download_piece', {id:d.getId()})}}" title="Télécharger ce fichier">
+                                <i class="fas fa-download"></i> 
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{%endfor%}
+
+{% endblock %}

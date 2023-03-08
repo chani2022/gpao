@@ -1,0 +1,150 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Evolution personnel{% endblock %}
+{% block pageTitle %}Evolution personnel{% endblock %}
+
+
+{% block body %}
+
+
+<div class="container">
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="row">
+                <div class="col-md-6" >
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="card">
+                            <div class="card-body">
+                               
+                                {{form_start(form)}}
+                                  <div class="form-group">
+                                      {{ form_row(form.user, {'attr': {'class': 'form-control'}}) }}
+                                  </div>
+                                  <div class="form-group">
+                                      {{ form_row(form.user, {'attr': {'class': 'test'}}) }}
+                                  </div>
+                                  <button type="submit" class="btn btn-primary">
+                                    <span class="fa fa-eye"></span> Afficher
+                                  </button>
+                                {{ form_end(form) }}
+                                
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+        </div>
+      </div>             
+    </div>
+</div>
+
+
+    <div class="card-deck">
+        <div class="container-fluid gedf-wrapper">
+            <div class="row" id="places">
+              {% for dossierName, data in datas %}
+                <div class="col-md-12" >
+                <br/>
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="card">
+                            <div class="card-body">
+                                <canvas class="test" id="{{dossierName}}" width="400" height="400"></canvas>
+                                <!--<canvas id="chart"></canvas>-->
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>  
+              {% endfor %} 
+        </div>
+      </div>             
+    </div>
+
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+
+
+var data = {{datas|json_encode()|raw}};
+
+for(var dossier in data){
+    var ctx = document.getElementById(dossier);
+    var dataChart = {
+      labels: {{labels|json_encode()|raw}},
+      datasets: null
+    };   
+    var datasets = [];
+    for(etapeTravail in data[dossier]){
+      var clr = "rgba("+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", "+Math.round(Math.random() * (255 - 1) + 1) +", 1)";        
+      var obj = {
+            label: etapeTravail,
+            data: data[dossier][etapeTravail]["vitesse_y"],
+            backgroundColor: clr,
+            borderColor: clr,
+            borderWidth: 3,
+            fill: false
+     };
+     datasets.push(obj);
+   }
+
+   dataChart.datasets = datasets;
+
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: dataChart,
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                    scaleLabel: {
+                        display: true,
+                        labelString: dossier,
+                        fontSize: 20 
+                    }
+                }]
+            }
+        }
+    });
+}
+
+            
+ $(document).ready(function () {
+
+  //$("select#form_user").css({"title": "Recherche"});
+
+    /*au changement du champs user on met à jour l'affichage des champs*/
+ 
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_user').select2({matcher: select2matchCustomUser});
+    /*initialisation de 'laffichage des champs*/
+ 
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+  
+ 
+
+</script>
+{% endblock %}

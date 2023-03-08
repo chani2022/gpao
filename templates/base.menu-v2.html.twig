@@ -1,0 +1,63 @@
+
+<div class="main-menu-area mg-tb-40">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <ul class="nav nav-tabs notika-menu-wrap menu-it-icon-pro">
+                        {% set hasSub = [] %}
+                        
+                        {% set i = 0 %}
+                        {% set nbActif = 0 %}
+                        
+                        {% for mainMenu in menus %}
+                            {% set active = "" %}
+                            {# raha tsy manana acces #}
+                            {% if mainMenu.roles|length > 0 and app.user.roles[0] not in mainMenu.roles  %}
+                                <li>
+                                    <i class="{{mainMenu.icon}}"></i> {{ mainMenu.name }}
+                                </li>
+                            {% else %}
+                                
+                                {% for child in mainMenu.child %}
+                                    {% if child.routes!="" and child.routes == ROUTES_ACTIVE %}
+                                        {% set active = "active" %}
+                                        {% set nbActif = i %}
+                                    {% endif %}
+                                {% endfor %}
+                                <li class="{{active}}">
+                                    <a data-toggle="tab" href="#menu{{ i }}"><i class="{{mainMenu.icon}}"></i> {{ mainMenu.name }}</a>
+                                </li>
+                            {% endif %}
+                            {% set i = i+1 %}
+                        {% endfor %}
+                    </ul>
+                    <div class="tab-content custom-menu-content">
+                        {% set i = 0 %}
+                        {% for mainMenu in menus %}
+                            <div id="menu{{i}}" 
+                                {% if nbActif==i %}
+                                    class="tab-pane in active notika-tab-menu-bg animated flipInX"
+                                {% else %}
+                                    class="tab-pane notika-tab-menu-bg animated flipInX"
+                                {% endif %}
+                            >
+                                <ul class="notika-main-menu-dropdown">
+                                    {% for child in mainMenu.child %}
+                                        <li
+                                        {% if child.routes!="" and child.routes == ROUTES_ACTIVE %}
+                                            class="notika-menu-active"
+                                        {% endif %}
+                                            >
+                                            <a href="{{url(child.routes)}}">{{ child.name }}</a>
+                                        </li>
+                                        {% endfor %}
+
+                                </ul>
+                            </div>
+                            {% set i = i+1 %}
+                        {% endfor %}
+                     </div>
+                </div>
+            </div>
+        </div>
+</div>

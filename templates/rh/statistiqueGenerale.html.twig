@@ -1,0 +1,319 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Statistique Generale{% endblock %}
+{% block style %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}
+{% block pageTitle %} Tableau de bord {% endblock %}
+
+{% block body %}
+
+
+<div class="container">
+
+	<div class="card gedf-card">
+	    <div class="card-header">
+			<form class="form-inline" name="option">
+			  <div class="form-group mx-sm-3 mb-2">
+			    <select class="form-control" name="actif">
+		            <option value="Oui">Actif</option>
+		            <option value="Non">Inactif</option>
+		            <option value="other">Les 2 </option>
+		        </select>
+		        &nbsp;
+		        <input class="btn btn-primary" type="submit" value="afficher"/>
+			  </div>
+			  
+			</form>	        
+	    </div>
+	</div>
+	       
+<div class="card-deck">
+
+
+	<div class="container-fluid gedf-wrapper">
+        <div class="row">
+            <div class="col-md-6">
+            <br/>
+			    <div class="card">
+                    <div class="card-body">
+                        <canvas id="nom_fonction" width="200" height="200" class="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+             <br/>
+			    <div class="card">
+                    <div class="card-body">
+                        <canvas id="date_embauche" width="200" height="200" class="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        	<div class="col-md-6">
+        		<br/>
+        	</div>
+        	<div class="col-md-6">
+        		<br/>
+        	</div>
+            <div class="col-md-6">
+			    <div class="card">
+                    <div class="card-body">
+                        <canvas id="sexe" width="200" height="200" class="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+			    <div class="card">
+                    <div class="card-body">
+                        <canvas id="situation_familiale" width="200" height="200" class="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+                
+                
+</div>
+
+</div>
+
+
+
+
+
+
+
+
+{% endblock %}
+{% block javascripts %}
+    <script>
+        $(function(){
+           /**
+             * statistique absence
+             */
+            var fonction = document.getElementById('nom_fonction');
+            var annee = document.getElementById('date_embauche');
+            var sexe = document.getElementById('sexe');
+            var situation = document.getElementById('situation_familiale');
+            /**
+            var options = {
+                    type: null,
+                    data: {
+                        labels: null,
+                        datasets: [{
+                            label: null,
+                            data: null,
+                            fill: false,
+                            
+                            borderColor: [
+                                'rgba(0, 128, 255, 1)',    
+                            ],
+                            borderWidth: 3,
+                            pointBorderWidth: 2,
+                            pointBorderColor: 'rgba(0, 0, 0, 1)',
+                            lineTension: 0.3,
+                            pointBorderWidth: 2
+                            
+                        }]
+                    }
+                };
+            **/
+            var chart_fonction = new Chart(fonction,{
+                type:'line'
+            });
+             
+            var chart_annee = new Chart(annee, { 
+                type:'bar'
+             });
+             
+             var chart_sexe = new Chart(sexe, { 
+                type:'line'
+             });
+             var chart_situation = new Chart(situation, { 
+                type:'pie'
+             });
+             
+           
+            $('form[name="option"]').submit(function(e){
+                e.preventDefault();
+                var donnee = {
+                  actif: $('select[name="actif"]').val(),
+                };
+                
+                $.ajax({
+                    url: '{{ path('statistique_generale') }}',
+                    type:'get',
+                    dataType:'json',
+                    data: donnee,
+                    
+                    success: function(data){
+                        console.log(data);
+                        for(var obj of data){
+                            for(var key in obj){
+                                
+                                var options = {
+                                    
+                                    type: 'line',
+                                    data: {
+                                        labels: data.x,
+                                        datasets: [{
+                                            label: 'absence personnel',
+                                            data: data.y,
+                                            fill: false,
+                                            
+                                            borderWidth: 3,
+                                            pointBorderWidth: 2,
+                                            pointBorderColor: 'rgba(0, 0, 0, 1)',
+                                            lineTension: 0.3,
+                                            pointBorderWidth: 2
+                                        }]
+                                    },
+                                    options: {
+                                        plugins: {
+                                                datalabels: {
+                                                    color: '#00ff',
+                                                    textAlign: 'center',
+                                                    font: {
+                                                        lineHeight: 1.6
+                                                    },
+                                                    formatter: function(value, ctx) {
+                                                        return ctx.chart.data.labels[ctx.dataIndex] + '\n' + value + '%';
+                                                    }
+                                                }
+                                            },
+                                    }
+                                }
+                                
+                                if(key !== undefined){
+                                    if(key == "nom_fonction"){
+                                        chart_fonction.destroy();
+                                        var bgColors = [];
+                                        var bgFinal = [];
+                                        for(var i=0; i<obj[key]["y"].length; i++){
+                                            var tab_rgb = [];
+                                            for(var j=0; j<3; j++){
+                                                var nbRgb = Math.floor(Math.random() * (255-0+1)) + 0;
+                                                tab_rgb.push(nbRgb);
+                                            }
+                                            bgColors.push(tab_rgb);
+                                        }
+                                        for(var i=0; i<bgColors.length; i++){
+                                            var strRgb = "rgba("+bgColors[i].join()+", 1)";
+                                            bgFinal.push(strRgb);
+                                        }
+                                        options.options = {
+                                            title: {
+                                                display: true,
+                                                text: 'Fonction ...'
+                                              },
+                                              
+                                              legend: {
+                                                labels: {
+                                                  /* here one can adjust the legend's labels, if required */
+                                                  // generateLabels: function(chart) {}
+                                                }
+                                              }
+                                        };
+                                        options.data.datasets[0]["fill"] = true;
+                                        options.data.datasets[0]["pointBorderColor"] = null;
+                                        options.type = "doughnut";
+                                        options.data.labels = obj[key]["x"];
+                                        options.data.datasets[0]["label"] = key;
+                                        options.data.datasets[0]["data"] = obj[key]["y"];
+                                        //options.data.datasets[0]["backgroundColor"] = 'rgba(0, 128, 255, 1)';
+                                        options.data.datasets[0]["backgroundColor"] = bgFinal;
+                                        chart_fonction = new Chart(fonction, options);
+                                    }
+                                    else if(key == "date_embauche"){
+                                        chart_annee.destroy();
+                                        options.options = {
+                                            title: {
+                                                display: true,
+                                                text: 'Date d\'embauche ...'
+                                              },
+                                              legend: {
+                                                labels: {
+                                                  /* here one can adjust the legend's labels, if required */
+                                                  // generateLabels: function(chart) {}
+                                                }
+                                              }
+                                        };
+                                        options.type = "bar";
+                                        options.data.labels = obj[key]["x"];
+                                        options.data.datasets[0]["label"] = key;
+                                        options.data.datasets[0]["data"] = obj[key]["y"];
+                                        options.data.datasets[0]["backgroundColor"] = 'rgba(0, 128, 255, 1)';
+                                        chart_annee = new Chart(annee, options);
+                                    }
+                                    else if(key == "sexe"){
+                                        chart_sexe.destroy();
+                                        var bgColor = ["#F7464A", "#46BFBD", "#FDB45C"];
+                                        
+                                        options.options = {
+                                            title: {
+                                                display: true,
+                                                text: 'Sexe ...'
+                                              },
+                                              legend: {
+                                                labels: {
+                                                  /* here one can adjust the legend's labels, if required */
+                                                  // generateLabels: function(chart) {}
+                                                }
+                                              }
+                                        };
+                                        
+                                        options.type = "doughnut";
+                                        options.data.datasets[0]["backgroundColor"] = bgColor;
+                                        options.data.labels = obj[key]["x"];
+                                        options.data.datasets[0]["label"] = key;
+                                        options.data.datasets[0]["data"] = obj[key]["y"];
+                                        
+                                        chart_sexe = new Chart(sexe, options);
+                                    }
+                                    else if(key == "situation_familiale"){
+                                        chart_situation.destroy();
+                                        var bgcolors = ["#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA","#ABCDEF", "#DDDDDD", "#ABCABC"]
+                                        options.options = {
+                                            title: {
+                                                display: true,
+                                                text: 'situation familiale ...'
+                                              },
+                                              legend: {
+                                                labels: {
+                                                  /* here one can adjust the legend's labels, if required */
+                                                  // generateLabels: function(chart) {}
+                                                }
+                                              }
+                                        };
+                                        options.type = "pie";
+                                        options.data.labels = obj[key]["x"];
+                                        options.data.datasets[0]["label"] = key;
+                                        options.data.datasets[0]["data"] = obj[key]["y"];
+                                        options.data.datasets[0]["backgroundColor"] = bgcolors;
+                                        chart_situation = new Chart(situation, options);
+                                    }
+                                    
+                                }
+                                
+                            }
+                        }
+                    },
+                    error: function(data){
+                        console.log("error", data)
+                    },
+                    beforeSend: function(){
+                        
+                        $('#validation_statistique').prop('disabled', true);
+                        console.log($('#validaton_statistique').attr("class"));
+                    }
+                }) ;
+            });
+        });
+        </script>
+{% endblock %}

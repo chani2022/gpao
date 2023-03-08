@@ -1,0 +1,80 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Création récolte{% endblock %}
+
+{% block pageTitle %}Édition Récolte d'heure{% endblock %}
+{% block stylesheets %}
+    <style>
+        .table th{
+            font-size: 8pt;
+        }
+    </style>
+{% endblock %}
+{% block body %}
+<div class="col-lg-12 col-md-12">
+    <div class="card">
+        <div class="card-body">
+            <form method="GET" class="form" action="{{url('recolte_save')}}" name="generation">
+                <div class="form-group col-md-8">
+                    <label>Veuillez choisir une personne</label>
+                    <select class="form-control liste-personnel" name="user" style="width:70%" required="required">  
+                        <option value="">-- Choisir --</option>
+                        {% for d in liste_personnel %}
+                            <option value="{{d.id_personnel}}">{{d.nom}} {{d.prenom}} ({{d.nom_fonction}})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button class="btn btn-success ml-2" type="submit">
+                    <i class="zmdi zmdi-plus-box"></i> Générer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>    
+<div class="col-lg-12 col-md-12">
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive" >
+                <table class="table table-earning">
+                    <thead>
+                        <tr>
+                            <th>Matr.</th>
+                            <th>Prénom</th>
+                            <th>Fonction</th>
+                            <th>Compte</th>
+                            <th>H. travaillées</th>
+                            <th>H. majorées</th>
+                            <th>H. récupérées</th>
+                            <th>H. supp 30%</th>
+                            <th>H. supp 75% (nuit)</th>
+                            <th>H. supp 100% (dimanche)</th>
+                            <th>Total H. supp</th>
+                            <th>Absence congé payé</th>
+                            <th>Absence régulière</th>
+                            <th>Absence irrégulière</th>
+                            <th>Indemnité congé payé</th>
+                            <th>Indemnité repas/transport</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        $(document).ready(function(){
+            
+            $('.liste-personnel').select2({
+                width:'resolve'
+            });
+        });
+ 
+    </script>
+{% endblock %}

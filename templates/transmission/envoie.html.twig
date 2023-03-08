@@ -1,0 +1,261 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Transmission{% endblock %}
+
+{% block pageTitle %}<i class="fas fa-edit"></i> Nouveau message{% endblock %}
+{% block body %}
+<div class="container">
+      <div class="row">
+        <div class="col-sm-2 col-lg-6">
+            <div class="card card-default">
+                <div class="card-body">
+                            {% form_theme form 'form-theme.html.twig' %}
+                            {{ form_start(form) }}
+                                {% set valReplyTo = app.request.query.get('replyTo')%}
+                                {% if valReplyTo == "" %}
+                                    {% set valReplyTo =  app.request.request.get('replyTo') %}
+                                {% endif %}
+                                <div id="pieceListe"></div>
+                                <div class="form-group ">
+                                    <label class="">Dossiers concerné</label>
+                                    {% if dossierForReply == "" %}
+                                        <select class="form-control dossiers" name="dossiers">  
+                                            <option value="">-- Choisir --</option>
+                                            {% for d in liste_dossier %}
+                                                <option value="{{d.getId()}}">{{d.getNomDossier()}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% else %}
+                                        <h4><span class="badge bg-primary text-white">{{dossierForReply.getNomDossier()}}<span></h4>
+                                        <input type="hidden" name="dossiers" value="{{dossierForReply.getId()}}">
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-sm btn-dark" type="button" onclick="selectGroupUser('(CP')"><i class="fas fa-users"></i> Séléctionner tous les CP</button>
+                                    <button class="btn btn-sm btn-dark" type="button" onclick="selectGroupUser('(Transmission')"><i class="fas fa-users"></i> Séléctionner tous les Trans</button>
+                                    
+                                </div>
+                                <div class="form-group ">
+                                    <label class="text-danger">Destinataires</label>
+                                    <select class="form-control destinataire" name="destinataires[]" multiple="mulitple" required="">    
+                                    </select>
+                                </div>
+
+                                {% if app.user.userdetails.nom_fonction == "Transmission" or app.user.userdetails.nom_privilege == "superadmin" %}
+                                    
+                                    <div class="form-group">
+                                        <label>Date de récéption réelle</label>
+                                        <input type="text" name="dateReel" id="dateReel" class="form-control" placeholder="" value="">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <input type="checkbox" name="mailClient" value="1"
+                                            {% if app.request.request.get('mailClient') or transObj.getMailClient()%}
+                                            checked="checked"
+                                            {% endif %}
+                                        >
+                                        <label class="text-primary">Mail Client?</label>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <input type="checkbox" name="mailNavette" value="1"
+                                                {% if app.request.request.get('mailNavette') or transObj.getMailNavette()%}
+                                                    checked="checked"
+                                                {% endif %}
+                                        >
+                                        <label class="text-primary">Archiver dans la Navette?</label>
+                                    </div>
+
+                                    {#
+                                    {% if app.user.userdetails.nom_fonction == "Transmission" %}
+                                        <input type="hidden" name="mailNavette" value="1"
+                                        >
+                                    {% else %}
+                                        <div class="form-group">
+                                            <input type="checkbox" name="mailNavette" value="1"
+                                            {% if app.request.request.get('mailNavette') or transObj.getMailNavette()%}
+                                                checked="checked"
+                                            {% endif %}
+                                            >
+                                            <label class="text-primary">Archiver dans la Navette?</label>
+                                        </div>
+                                    {% endif %}
+                                    #}
+                                    
+                                {% endif %}
+                                <div class="form-group">
+                                    {{ form_row(form.objet) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_row(form.contenu) }}
+                                </div>
+                                <div class="form-group">
+                                    <input type="hidden" name="replyTo" value="{{ valReplyTo }}">
+                                    <button type="submit" class="btn btn-secondary">
+                                        <span class="zmdi zmdi-outlook"></span> Envoyer
+                                    </button>
+                                </div>
+                        {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2 col-lg-6">
+            <div class="card card-default">
+                <div class="card-body">
+                        <label>Pièces Jointes</label>
+                        <div class="card card-default" style="height: 650px;">
+                        <form method="post" action="" enctype="multipart/form-data">
+                        <div class="card-body dropzone" id="piece">
+                        <div class="fallback">
+                                <input name="file" type="file" multiple/>
+                        </div>
+                        </div>
+                        </form>
+                        </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    {%if replyTo !=""%}
+        {{ render(controller('App\\Controller\\TransmissionController::loadMessageToReply', {replyTo:replyTo})) }}
+    {%endif%}
+
+{%endblock%}
+{% block javascripts %}
+{{parent()}}
+<script>
+    Dropzone.autoDiscover = false;
+    
+    function selectGroupUser(toSearch){
+            var allOpt = [];
+            $(".destinataire option").each(function(index, value){
+                var content = $(this).text();
+                if (content.indexOf(toSearch)>=0){
+                    allOpt.push($(this).val())
+                }
+            });
+            
+            $(".destinataire").val(allOpt);
+            $(".destinataire").trigger("change");
+        }
+    $(document).ready(function(){
+        $('.destinataire').select2();
+        $('.dossiers').select2();
+        
+        {%if jsDossiers !="" %}
+                {{ jsDossiers|raw }}
+        {%endif%}
+        
+        //chargement des destinataires
+        var gD = $.get(Routing.generate('transmission_load_destinataires'),{},function(data){
+            if (data !=0){
+                $(".destinataire").html(data);
+            }
+        }).always(function(data){
+            {%if jsPredefSelect !="" %}
+                {{ jsPredefSelect|raw }}
+            {%endif%}
+        });
+        
+        
+        
+        var default_text="";
+        $('textarea.message-transmission').summernote({
+            height:350,
+            minHeight:350,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                //['insert', ['link', 'picture', 'video']],
+                ['view', ['codeview', 'help']]
+              ]
+        });
+        
+        initializeDropzone();
+
+            $("#dateReel").daterangepicker({
+                //autoUpdateInput:false,
+                singleDatePicker:true,
+                /*ranges: {
+                    'Aujourd\'hui': [moment(), moment()],
+                    'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                    'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                    'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                    'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },*/
+                locale:{
+                    format: "YYYY-MM-DD",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    //customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                {% if transObj.getDateReelReception() %}
+                    startDate:"{{transObj.getDateReelReception|date('Y-m-d')}}"
+                {% endif %}
+              
+            });
+            
+            $('#dateReel').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD'));
+            });
+    });
+    
+
+ 
+    function initializeDropzone() {
+            var formElement = document.querySelector('#piece');
+            if (!formElement) {
+                return;
+            }
+            var dropzone_default = new Dropzone(formElement, {
+
+                url: Routing.generate('transmission_receive_piece'),
+                maxFiles: 10,
+                dictMaxFilesExceeded: "Vous ne devez envoyer qu'un seul fichier à la fois",
+                dictDefaultMessage: "Veuillez glisser un fichier ici",
+                // maxfilesexceeded: "La taille du fichier ne doit pas dépassé 20Mo",
+                acceptedFiles: 'image/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.txt,.csv',
+                paramName: 'piece',
+                maxFilesize: 100, // in Mb
+                //maxFiles
+                addRemoveLinks: true,
+                init: function() {
+                    this.on("maxfilesexceeded", function(file) {
+                        this.removeFile(file);
+                    });
+                    this.on("addedfile", function(file) {
+                        $('#envoyer').attr('disabled', false);
+                    });
+                    this.on("sending", function(file, xhr, formData) {
+                        formData.append('action','sendPiece');
+                        $('button').attr('disabled', true);
+                    });
+                    this.on("error", function(file, message) {
+                        this.removeFile(file);
+                        $('button').attr('disabled', false);
+                    });
+                    this.on("success", function(file, response) {
+                        
+                        if (response.match('KO') != null) {
+                            alert("Il y a une erreur survenue lors de l'envoi du fichier vers le serveur.");
+                        } else {
+                            $("#pieceListe").append(response);
+                        }
+                        $('button').attr('disabled', false);
+                    });
+                }
+            });
+    }
+</script>
+{% endblock%}

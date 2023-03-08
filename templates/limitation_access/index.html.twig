@@ -1,0 +1,98 @@
+{% extends 'base-home.html.twig' %}
+
+{% block title %}Limitation Accès{% endblock %}
+
+{% block pageTitle %}<i class="fas fa-check"></i> Limitation Accès{% endblock %}
+{% block body %}
+    <div class="col-lg-6 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" action="{{url('index_limitation_access')}}" class="form-inline">
+                    <input type="text" name="keywords" placeholder="Matricule..." class="form-control col-md-8"
+                           value="{{app.request.query.get('keywords')}}">
+                    <button type="submit" class="btn btn-primary ml-2">
+                        Rechercher
+                    </button>
+                </form>
+                <br>
+                <a href="{{ url('edit_limitation_access') }}" class="btn-sm btn-success"><i class="fas fa-plus"></i> Insertion</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12">
+    <br/>
+        <div class="card">
+            <div class="card-header"><h4>Récapitulation</h4></div>
+            <div class="card-body">
+                <div class="row">
+                {% for j,nj in liste_jours %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header"><h4>{{nj}}</h4></div>
+                        <div class="card-body">
+                            {% set total = 0 %}
+                            
+                            {% set incr = 0 %}
+                            {% for lp in liste_type_pointage %}
+                                {% set total_type_p = 0 %}
+                                {% if lp == 1 %}
+                                    <h5>Equipe Matin</h5>
+                                {% else %}
+                                    <h5>Equipe APM</h5>
+                                {% endif %}
+
+                                {% if j in liste_grouped|keys %}
+                                    {% if lp in liste_grouped[j]|keys %}
+                                        {% for u in liste_grouped[j][lp] %}
+                                        {% set total = total + 1 %}
+                                        {% set total_type_p = total_type_p +1 %}
+                                        <span class="badge badge-dark">{{u['id_personnel']}}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <h6>Total: {{total_type_p}}</h6>
+                                <hr>
+                                {% set incr = incr+ 1%}
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer">
+                        <h5>Total: {{total}}</h5>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12">
+    <br/>
+        <div class="card">
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for c in liste %}
+                        <li class="list-group-item list-group-item-light" style="font-size: 12pt;">
+                            <i class="fas fa-user"></i> {{c.id_personnel}} {{c.nom}} {{c.prenom}}
+                            <br>
+                            <span class="text-muted">
+                                Jour de travail autorisé : {{ c.jours_autorisations|transformeJour }}<br>
+                                Date début : {{ c.date_debut|date('d/m/Y') }}
+                            </span>
+                            <br>
+                            <a href="{{ url('edit_limitation_access') }}?edit={{ c.id_limitation_acces }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></a>
+                            <a href="{{ url('edit_limitation_access') }}?delete={{ c.id_limitation_acces }}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+{%endblock%}
+{% block javascripts %}
+    {{parent()}}
+    <script>
+
+    </script>
+{% endblock%}

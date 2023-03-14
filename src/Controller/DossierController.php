@@ -8527,8 +8527,10 @@ class DossierController extends AbstractController
             "equipe" => $equipe_choix
         ]);
     }
-    
 
+    /**
+     * @Security("is_granted('ROLE_ADMIN')")
+     */
     public function fichierHistoriqueModif(Request $request, Connection $connex): Response
     {
         $fichiers = [];
@@ -8639,7 +8641,9 @@ class DossierController extends AbstractController
             "info_modif" => $info_modif
         ]);
     }
-
+    /**
+     * @Security("is_granted('ROLE_ADMIN')")
+     */
     public function attributionDossier(Request $request, Connection $connex)
     {
         $attributionDossier = new AttributionDossier($connex);

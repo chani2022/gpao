@@ -2638,16 +2638,16 @@ class RhController extends AbstractController
         ]);
     }
     /**
+     * @Security("is_granted('ROLE_ADMIN')")
+     */
     public function gestionDemande(Request $request, Connection $connex, SessionInterface $session)
     {
-        $searchActive = false;
         $isModif = false;
 
         $demande = new DemandeSupplementaire($connex);
 
         $id_demande = $request->query->get('id');
         $date_value = '';
-        // $matricule = $id_demande;
         $heure_debut_value = '';
         $heure_fin_value = '';
         $etat_validation_value = '';
@@ -2655,115 +2655,91 @@ class RhController extends AbstractController
 
         $sqlDemande = $demande->Get([
             "demande_supplementaire.*",
-        
+
         ]);
-        if (!$request->query->get('slug')) {
-            /**
-     * lors d'un insertion, on enleve les sessions
-     *
-                $session->remove("plage_date");
-                $session->remove('matricule');
+        /**
+         * id_demande existe, càd update
+         */
+        if ($id_demande) {
+            $isModif = true;
+            $pers_data = $demande->Get([
+                "demande_supplementaire.*"
+            ])->where('id_demande_supplementaire = :id_demande')
+                ->setParameter('id_demande', $id_demande)
+                ->execute()->fetch();
+
+            $date_value = $pers_data["date_suplementaire"];
+            $heure_debut_value = $pers_data["heure_debut_supplementaire"];
+            $heure_fin_value = $pers_data["heure_fin_supplementaire"];
+            $etat_validation_value = $pers_data["etat_validation"];
+            $id_personnel_value = $pers_data["id_personnel"];
         }
         /**
-     * si session plage_date et matricule existe, donc il y a une recherche qui est activée
-     *
-        if ($session->get('plage_date') or $session->get('matricule')){
-
-            $id_personnel_value = $session->get('matricule');
-            $matricule_search= $session->get('matricule');
+         * si session plage_date ou matricule existe, donc il y a une recherche qui est activé
+         **/
+        if ($session->get('plage_date') or $session->get('matricule')) {
+            /**
+             * si on fait une recherche
+             */
+            if ($request->query->get('slug') == "search") {
+                $session->set('plage_date', $request->request->get('date'));
+                $session->set('matricule', $request->request->get('matricule'));
+            }
+            $matricule_search = $session->get('matricule');
             $dates = $session->get('plage_date');
+            if ($dates) {
+                if ($matricule_search && $dates) {
+                    $dates = explode(' - ', $dates);
 
-            if ($matricule_search && $dates) {
-                        
-                $dates = explode(' - ', $dates);
-                $sqlDemande->where('demande_supplementaire.id_personnel = :id_personnel')
+                    $sqlDemande->where('demande_supplementaire.id_personnel = :id_personnel')
                         ->setParameter('id_personnel', $matricule_search)
                         ->andWhere('date_suplementaire BETWEEN :dateD AND :dateF')
                         ->setParameter('dateD', $dates[0])
                         ->setParameter('dateF', $dates[1]);
-            } else if ($matricule_search) {
-                $sqlDemande->where('personnel.id_personnel = :id_personnel')
+                } else if ($matricule_search) {
+                    $sqlDemande->where('personnel.id_personnel = :id_personnel')
                         ->setParameter('id_personnel', $matricule_search);
-            } else {
-                $dates = explode(' - ', $dates);
-                $sqlDemande
+                } else {
+                    $dates = explode(' - ', $dates);
+                    $sqlDemande
                         ->where('date_suplementaire BETWEEN :dateD AND :dateF')
                         ->setParameter('dateD', $dates[0])
                         ->setParameter('dateF', $dates[1]);
-            }
-
-            /**
-     * id_demande existe, càd update
-     *
-            if ($id_demande) {
-                $isModif = true;
-                $pers_data = $demande->Get([
-                    "demande_supplementaire.*"
-                ])->where('id_demande_supplementaire = :id_demande')
-                                        ->setParameter('id_demande', $id_demande)
-                                        ->execute()->fetch();
-                
-                $date_value = $pers_data["date_suplementaire"];
-                $heure_debut_value = $pers_data["heure_debut_supplementaire"];
-                $heure_fin_value = $pers_data["heure_fin_supplementaire"];
-                $etat_validation_value = $pers_data["etat_validation"];
-                $id_personnel_value = $pers_data["id_personnel"];
+                }
             }
         } else {
-            
-            /**
-     * id_demande existe, càd update
-     *
-            if ($id_demande) {
-                $isModif = true;
-                $pers_data = $sqlDemande->where('id_demande_supplementaire = :id_demande')
-                                        ->setParameter('id_demande', $id_demande)
-                                        ->execute()->fetch();
+            if ($request->query->get('slug') && $request->query->get('slug') == 'search') {
+                $matricule_search = $request->request->get('matricule');
+                $dates = $request->request->get('date');
 
-                $date_value = $pers_data["date_suplementaire"];
-                $heure_debut_value = $pers_data["heure_debut_supplementaire"];
-                $heure_fin_value = $pers_data["heure_fin_supplemtaire"];
-                $etat_validation_value = $pers_data["etat_validation"];
-                $id_personnel_value = $pers_data["id_personnel"];
+                $session->set('plage_date', $dates);
+                $session->set('matricule', $matricule_search);
 
-            } else {
-                /**
-     * search
-     *
-                if ($request->query->get('slug') && $request->query->get('slug') == 'search') {
-                    $searchActive = true;
-                    $matricule_search = $request->request->get('matricule');
-                    $dates = $request->request->get('date');
-                    
-                    $session->set('plage_date', $dates);
-                    $session->set('matricule', $matricule_search);
-                    
-                    if ($matricule_search && $dates) {
-                        
-                        $dates = explode(' - ', $dates);
-                        $sqlDemande->where('personnel.id_personnel = :id_personnel')
-                                ->setParameter('id_personnel', $matricule_search)
-                                ->andWhere('date_suplementaire BETWEEN :dateD AND :dateF')
-                                ->setParameter('dateD', $dates[0])
-                                ->setParameter('dateF', $dates[1]);
-                    } else if ($matricule_search) {
-                        $sqlDemande->where('personnel.id_personnel = :id_personnel')
-                                ->setParameter('id_personnel', $matricule_search);
-                    } else {
-                        $dates = explode(' - ', $dates);
-                        $sqlDemande
-                                ->where('date_suplementaire BETWEEN :dateD AND :dateF')
-                                ->setParameter('dateD', $dates[0])
-                                ->setParameter('dateF', $dates[1]);
-                    }
+                if ($matricule_search && $dates) {
+
+                    $dates = explode(' - ', $dates);
+                    $sqlDemande->where('personnel.id_personnel = :id_personnel')
+                        ->setParameter('id_personnel', $matricule_search)
+                        ->andWhere('date_suplementaire BETWEEN :dateD AND :dateF')
+                        ->setParameter('dateD', $dates[0])
+                        ->setParameter('dateF', $dates[1]);
+                } else if ($matricule_search) {
+                    $sqlDemande->where('personnel.id_personnel = :id_personnel')
+                        ->setParameter('id_personnel', $matricule_search);
+                } else {
+                    $dates = explode(' - ', $dates);
+                    $sqlDemande
+                        ->where('date_suplementaire BETWEEN :dateD AND :dateF')
+                        ->setParameter('dateD', $dates[0])
+                        ->setParameter('dateF', $dates[1]);
                 }
             }
         }
 
         $personnel = new Personnel($connex);
         /**
-     * personnel form select formulaire
-     *
+         * personnel form select formulaire
+         */
         $personnels = $personnel->Get([
             "id_personnel",
             "nom",
@@ -2772,39 +2748,35 @@ class RhController extends AbstractController
             ->andWhere('nom_fonction IN(\'OP 1\',\'OP 2\',\'CORE 1\',\'CORE 2\',\'ACP 1\',\'Transmission\',\'TECH\',\'CP 1\',\'CP 2\')')
             ->orderBy('personnel.id_personnel', 'ASC')
             ->execute()->fetchAll();
-        
-        $pers_choices = [];
-        $users = $personnels;
 
+        $pers_choices = [];
         foreach ($personnels as $pers) {
-            $pers_choices[$pers["id_personnel"]. ' - '.$pers["nom"]. ' '.$pers["prenom"]] = $pers["id_personnel"];
+            $pers_choices[$pers["id_personnel"] . ' - ' . $pers["nom"] . ' ' . $pers["prenom"]] = $pers["id_personnel"];
         }
 
         $formBuilder = $this->createFormBuilder()
-                     ->add('date_sup', TextType::class, [
-                        "attr" => [
-                            "value" => $date_value
-                        ]
-                     ])
-                     ->add('personnel', ChoiceType::class, [
-                        "placeholder" => '-Selectionnez-',
-                        "choices" => $pers_choices,
-                        "attr" => [
-                            "value" => $id_personnel_value
-                        ]
-                        
-                     ])
-                     ->add('hD', TextType::class, [
-                        "attr" => [
-                            "value" => $heure_debut_value
-                        ]
-                     ])
-                     ->add('hF', TextType::class, [
-                        "attr" => [
-                            "value" => $heure_fin_value
-                        ]
-                        ]);
-                    
+            ->add('date_sup', TextType::class, [
+                "attr" => [
+                    "value" => $date_value
+                ]
+            ])
+            ->add('personnel', ChoiceType::class, [
+                "placeholder" => '-Selectionnez-',
+                "choices" => $pers_choices,
+                "data" => $id_personnel_value
+
+            ])
+            ->add('hD', TextType::class, [
+                "attr" => [
+                    "value" => $heure_debut_value
+                ]
+            ])
+            ->add('hF', TextType::class, [
+                "attr" => [
+                    "value" => $heure_fin_value
+                ]
+            ]);
+
         if ($isModif) {
             $formBuilder->add("etat", ChoiceType::class, [
                 "placeholder" => "-Selectionnez-",
@@ -2813,13 +2785,13 @@ class RhController extends AbstractController
                     "Rejeter" => "Rejeter",
                     "En Attente" => "En Attente"
                 ],
-                
+                "data" => $etat_validation_value
             ]);
         }
         $form = $formBuilder->getForm();
 
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted()) {
             $date = $form->get('date_sup')->getData();
             $matricule = $form->get('personnel')->getData();
@@ -2828,7 +2800,7 @@ class RhController extends AbstractController
 
             $heure_debut = new DateTime($heure_debut);
             $heure_fin = new DateTime($heure_fin);
-            
+
 
             if ($heure_fin->getTimestamp() <= $heure_debut->getTimestamp()) {
                 $this->addFlash("danger", "L'heure debut doit être inférieur à l'heure fin ");
@@ -2839,55 +2811,51 @@ class RhController extends AbstractController
                 $this->addFlash("danger", "L'heure debut + 5 heures doit être supérieur ou egale à l'heure fin");
                 return $this->redirectToRoute("app_gestion_demande");
             }
-            
+
             $data = [
                 "date_suplementaire" => $date,
                 "heure_debut_supplementaire" => $heure_debut->sub(new DateInterval("PT5H"))->format("H:i:s"),
                 "heure_fin_supplementaire" => $heure_fin->format("H:i:s"),
                 "id_personnel" => $matricule,
-                "etat_validation" => "Accorder",
+                "etat_validation" => $id_demande ? $form->get('etat')->getData() : "Accorder",
                 "date_envoie" => date('Y-m-d')
             ];
             /**
-     * insertion
-     *
+             * insertion
+             */
             if (!$isModif) {
                 $demande->insertData($data)->execute();
                 /**
-     * on enleve les sessions
-     *
+                 * on enleve les sessions pour pouvoir entrer une autre demande
+                 */
                 $session->remove("plage_date");
                 $session->remove('matricule');
 
                 $this->addFlash("success", "Insertion demande effectué avec success!");
             } else {
                 /**
-     * si modification, on fait une redirection
-     *
-                $demande->updateData($data)->execute();
+                 * si modification, on fait une redirection
+                 */
+                $demande->updateData($data, ["id_demande_supplementaire" => $id_demande])->execute();
                 $this->addFlash("success", "Modification demande effectué avec success!");
-                return $this->redirectToRoute("app_gestion_demande");
             }
-
+            return $this->redirectToRoute("app_gestion_demande");
         }
         /**
-     * search not active if session not defined
-     *
+         * search not active if session not defined
+         */
         if (!$session->get('plage_date')) {
             $sqlDemande->where('date_suplementaire = :date')
-                               ->setParameter('date', date('Y-m-d'));
+                ->setParameter('date', date('Y-m-d'));
         }
-        
-        $demandes = $sqlDemande->execute()
-                               ->fetchAll();
-        // dump($demandes);
+
+        $demandes = $sqlDemande->orderBy('date_suplementaire', 'DESC')
+            ->execute()
+            ->fetchAll();
+
         return $this->render("rh/gestion_heure_suppl.html.twig", [
             "form" => $form->createView(),
             "demandes" => $demandes,
-            "users" => $users,
-            "etat_validation" => $etat_validation_value,
-            "id_personnel" => $id_personnel_value
         ]);
-        return new Response("ok")
-    }**/
+    }
 }

@@ -2675,6 +2675,15 @@ class RhController extends AbstractController
             $id_personnel_value = $pers_data["id_personnel"];
         }
         /**
+         * forcer l'utilisateur à renseigner la date dans le recherche
+         */
+        if ($request->query->get('slug') == "search") {
+            if ($request->request->get('date') == "") {
+                $this->addFlash("error_search", "Veuillez renseigner la date.");
+                return $this->redirectToRoute("app_gestion_demande");
+            }
+        }
+        /**
          * si session plage_date ou matricule existe, donc il y a une recherche qui est activé
          **/
         if ($session->get('plage_date') or $session->get('matricule')) {
@@ -2687,6 +2696,11 @@ class RhController extends AbstractController
             }
             $matricule_search = $session->get('matricule');
             $dates = $session->get('plage_date');
+            /**
+             * permet de vérifier si une insertion est déclenchée,
+             * si $dates est null, donc c'est une insertion
+             * sinon c'est une recherche
+             */
             if ($dates) {
                 if ($matricule_search && $dates) {
                     $dates = explode(' - ', $dates);

@@ -2674,6 +2674,12 @@ class RhController extends AbstractController
             $etat_validation_value = $pers_data["etat_validation"];
             $id_personnel_value = $pers_data["id_personnel"];
         }
+        if ($request->query->get('slug') == "search") {
+            if ($request->request->get('date') == "") {
+                $this->addFlash("error_search", "Veuillez renseigner la date.");
+                return $this->redirectToRoute("app_gestion_demande");
+            }
+        }
         /**
          * si session plage_date ou matricule existe, donc il y a une recherche qui est activé
          **/
@@ -2687,6 +2693,11 @@ class RhController extends AbstractController
             }
             $matricule_search = $session->get('matricule');
             $dates = $session->get('plage_date');
+            /**
+             * permet de vérifier si une insertion est déclenchée,
+             * si $dates est null, donc c'est une insertion
+             * sinon c'est une recherche
+             */
             if ($dates) {
                 if ($matricule_search && $dates) {
                     $dates = explode(' - ', $dates);

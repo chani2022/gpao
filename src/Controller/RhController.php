@@ -2674,6 +2674,12 @@ class RhController extends AbstractController
             $etat_validation_value = $pers_data["etat_validation"];
             $id_personnel_value = $pers_data["id_personnel"];
         }
+        if ($request->query->get('slug') == "search") {
+            if ($request->request->get('date') == "") {
+                $this->addFlash("error_search", "Veuillez renseigner la date.");
+                return $this->redirectToRoute("app_gestion_demande");
+            }
+        }
         /**
          * forcer l'utilisateur à renseigner la date dans le recherche
          */

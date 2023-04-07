@@ -1,224 +1,266 @@
 {% extends 'base-home.html.twig' %}
 
-{% block title %}Transs::Boite de réception{% endblock %}
+{% block title %}Transs::Boite de réception
+{% endblock %}
 {% block stylesheets %}
-    <style>
-        #listeMessage .unread td{
-            font-weight: bold;
-            color: #098ddf;
-        }
-    </style>
+	<style>
+		#listeMessage .unread td {
+			font-weight: bold;
+			color: #098ddf;
+		}
+	</style>
 {% endblock %}
 {% block pageTitle %}
-    <i class="fas fa-comment"></i>Boite de réception <span class="badge badge-secondary">{{nbMsgNonLu}}</span>
+	<i class="fas fa-comment"></i>Boite de réception
+	<span class="badge badge-secondary">{{nbMsgNonLu}}</span>
 {% endblock %}
 {% block body %}
 
 
-    <div class="col-lg-12 col-md-12">
-        <div class="card card-default">
-            <div class="card-body">
+	<div class="col-lg-12 col-md-12">
+		<div class="card card-default">
+			<div class="card-body">
 
-                <h3>Recherche</h3>
-                <hr>
-                <form method="post" action="{{url('transmission_index')}}" class="form-inline">
-                    
-                    <input type="text" name="keywords" placeholder="Recherche...." class="form-control" value="{{app.request.request.get('keywords')}}">
-                    <input type="text" name="date" id="searchDate" class="form-control ml-2" placeholder="Date..." value="">
-                    <input type="checkbox" name="sansReponses" value="1" class="ml-2"
-                        {% if app.request.request.get('sansReponses')%} checked="checked" {% endif %}
-                    >
-                    <label class="ml-2">Sans réponses</label>
-                    <button type="submit" class="btn btn-primary ml-2">
-                        Rechercher
-                    </button>
-                </form>
-            </div>
-        </div>
+				<h3>Recherche</h3>
+				<hr>
+				<form method="post" action="{{url('transmission_index')}}" class="form-inline">
 
-        <div class="alert alert-secondary">
-            <i class="fas fa-info"></i> {{messages|length}} éléments trouvés
-        </div>
-    </div>
+					<input type="text" name="keywords" placeholder="Recherche...." class="form-control" value="{{app.request.request.get('keywords')}}">
+					<input type="text" name="date" id="searchDate" class="form-control ml-2" placeholder="Date..." value="">
+					<input type="checkbox" name="sansReponses" value="1" class="ml-2" {% if app.request.request.get('sansReponses')%} checked="checked" {% endif %}>
+					<label class="ml-2">Sans réponses</label>
+					<button type="submit" class="btn btn-primary ml-2">
+						Rechercher
+					</button>
+				</form>
+			</div>
+		</div>
 
-    <div class="col-lg-12 col-md-12">
-        <a href="#" class="btn btn-secondary btn-sm" id="checkAll"><i class="fas fa-check"></i> Cocher tout</a>
-        <a href="#" class="btn btn-secondary btn-sm" id="unCheckAll"><i class="fas fa-square"></i> Décocher tout</a>
-        <a href="#" class="btn btn-primary btn-sm" id="setRead"><i class="fas fa-ok"></i> Marquer comme lu</a>
-    </div>
-    
-    <div class="col-lg-12 col-md-12">
-        
-        <div class="table-responsive table-responsive-data2">
-            <table class="table table-data2">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Dossier</th>
-                        <th>Objet</th>
-                        <th>de</th>
-                        <th>inséré le</th>
-                        <th>reçu le</th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="listeMessage">
-                    {% for m in messagePaginated %}
-                        {% set Lu = 0 %}
-                        
-                         {% for lec in m.getLectureTransmissions() %}
-                            {% if lec.destinataire == app.user.userdetails['id_personnel'] %}
-                                {% set Lu = 1 %}
-                            {% endif %}
-                         {% endfor %}
-                        
-                        <tr class="tr-shadow {% if Lu == 0 %}unread{%endif%}" style="cursor: pointer;{% if Lu == 0 %}font-weight:bold;{%endif%}"
-                            
-                            >
-                            <td>
-                                <input type="checkbox" name="messageLu[]" value="{{ m.getId() }}" class="form-control marqueLu"/>
+		<div class="alert alert-secondary">
+			<i class="fas fa-info"></i>
+			{{messages|length}}
+			éléments trouvés
+		</div>
+	</div>
 
-                            </td>
-                            <td onclick="readMessage({{m.getId()}})" style="font-weight:bold">
-                                {% if m.getDossier() %}
-                                    {{m.getDossier().getNomDossier()}}
-                                {% else %}
-                                    <i>Non indiqué</i>
-                                {% endif %}<br>
-                                {% if m.getMailClient() == 1%}
-                                    <i class="fas fa-star text-success"></i>
-                                {% endif %}
-                                {% if m.getReponses()|length == 0 and m.getTransmissions()|length == 0%}
-                                    <i class="fas fa-exclamation-circle text-danger"></i>
-                                {% endif %}
-                            </td>
-                            <td onclick="readMessage({{m.getId()}})">{{m.getObjet()}}</td>
-                            <td onclick="readMessage({{m.getId()}})" >
-                                {{allUsers[m.getExpediteur()]['login']|title}}<br>
-                                <span class="text-muted">{{allUsers[m.getExpediteur()]['nom_fonction']|title}}</span>
-                            </td>
-                            <td>{{m.getDateEnvoie()|date("d/m/Y H:i:s")}}</td>
-                            <td>
-                                {% if m.getDateReelReception() %}
-                                    {{m.getDateReelReception()|date("d/m/Y")}}
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if m.getPieces()|length > 0 %}
-                                    <div class="table-data-feature">
-                                        <button class="item" data-toggle="tooltip" data-placement="top" title="Ce message contient un ou plusieurs pièces jointes">
-                                            <i class="zmdi zmdi-attachment-alt"></i>
-                                        </button>
-                                    </div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="table-data-feature">
-                                    <a href="{{url('transmission_read' , {id:m.getId()})}}" class="item" data-toggle="tooltip" data-placement="top" title="Visualiser">
-                                        <i class="zmdi zmdi-view-web"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+	<div class="col-lg-12 col-md-12">
+		<a href="#" class="btn btn-secondary btn-sm" id="checkAll">
+			<i class="fas fa-check"></i>
+			Cocher tout</a>
+		<a href="#" class="btn btn-secondary btn-sm" id="unCheckAll">
+			<i class="fas fa-square"></i>
+			Décocher tout</a>
+		<a href="#" class="btn btn-primary btn-sm" id="setRead">
+			<i class="fas fa-ok"></i>
+			Marquer comme lu</a>
+	</div>
 
-                        <tr class="spacer"></tr>
-                    {% endfor %}
-                    
-                </tbody>
-            </table>
-        </div>
-        <!-- END DATA TABLE -->
-        
-        <div class="navigation pagination justify-content-center">
-            {{ knp_pagination_render(messagePaginated) }}
-        </div>
-        
-    </div>
+	<div class="col-lg-12 col-md-12">
+
+		<div class="table-responsive table-responsive-data2">
+			<table class="table table-data2">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Dossier</th>
+						<th>Objet</th>
+						<th>de</th>
+						<th>inséré le</th>
+						<th>reçu le</th>
+						<th></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody id="listeMessage">
+					{% for m in messagePaginated %}
+						{% set Lu = 0 %}
+
+						{% for lec in m.getLectureTransmissions() %}
+							{% if lec.destinataire == app.user.userdetails['id_personnel'] %}
+								{% set Lu = 1 %}
+							{% endif %}
+						{% endfor %}
+
+						<tr class="tr-shadow {% if Lu == 0 %}unread{%endif%}" style="cursor: pointer;{% if Lu == 0 %}font-weight:bold;{%endif%}">
+							<td>
+								<input type="checkbox" name="messageLu[]" value="{{ m.getId() }}" class="form-control marqueLu"/>
+
+							</td>
+							<td onclick="readMessage({{m.getId()}})" style="font-weight:bold">
+								{% if m.getDossier() %}
+									{{m.getDossier().getNomDossier()}}
+								{% else %}
+									<i>Non indiqué</i>
+								{% endif %}<br>
+								{% if m.getMailClient() == 1%}
+									<i class="fas fa-star text-success"></i>
+								{% endif %}
+								{% if m.getReponses()|length == 0 and m.getTransmissions()|length == 0%}
+									<i class="fas fa-exclamation-circle text-danger"></i>
+								{% endif %}
+							</td>
+							<td onclick="readMessage({{m.getId()}})">{{m.getObjet()}}</td>
+							<td
+								onclick="readMessage({{m.getId()}})">
+								{# verifiez si expediteur #}
+								{% if m.getExpediteur() in allUsers|keys %}
+									{{allUsers[m.getExpediteur()]['login']|title}}<br>
+									<span class="text-muted">{{allUsers[m.getExpediteur()]['nom_fonction']|title}}</span>
+								{% endif %}
+							</td>
+							<td>{{m.getDateEnvoie()|date("d/m/Y H:i:s")}}</td>
+							<td>
+								{% if m.getDateReelReception() %}
+									{{m.getDateReelReception()|date("d/m/Y")}}
+								{% endif %}
+							</td>
+							<td>
+								{% if m.getPieces()|length > 0 %}
+									<div class="table-data-feature">
+										<button class="item" data-toggle="tooltip" data-placement="top" title="Ce message contient un ou plusieurs pièces jointes">
+											<i class="zmdi zmdi-attachment-alt"></i>
+										</button>
+									</div>
+								{% endif %}
+							</td>
+							<td>
+								<div class="table-data-feature">
+									<a href="{{url('transmission_read' , {id:m.getId()})}}" class="item" data-toggle="tooltip" data-placement="top" title="Visualiser">
+										<i class="zmdi zmdi-view-web"></i>
+									</a>
+								</div>
+							</td>
+						</tr>
+
+						<tr class="spacer"></tr>
+					{% endfor %}
+
+				</tbody>
+			</table>
+		</div>
+		<!-- END DATA TABLE -->
+
+		<div class="navigation pagination justify-content-center">
+			{{ knp_pagination_render(messagePaginated) }}
+		</div>
+
+	</div>
 {% endblock %}
 {% block javascripts %}
-    <script>
-        $(document).ready(function(){
+	<script>
+		$(document).ready(function () {
 
-            $("#checkAll").click(function () {
-                //$(".marqueLu").attr("checked",true)
-                $.each($(".marqueLu"), function(i,val){
-                    $(val).attr("checked",true)
-                })
-            });
-            $("#unCheckAll").click(function () {
-                //$(".marqueLu").attr("checked",false)
-                $.each($(".marqueLu"), function(i,val){
-                    $(val).attr("checked",false)
-                })
-            });
+$("#checkAll").click(function () { // $(".marqueLu").attr("checked",true)
+$.each($(".marqueLu"), function (i, val) {
+$(val).attr("checked", true)
+})
+});
+$("#unCheckAll").click(function () { // $(".marqueLu").attr("checked",false)
+$.each($(".marqueLu"), function (i, val) {
+$(val).attr("checked", false)
+})
+});
 
-            $("#setRead").click(function(){
-                $("#setRead").attr("disabled",true)
-                var lu = []
-                $.each($(".marqueLu:checked"), function(i,val){
-                    lu.push($(val).val())
-                })
-                if (lu.length>0){
-                    $.ajax({
-                        method:"POST",
-                        url:Routing.generate('transmission_marquer_lu'),
-                        data:{"ids": lu},
-                        success:function(data){
-                            if (data.length>0){
-                                window.location.reload()
-                            }
-                        },
-                        complete:function(data){
-                            $("#setRead").attr("disabled",false)
-                        },
-                        error:function(){
+$("#setRead").click(function () {
+$("#setRead").attr("disabled", true)
+var lu = []
+$.each($(".marqueLu:checked"), function (i, val) {
+lu.push($(val).val())
+})
+if (lu.length > 0) {
+$.ajax({
+method: "POST",
+url: Routing.generate('transmission_marquer_lu'),
+data: {
+"ids": lu
+},
+success: function (data) {
+if (data.length > 0) {
+window.location.reload()
+}
+},
+complete: function (data) {
+$("#setRead").attr("disabled", false)
+},
+error: function () {}
+});
+}
 
-                        }
-                    });
-                }
-
-            });
+});
 
 
-            $("#searchDate").daterangepicker({
-                
-                ranges: {
-                    'Aujourd\'hui': [moment(), moment()],
-                    'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
-                    'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
-                    'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
-                    'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                },
-                locale:{
-                    format: "DD/MM/YYYY",
-                    separator: " - ",
-                    applyLabel: "Appliquer",
-                    cancelLabel: "Annuler",
-                    fromLabel: "Da",
-                    toLabel: "A",
-                    customRangeLabel: "Plage personnalisée",
-                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
-                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
-                    firstDay: 1
-                },
-                {%if dateDebut != "" %}
-                    startDate: "{{dateDebut}}",
-                    endDate: "{{dateFin}}"
-                {%else%}
-                    autoUpdateInput:false,
-                {%endif%}
-            });
-            
-            $('#searchDate').on('apply.daterangepicker', function(ev, picker) {
-                $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
-            });
-            
-       
-        });
-        function readMessage(id){
-            window.location.href = Routing.generate('transmission_read',{id:id});
-        }
-    </script>
+$("#searchDate").daterangepicker({
+
+ranges: {
+'Aujourd\'hui': [
+moment(), moment()
+],
+'Hier': [
+moment().subtract(1, 'days'),
+moment().subtract(1, 'days')
+],
+'Les 7 jours derniers': [
+moment().subtract(6, 'days'),
+moment()
+],
+'Les 30 jours derniers': [
+moment().subtract(29, 'days'),
+moment()
+],
+'Ce mois-ci': [
+moment().startOf('month'), moment().endOf('month')
+],
+'Le mois dernier': [
+moment().subtract(1, 'month').startOf('month'),
+moment().subtract(1, 'month').endOf('month')
+]
+},
+locale: {
+format: "DD/MM/YYYY",
+separator: " - ",
+applyLabel: "Appliquer",
+cancelLabel: "Annuler",
+fromLabel: "Da",
+toLabel: "A",
+customRangeLabel: "Plage personnalisée",
+daysOfWeek: [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+monthNames: [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+firstDay: 1
+},{% if dateDebut != "" %}startDate : "{{ dateDebut }}",
+endDate : "{{ dateFin }}"
+{% else %}
+autoUpdateInput : false,{% endif %}
+});
+
+$('#searchDate').on('apply.daterangepicker', function (ev, picker) {
+$(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+});
+
+
+});
+function readMessage(id) {
+window.location.href = Routing.generate('transmission_read', {id: id});
+}
+	</script>
 {% endblock %}

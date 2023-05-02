@@ -7,7 +7,7 @@ use App\Model\GPAOModels\DemandeSupplementaire;
 use App\Model\GPAOModels\Personnel;
 use App\Model\GPAOModels\Fonction;
 use App\Model\GPAOModels\Pointage;
-
+use App\Model\GPAOModels\Production;
 use Doctrine\DBAL\Driver\Connection;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use DateInterval;
 use DateTime;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class RhController extends AbstractController
@@ -2867,6 +2868,82 @@ class RhController extends AbstractController
         return $this->render("rh/gestion_heure_suppl.html.twig", [
             "form" => $form->createView(),
             "demandes" => $demandes,
+        ]);
+    }
+    /**
+     * @Security("is_granted('ROLE_RH')")
+     * @Route("/rh/fraude", name="app_rh_fraude")
+     */
+    public function fraude(Request $request, Connection $connex): Response
+    {
+        ini_set('memory_limit', '2048M');
+        set_time_limit(0);
+
+        $data = [];
+        $pointage = new Pointage($connex);
+        $prod = new Production($connex);
+
+        $form = $this->createFormBuilder()
+            ->add('date', TextType::class, [
+                "required" => true
+            ])->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $date = $form->get('date')->getData();
+            $pointages = $pointage->Get([
+                "personnel.id_personnel",
+                "pointage.heure_entre",
+            ])
+                ->where('personnel.nom_fonction IN (\'OP 1\',\'OP 2\')')
+                ->andWhere('date_debut = :date')
+                ->setParameter('date', $date)
+                ->orderBy('personnel.id_personnel', 'ASC')
+                ->execute()
+                ->fetchAll();
+
+            $productions = $prod->Get([
+                "personnel.id_personnel",
+                "production.heure_reel_debut"
+            ])->where("production.date_debut = :date_debut")
+                ->andWhere('personnel.nom_fonction IN (\'OP 1\', \'OP 2\')')
+                ->setParameter("date_debut", $date)
+                ->orderBy('production.heure_debut', 'ASC')
+                ->execute()
+                ->fetchAll();
+            /**
+             * prendre seulement le premier ligne du production qui correspond à son 
+             * premier production de la journée
+             */
+            $premier_ligne_prods = [];
+            foreach ($productions as $production) {
+                if (!array_key_exists($production["id_personnel"], $premier_ligne_prods)) {
+                    $premier_ligne_prods[$production["id_personnel"]] = $production;
+                }
+            }
+
+            foreach ($pointages as $pointage) {
+                foreach ($premier_ligne_prods as $production) {
+                    if ($production["id_personnel"] == $pointage["id_personnel"]) {
+                        $heure_dif_timestamp = strtotime($production["heure_reel_debut"]) - strtotime($pointage["heure_entre"]);
+
+                        if (date("H:i:s", $heure_dif_timestamp) >= "00:30:00") {
+                            if ($pointage["heure_entre"] < $production["heure_reel_debut"]) {
+                                $data[$pointage["id_personnel"]] = [
+                                    "heure_entre" => $pointage["heure_entre"],
+                                    "heure_debut_prod" => $production["heure_reel_debut"],
+                                    "difference" => date("H:i:s", $heure_dif_timestamp)
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $this->render("rh/fraude.html.twig", [
+            "form" => $form->createView(),
+            "data" => $data
         ]);
     }
 }

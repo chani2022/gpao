@@ -2915,7 +2915,7 @@ class RhController extends AbstractController
             $productions = $prod->Get([
                 "personnel.id_personnel",
                 "production.heure_reel_debut"
-            ])->where("production.date_debut = :date_debut")
+            ])->where("production.date_traitement = :date_debut")
                 ->andWhere('personnel.nom_fonction IN (\'OP 1\', \'OP 2\')')
                 ->setParameter("date_debut", $date)
                 ->orderBy('production.heure_debut', 'ASC')

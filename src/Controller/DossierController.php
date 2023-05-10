@@ -7980,6 +7980,7 @@ class DossierController extends AbstractController
         $export = false;
         $statistiques = [];
         $equipe_choix = "";
+        $categorie = "";
         $choices_equipe = [
             "Matin 6h" => 1,
             "APM 6h" => 24,
@@ -8029,6 +8030,17 @@ class DossierController extends AbstractController
                 "required" => false,
 
             ])
+            ->add('categorie', ChoiceType::class, [
+                "required" => false,
+                "placeholder" => '-Selectionnez-',
+                "attr" => [
+                    "class" => "form-control"
+                ],
+                "choices" => [
+                    "Equipe 1" => 1,
+                    "Equipe 2" => 2
+                ]
+            ])
             ->getForm();
         $form->handleRequest($request);
 
@@ -8040,6 +8052,7 @@ class DossierController extends AbstractController
             $export = $form->getData()["export"];
             $equipe_selected = $form->getData()["equipe"];
             $matricule = $form->getData()["matricule"];
+            $categorie = $form->getData()['categorie'];
 
             foreach ($choices_equipe as $equipe => $type_pointage) {
                 if ($type_pointage == $equipe_selected) {
@@ -8088,6 +8101,10 @@ class DossierController extends AbstractController
                     ->setParameter("id_personnel", $matricule);
             } else {
                 $sqlDemandeSuppl->andWhere('personnel.nom_fonction IN (\'OP 1\',\'OP 2\',\'CORE 1\',\'CORE 2\')');
+                if ($categorie) {
+                    $sqlDemandeSuppl->andWhere('personnel.id_equipe_tache_operateur = :equipe')
+                        ->setParameter('equipe', $categorie);
+                }
             }
 
             /**
@@ -8132,6 +8149,10 @@ class DossierController extends AbstractController
                         ->setParameter("id_personnel", $matricule);
                 } else {
                     $sqlProd->andWhere('nom_fonction IN (\'OP 1\',\'OP 2\',\'CORE 1\',\'CORE 2\')');
+                    if ($categorie) {
+                        $sqlProd->andWhere('personnel.id_equipe_tache_operateur = :equipe')
+                            ->setParameter('equipe', $categorie);
+                    }
                 }
             }
 
@@ -8162,7 +8183,12 @@ class DossierController extends AbstractController
                     $sqlPointage->andWhere("personnel.id_personnel = :id_personnel")
                         ->setParameter("id_personnel", $matricule);
                 }
-                $pointages = $sqlPointage->orderBy("personnel.id_personnel", "ASC")
+                if ($categorie) {
+                    $sqlPointage->andWhere('personnel.id_equipe_tache_operateur = :equipe')
+                        ->setParameter('equipe', $categorie);
+                }
+                $pointages = $sqlPointage
+                    ->orderBy("personnel.id_personnel", "ASC")
                     ->execute()
                     ->fetchAll();
                 // if ($matricule) {
@@ -8524,7 +8550,8 @@ class DossierController extends AbstractController
             "form" => $form->createView(),
             "data" => $data,
             "statistique" => $statistiques,
-            "equipe" => $equipe_choix
+            "equipe" => $equipe_choix,
+            "categorie" => $categorie
         ]);
     }
 

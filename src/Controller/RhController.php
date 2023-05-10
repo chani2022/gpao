@@ -2904,6 +2904,7 @@ class RhController extends AbstractController
             $pointages = $pointage->Get([
                 "personnel.id_personnel",
                 "pointage.heure_entre",
+                // "personnel.*"
             ])
                 ->where('personnel.nom_fonction IN (\'OP 1\',\'OP 2\')')
                 ->andWhere('date_debut = :date')
@@ -2911,7 +2912,7 @@ class RhController extends AbstractController
                 ->orderBy('personnel.id_personnel', 'ASC')
                 ->execute()
                 ->fetchAll();
-
+            dd($pointages);
             $productions = $prod->Get([
                 "personnel.id_personnel",
                 "production.heure_reel_debut"

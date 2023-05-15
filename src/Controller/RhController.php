@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Model\GPAOModels\AbsencePersonnel;
 use App\Model\GPAOModels\DemandeSupplementaire;
+use App\Model\GPAOModels\EquipeTacheOperateur;
 use App\Model\GPAOModels\Personnel;
 use App\Model\GPAOModels\Fonction;
 use App\Model\GPAOModels\Pointage;
@@ -2891,6 +2892,8 @@ class RhController extends AbstractController
         $data = [];
         $pointage = new Pointage($connex);
         $prod = new Production($connex);
+        $equipe = new EquipeTacheOperateur($connex);
+
 
         $form = $this->createFormBuilder()
             ->add('date', TextType::class, [
@@ -2904,7 +2907,8 @@ class RhController extends AbstractController
             $pointages = $pointage->Get([
                 "personnel.id_personnel",
                 "pointage.heure_entre",
-                // "personnel.*"
+                "pointage.heure_reel_entree",
+                // "type_pointage.*"
             ])
                 ->where('personnel.nom_fonction IN (\'OP 1\',\'OP 2\')')
                 ->andWhere('date_debut = :date')
@@ -2912,7 +2916,7 @@ class RhController extends AbstractController
                 ->orderBy('personnel.id_personnel', 'ASC')
                 ->execute()
                 ->fetchAll();
-            dd($pointages);
+
             $productions = $prod->Get([
                 "personnel.id_personnel",
                 "production.heure_reel_debut"
@@ -2942,6 +2946,7 @@ class RhController extends AbstractController
                             if ($pointage["heure_entre"] < $production["heure_reel_debut"]) {
                                 $data[$pointage["id_personnel"]] = [
                                     "heure_entre" => $pointage["heure_entre"],
+                                    "heure_reel_entre" => $pointage['heure_reel_entree'],
                                     "heure_debut_prod" => $production["heure_reel_debut"],
                                     "difference" => date("H:i:s", $heure_dif_timestamp)
                                 ];
@@ -2951,6 +2956,7 @@ class RhController extends AbstractController
                 }
             }
         }
+        dump($data);
         return $this->render("rh/fraude.html.twig", [
             "form" => $form->createView(),
             "data" => $data

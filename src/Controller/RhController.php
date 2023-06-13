@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Model\GPAOModels\AbsencePersonnel;
+use App\Model\GPAOModels\Allaitement;
+use App\Model\GPAOModels\CongeMaternite;
 use App\Model\GPAOModels\DemandeSupplementaire;
 use App\Model\GPAOModels\EquipeTacheOperateur;
 use App\Model\GPAOModels\Personnel;
@@ -2908,7 +2910,6 @@ class RhController extends AbstractController
                 "personnel.id_personnel",
                 "pointage.heure_entre",
                 "pointage.heure_reel_entree",
-                // "type_pointage.*"
             ])
                 ->where('personnel.nom_fonction IN (\'OP 1\',\'OP 2\')')
                 ->andWhere('date_debut = :date')
@@ -2960,6 +2961,96 @@ class RhController extends AbstractController
         return $this->render("rh/fraude.html.twig", [
             "form" => $form->createView(),
             "data" => $data
+        ]);
+    }
+    /**
+     * @Security("is_granted('ROLE_RH')")
+     * @Route("/rh/gestion/{option}", name="app_gestion_allaitement_conge_maternite")
+     */
+    public function gestionAllaitementAndcongeMaternite(string $option, Request $request, Connection $connex): Response
+    {
+        $entity = new CongeMaternite($connex);
+        $pers = new Personnel($connex);
+        $resultSearch = null;
+        $personnels = [];
+        $filter = [
+            "personnel.id_personnel",
+            "personnel.nom",
+            "personnel.prenom"
+        ];
+
+        $personnels_get = $pers->Get($filter)
+            ->where('personnel.actif =\'Oui\' AND personnel.sexe = \'FEMININ\'')
+            ->orderBy('id_personnel', 'ASC')
+            ->execute()
+            ->fetchAll();
+
+        foreach ($personnels_get as $pers) {
+            $personnels[$pers['id_personnel'] . ' - ' . $pers['nom'] . ' ' . $pers['prenom']] = $pers['id_personnel'];
+        }
+
+        if ($option == "allaitement") {
+            $entity = new Allaitement($connex);
+        }
+
+        /**
+         * search
+         */
+        if ($request->request->get('search')) {
+            $dates = $request->request->get('search');
+            $date_fin = explode(' - ', $dates)[1];
+
+            $filter[] = 'date_debut';
+            $filter[] = 'date_fin';
+
+            $resultSearch = $entity->Get($filter)
+                ->where('date_fin >= :date_fin')
+                ->setParameter('date_fin', $date_fin)
+                ->execute()
+                ->fetchAll();
+        }
+
+        $form = $this->createFormBuilder()
+            ->add('personnel', ChoiceType::class, [
+                "placeholder" => '-Selectionnez-',
+                "choices" => $personnels,
+                "required" => true
+            ])
+            ->add('dates', TextType::class, [
+                'required' => true
+            ])
+            ->add('remarques', TextareaType::class, [
+                "required" => true
+            ])->getForm();
+
+        if ($form->isSubmitted()) {
+            $data = $form->getData();
+            $id_personnel = $data['personnel'];
+            $dates = $data['dates'];
+            $date_debut = explode(' - ', $dates)[0];
+            $date_fin = explode(' - ', $dates)[1];
+            $remarques = $data['remarques'];
+
+            if (strtotime($date_debut) > strtotime($date_fin)) {
+                $this->addFlash('error', "La date de debut doit être inférieur à la date de fin");
+                $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+            }
+
+
+            $entity->insertData([
+                "id_personnel" => $id_personnel,
+                "date_debut" => $date_debut,
+                "date_fin" => $date_fin,
+                "remarques" => $remarques
+            ])->execute();
+
+            $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+        }
+
+        return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
+            "form" => $form->createView(),
+            'option' => $option,
+            "resultSearch" => $resultSearch
         ]);
     }
 }

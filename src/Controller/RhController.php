@@ -3009,7 +3009,9 @@ class RhController extends AbstractController
                 ->execute()
                 ->fetchAll();
         }
-
+        /**
+         * form
+         */
         $form = $this->createFormBuilder()
             ->add('personnel', ChoiceType::class, [
                 "placeholder" => '-Selectionnez-',
@@ -3023,6 +3025,10 @@ class RhController extends AbstractController
                 "required" => true
             ])->getForm();
 
+        $form->handleRequest($request);
+        /**
+         * form submit
+         */
         if ($form->isSubmitted()) {
             $data = $form->getData();
             $id_personnel = $data['personnel'];

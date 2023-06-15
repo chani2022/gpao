@@ -1,0 +1,135 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Allaitement{% endblock %}
+{% block style %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}
+{% block pageTitle %} Allaitement {% endblock %}
+
+{% block body %}
+   
+
+<div class="col-lg-12 col-md-12">
+    <div class="row">
+    <div class="col-6">
+        <div class="card">
+            <div class="card-body">
+            {% form_theme form 'form-theme.html.twig' %}
+
+                {{ form_start(form) }}
+
+                {{ form_errors(form) }}
+                
+                    <div class="form-group">
+                    {{ form_row(form.personnel, {'attr': {'class': 'form-control matricule'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_row(form.dates, {'attr': {'class': 'form-control','placeholder':'Date','name':'date','autocomplete':'off','readonly':'readonly'}}) }}
+                    </div>
+                    <div class="form-group">
+                    {{ form_row(form.remarques, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <span class="fa fa-save"></span> Enregistrer
+                    </button>
+                {{ form_end(form) }}
+                </div>
+        </div>
+  </div>
+
+
+
+    <div class="col-lg-12 col-md-12">
+    <br/>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive" >
+                    <table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Dates</th>
+                                    <th>Remarques</th>
+                                </tr>
+                            </thead>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    
+
+<script>
+        $("#form_dates").daterangepicker({
+                autoUpdateInput:false,
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                
+            });
+            
+            $('#form_dates').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+    </script>
+
+     <script>
+        $(".DateException_avec_interval").daterangepicker({
+                autoUpdateInput:false,
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+                
+            });
+            
+            $('.DateException_avec_interval').on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            });
+    </script>
+
+    
+    
+<script>
+    $('select#form_personnel').select2({matcher: select2matchCustomUser});
+
+    /*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) {
+    /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+        return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+}
+</script>
+
+{% endblock %}

@@ -198,6 +198,12 @@ class MainController extends AbstractController
                         "roles" => [],
                         "icon" => "zmdi zmdi-format-color-text"
                     ],
+                    [
+                        "name" => "Allaitement",
+                        "routes" => "app_gestion_allaitement_conge_maternite",
+                        "roles" => [],
+                        "icon" => "zmdi zmdi-format-color-text"
+                    ],
 
 
                 ]

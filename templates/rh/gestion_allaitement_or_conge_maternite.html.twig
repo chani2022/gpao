@@ -1,5 +1,5 @@
 {% extends 'base-home.html.twig' %}
-{% block title %}Allaitement{% endblock %}
+{% block title %}Allaitement et congé de maternité{% endblock %}
 {% block style %}
 <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -7,7 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% endblock %}
-{% block pageTitle %} Allaitement {% endblock %}
+{% block pageTitle %} Allaitement et congé de maternité {% endblock %}
 
 {% block body %}
    
@@ -40,9 +40,25 @@
                 </div>
         </div>
   </div>
+  <div class="col-lg-6 col-md-6">
+    <div class="card">
 
-
-
+        <div class="card-body">
+          
+            {# form search #}
+            <div class="form-group">
+                <input readonly="readonly" type="text" name="search" id="dates" placeholder="Date" class="form-control"  required="required"/>
+            </div>
+            
+            <button type="submit" class="btn btn-primary ml-2">
+                Rechercher
+            </button>
+        </form>
+        {# end form search #}
+    </div>
+</div>
+</div>
+ 
     <div class="col-lg-12 col-md-12">
     <br/>
         <div class="card">
@@ -52,17 +68,35 @@
                             <thead style="background:#4272d7;color:#fff;">
                                 <tr>
                                     <th>Matricule</th>
-                                    <th>Dates</th>
                                     <th>Remarques</th>
+                                    <th>Date début</th>
+                                    <th>Date fin</th>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
                                 </tr>
                             </thead>
+                            <tbody>
+                                    {% for tabl in data %}
+                                   
+                                        <div class="form-group">
+                                            <tr>
+                                                <td>{{tabl.id_personnel}}</td>
+                                                <td>{{tabl.remarques}}</td>
+                                                <td>{{tabl.date_debut}}</td>
+                                                <td>{{tabl.date_fin}}</td>
+                                                <td>{{tabl.nom}}</td>
+                                                <td>{{tabl.prenom}}</td>
+                                            </tr>
+                                        </div>
+                                    {% endfor %}
+                            </tbody>
                         
                     </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    
 
 {% endblock %}
 
@@ -131,5 +165,239 @@ function select2matchCustomUser(params, data) {
     return defaultMatcher(params, data);
 }
 </script>
+<script>$(document).ready(function () {
+    var DatePickerLocal = {
+    "direction": "ltr",
+    "format": "DD/MM/YYYY",
+    "separator": " -",
+    "applyLabel": "Appliquer",
+    "cancelLabel": "Annuler",
+    "fromLabel": "Da",
+    "toLabel": "A",
+    "customRangeLabel": "Plage personnalisée",
+    "daysOfWeek": [
+    "Di",
+    "Lu",
+    "Ma",
+    "Me",
+    "Jeu",
+    "Ve",
+    "Sa"
+    ],
+    "monthNames": [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre"
+    ],
+    "firstDay": 1
+    };
+    
+    $("#dates").daterangepicker({
+    autoUpdateInput: false,
+    ranges: {
+    'Aujourd\'hui': [
+    moment(), moment()
+    ],
+    'Hier': [
+    moment().subtract(1, 'days'),
+    moment().subtract(1, 'days')
+    ],
+    'Les 7 jours derniers': [
+    moment().subtract(6, 'days'),
+    moment()
+    ],
+    'Les 30 jours derniers': [
+    moment().subtract(29, 'days'),
+    moment()
+    ],
+    'Ce mois-ci': [
+    moment().startOf('month'), moment().endOf('month')
+    ],
+    'Le mois dernier': [
+    moment().subtract(1, 'month').startOf('month'),
+    moment().subtract(1, 'month').endOf('month')
+    ]
+    },
+    locale: {
+    format: "YYYY-MM-DD",
+    separator: " - ",
+    applyLabel: "Appliquer",
+    cancelLabel: "Annuler",
+    fromLabel: "Da",
+    toLabel: "A",
+    customRangeLabel: "Plage personnalisée",
+    daysOfWeek: [
+    "Di",
+    "Lu",
+    "Ma",
+    "Me",
+    "Jeu",
+    "Ve",
+    "Sa"
+    ],
+    monthNames: [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre"
+    ],
+    firstDay: 1
+    }
+    });
+    
+    $('#dates').on('apply.daterangepicker', function (ev, picker) {
+    $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+    });
+    });</script><script>$(document).ready(function () {
+    var DatePickerLocal = {
+    "direction": "ltr",
+    "format": "YYYY-MM-DD",
+    "separator": " -",
+    "applyLabel": "Appliquer",
+    "cancelLabel": "Annuler",
+    "fromLabel": "Da",
+    "toLabel": "A",
+    "customRangeLabel": "Plage personnalisée",
+    "daysOfWeek": [
+    "Di",
+    "Lu",
+    "Ma",
+    "Me",
+    "Jeu",
+    "Ve",
+    "Sa"
+    ],
+    "monthNames": [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre"
+    ],
+    "firstDay": 1
+    };
+    $("#form_date_sup").daterangepicker({ // autoUpdateInput:false,
+    singleDatePicker: true,
+    locale: {
+    
+    format: "YYYY-MM-DD",
+    separator: " - ",
+    applyLabel: "Appliquer",
+    cancelLabel: "Annuler",
+    fromLabel: "Da",
+    toLabel: "A",
+    customRangeLabel: "Plage personnalisée",
+    daysOfWeek: [
+    "Di",
+    "Lu",
+    "Ma",
+    "Me",
+    "Jeu",
+    "Ve",
+    "Sa"
+    ],
+    monthNames: [
+    "Janvier",
+    "Février",
+    "Mars",
+    "Avril",
+    "Mai",
+    "Juin",
+    "Juillet",
+    "Août",
+    "Septembre",
+    "Octobre",
+    "Novembre",
+    "Décembre"
+    ],
+    firstDay: 1
+    }
+    
+    });
+    
+    $('#form_date_sup').on('apply.daterangepicker', function (ev, picker) {
+    $(this).val(picker.startDate.format('YYYY-MM-DD'));
+    });
+    });
+    
+    
+    $(document).ready(function () {
+    // $("#divID").html("this text will be added to div");
+    
+    // $("select#form_user").css({"title": "Recherche"});
+    
+    /*au changement du champs user on met à jour l'affichage des champs*/
+    
+    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+    $('select#form_personnel').select2({matcher: select2matchCustomUser});
+    $('select#form_etat').select2({matcher: select2matchCustomUser});
+    
+    /*initialisation de 'laffichage des champs*/
+    
+    });
+    
+    /*On va utiliser le système de recherche classique du plugin select2*/
+    var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+    function select2matchCustomUser(params, data) { /* Si l'option est "Autre" on l'affiche toujours */
+    if (params.term && data.id == "autre") {
+    return data;
+    }
+    /* Sinon utilisation de la recherche classique */
+    return defaultMatcher(params, data);
+    }</script>
+    <script>
+    $(document).ready(function () {
+    
+    $("#form_hD").daterangepicker({
+    timePicker: true,
+    singleDatePicker: true,
+    timePicker24Hour: true,
+    timePickerIncrement: 1,
+    timePickerSeconds: true,
+    locale: {
+    format: 'HH:mm:ss'
+    }
+    }).on('show.daterangepicker', function (ev, picker) {
+    picker.container.find(".calendar-table").hide();
+    });
+    })</script><script>$(document).ready(function () {
+    
+    $("#form_hF").daterangepicker({
+    timePicker: true,
+    singleDatePicker: true,
+    timePicker24Hour: true,
+    timePickerIncrement: 1,
+    timePickerSeconds: true,
+    locale: {
+    format: 'HH:mm:ss'
+    }
+    }).on('show.daterangepicker', function (ev, picker) {
+    picker.container.find(".calendar-table").hide();
+    });
+    })</script>
 
 {% endblock %}

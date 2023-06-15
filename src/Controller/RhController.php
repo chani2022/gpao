@@ -3053,10 +3053,20 @@ class RhController extends AbstractController
             $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
         }
 
+        $data = $entity->Get([
+            "personnel.id_personnel",
+            "remarques",
+            "date_debut",
+            "date_fin",
+            "personnel.nom",
+            "personnel.prenom"
+        ])->execute()->fetchAll();
+        dump($data);
         return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
             "form" => $form->createView(),
             'option' => $option,
-            "resultSearch" => $resultSearch
+            "resultSearch" => $resultSearch,
+            "data" => $data
         ]);
     }
 }

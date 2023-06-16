@@ -68,7 +68,7 @@
 						{% set dates = app.session.get('plage_date') %}
 						{% set matricule = app.session.get('matricule') %}
 						{# form search #}
-						<form method="post" action="{{ path('app_gestion_demande', { 'slug' : 'search' }) }}" class="form"/>
+						<form method="post" action="{{ path('app_gestion_demande', { 'slug' : 'search' }) }}" class="form">
 						<div class="form-group">
 							<input type="text" name="matricule" placeholder="Matricule" class="form-control" value="{{ matricule }}"/>
 						</div>
@@ -337,7 +337,9 @@ return data;
 }
 /* Sinon utilisation de la recherche classique */
 return defaultMatcher(params, data);
-}</script><script>$(document).ready(function () {
+}</script>
+<script>
+$(document).ready(function () {
 
 $("#form_hD").daterangepicker({
 timePicker: true,

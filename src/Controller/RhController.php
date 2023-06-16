@@ -2980,6 +2980,7 @@ class RhController extends AbstractController
             "personnel.nom",
             "personnel.prenom"
         ];
+        $date_search = null;
         $personnels_get = $pers->Get($filter)
             ->where('personnel.actif =\'Oui\' AND personnel.sexe = \'FEMININ\'')
             ->orderBy('id_personnel', 'ASC')
@@ -2999,11 +3000,11 @@ class RhController extends AbstractController
          */
         if ($request->request->get('search')) {
 
-            $dates = $request->request->get('search');
+            $date_search = $request->request->get('search');
             $envigere = $request->request->get('envigueur');
 
-            $date_fin = explode(' - ', $dates)[1];
-            $date_debut = explode(' - ', $dates)[0];
+            $date_fin = explode(' - ', $date_search)[1];
+            $date_debut = explode(' - ', $date_search)[0];
 
             if (strtotime($date_debut) > strtotime($date_fin)) {
                 $this->addFlash('error', "La date de debut doit être inférieur à la date de fin");
@@ -3020,6 +3021,10 @@ class RhController extends AbstractController
             if ($envigere) {
                 $sql->where('date_fin >= :date_fin')
                     ->setParameter('date_fin', $date_fin);
+            } else {
+                $sql->where('date_fin BETWEEN :dD AND :df')
+                    ->setParameter('dD', $date_debut)
+                    ->setParameter('df', $date_fin);
             }
 
             $data = $sql->execute()
@@ -3085,7 +3090,7 @@ class RhController extends AbstractController
         return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
             "form" => $form->createView(),
             'option' => $option,
-            // "result" => $result,
+            "date_search" => $date_search,
             "data" => $data
         ]);
     }

@@ -46,6 +46,7 @@
         <div class="card-body">
           
             {# form search #}
+        <form method="post" action="{{ path('app_gestion_conge_maternite', { 'slug' : 'search' }) }}" class="form" >
             <div class="form-group">
                 <input readonly="readonly" type="text" name="search" id="dates" placeholder="Date" class="form-control"  required="required"/>
             </div>

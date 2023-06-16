@@ -2972,7 +2972,8 @@ class RhController extends AbstractController
     {
         $entity = new CongeMaternite($connex);
         $pers = new Personnel($connex);
-        $resultSearch = null;
+        $data = null;
+        $search_active = false;
         $personnels = [];
         $filter = [
             "personnel.id_personnel",
@@ -2997,16 +2998,31 @@ class RhController extends AbstractController
          * search
          */
         if ($request->request->get('search')) {
-            $dates = $request->request->get('search');
-            $date_fin = explode(' - ', $dates)[1];
 
+            $dates = $request->request->get('search');
+            $envigere = $request->request->get('envigueur');
+
+            $date_fin = explode(' - ', $dates)[1];
+            $date_debut = explode(' - ', $dates)[0];
+
+            if (strtotime($date_debut) > strtotime($date_fin)) {
+                $this->addFlash('error', "La date de debut doit être inférieur à la date de fin");
+                $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+            }
+
+            $search_active = true;
             $filter[] = 'date_debut';
             $filter[] = 'date_fin';
+            $filter[] = 'remarques';
 
-            $resultSearch = $entity->Get($filter)
-                ->where('date_fin >= :date_fin')
-                ->setParameter('date_fin', $date_fin)
-                ->execute()
+            $sql = $entity->Get($filter);
+
+            if ($envigere) {
+                $sql->where('date_fin >= :date_fin')
+                    ->setParameter('date_fin', $date_fin);
+            }
+
+            $data = $sql->execute()
                 ->fetchAll();
         }
         /**
@@ -3052,20 +3068,24 @@ class RhController extends AbstractController
 
             $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
         }
-
-        $data = $entity->Get([
-            "personnel.id_personnel",
-            "remarques",
-            "date_debut",
-            "date_fin",
-            "personnel.nom",
-            "personnel.prenom"
-        ])->execute()->fetchAll();
-        // dump($data);
+        /**
+         * default data
+         */
+        if (!$search_active) {
+            $data = $entity->Get([
+                "personnel.id_personnel",
+                "remarques",
+                "date_debut",
+                "date_fin",
+                "personnel.nom",
+                "personnel.prenom"
+            ])->execute()->fetchAll();
+        }
+        dump($data);
         return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
             "form" => $form->createView(),
             'option' => $option,
-            "resultSearch" => $resultSearch,
+            // "result" => $result,
             "data" => $data
         ]);
     }

@@ -21,6 +21,8 @@ use App\Model\GPAOModels\Personnel;
 use App\Form\TransmissionType;
 
 use Doctrine\DBAL\Driver\Connection;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class TransmissionController extends AbstractController
 {

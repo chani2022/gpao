@@ -31,6 +31,7 @@ use DateInterval;
 use DateTime;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class RhController extends AbstractController
 {
@@ -2978,7 +2979,6 @@ class RhController extends AbstractController
             "personnel.nom",
             "personnel.prenom"
         ];
-
         $personnels_get = $pers->Get($filter)
             ->where('personnel.actif =\'Oui\' AND personnel.sexe = \'FEMININ\'')
             ->orderBy('id_personnel', 'ASC')
@@ -3061,7 +3061,7 @@ class RhController extends AbstractController
             "personnel.nom",
             "personnel.prenom"
         ])->execute()->fetchAll();
-        dump($data);
+        // dump($data);
         return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
             "form" => $form->createView(),
             'option' => $option,

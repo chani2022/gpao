@@ -2970,11 +2970,13 @@ class RhController extends AbstractController
      */
     public function gestionAllaitementAndcongeMaternite(string $option, Request $request, Connection $connex): Response
     {
-        $entity = new CongeMaternite($connex);
-        $pers = new Personnel($connex);
+        $entity = new \App\Model\GPAOModels\CongeMaternite($connex);
+        $pers = new \App\Model\GPAOModels\Personnel($connex);
         $data = null;
         $search_active = false;
         $personnels = [];
+        $date_fin_envigeure = null;
+
         $filter = [
             "personnel.id_personnel",
             "personnel.nom",
@@ -2992,7 +2994,7 @@ class RhController extends AbstractController
         }
 
         if ($option == "allaitement") {
-            $entity = new Allaitement($connex);
+            $entity = new \App\Model\GPAOModels\Allaitement($connex);
         }
 
         /**
@@ -3004,6 +3006,7 @@ class RhController extends AbstractController
             $envigere = $request->request->get('envigueur');
 
             $date_fin = explode(' - ', $date_search)[1];
+            $date_fin_envigeure = $date_fin;
             $date_debut = explode(' - ', $date_search)[0];
 
             if (strtotime($date_debut) > strtotime($date_fin)) {
@@ -3086,12 +3089,13 @@ class RhController extends AbstractController
                 "personnel.prenom"
             ])->execute()->fetchAll();
         }
-        dump($data);
+        dump($data, $date_fin_envigeure);
         return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
             "form" => $form->createView(),
             'option' => $option,
             "date_search" => $date_search,
-            "data" => $data
+            "data" => $data,
+            "date_envigeure" => $date_fin_envigeure ? $date_fin_envigeure : date('Y-m-d')
         ]);
     }
 }

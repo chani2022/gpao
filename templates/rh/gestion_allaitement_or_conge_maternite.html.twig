@@ -2,10 +2,6 @@
 {% block title %}Allaitement et congé de maternité{% endblock %}
 {% block style %}
 <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% endblock %}
 {% block pageTitle %} Allaitement et congé de maternité {% endblock %}
 
@@ -42,12 +38,16 @@
   </div>
   <div class="col-lg-6 col-md-6">
     <div class="card">
-
         <div class="card-body">
+            {% for error in app.flashes('error_search') %}
+                <div class="alert alert-warning">
+                    {{ error }}
+                </div>
+            {% endfor %}
            {# form search #}
                 <form method="post" action="{{option}}"  class="form" >
                     <div class="form-group">
-                        <input readonly="readonly" type="text" name="search"  id="dates" placeholder="Date" class="form-control"  required="required"/>
+                        <input readonly="readonly" type="text" name="search" value="{{date_search}}"  id="dates" placeholder="Date" class="form-control"  required="required"/>
                     </div>
                     <div class="form-group">
                         <div class="form-check">
@@ -83,19 +83,25 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                    {% for tabl in data %}
-                                   
-                                        <div class="form-group">
+                               {% for tabl in data %}
+                                 <div class="form-group">
                                             <tr>
                                                 <td>{{tabl.id_personnel}}</td>
                                                 <td>{{tabl.remarques}}</td>
-                                                <td>{{tabl.date_debut}}</td>
-                                                <td>{{tabl.date_fin}}</td>
+                                                <td>{{tabl.date_debut|date("d/m/y")}}</td>
+                                                {% if date_envigeure | date("m") < tabl.date_fin | date("m") or date_envigeure | date("d") < tabl.date_fin | date("d") %}
+                                                <td style="background:#1db978">{{ tabl.date_fin|date("d/m/y") }}</td>
+                                                {% else %}
+                                                <td style="background:#e76363">{{ tabl.date_fin|date("d/m/y") }}</td>
+                                                {% endif %}
+                                            
                                                 <td>{{tabl.nom}}</td>
                                                 <td>{{tabl.prenom}}</td>
                                             </tr>
+                                           
                                         </div>
                                     {% endfor %}
+
                             </tbody>
                         
                     </table>

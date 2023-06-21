@@ -3042,7 +3042,8 @@ class RhController extends AbstractController
                     ->setParameter('df', $date_fin);
             }
 
-            $data = $sql->orderBy('date_fin', 'DESC')
+            $data = $sql
+                ->orderBy('date_fin', 'DESC')
                 ->execute()
                 ->fetchAll();
         }

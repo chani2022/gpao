@@ -2966,11 +2966,11 @@ class RhController extends AbstractController
     }
     /**
      * @Security("is_granted('ROLE_RH')")
-     * @Route("/rh/gestion/{option}", name="app_gestion_allaitement_conge_maternite")
+     * 
      */
-    public function gestionAllaitementAndcongeMaternite(string $option, Request $request, Connection $connex): Response
+    public function gestionAllaitementAndcongeMaternite(string $option, int $id = null, Request $request, Connection $connex): Response
     {
-        $entity = new \App\Model\GPAOModels\CongeMaternite($connex);
+        $entity = null;
         $pers = new \App\Model\GPAOModels\Personnel($connex);
         $data = null;
         $search_active = false;
@@ -2995,8 +2995,18 @@ class RhController extends AbstractController
 
         if ($option == "allaitement") {
             $entity = new \App\Model\GPAOModels\Allaitement($connex);
+        } else {
+            $entity = new \App\Model\GPAOModels\CongeMaternite($connex);
+            $option = "conge_maternite";
         }
 
+        if ($id) {
+            $entity->deleteData()
+                ->where('id_' . $option . ' = :id_delete')
+                ->setParameter("id_delete", $id)
+                ->execute();
+            $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+        }
         /**
          * search
          */
@@ -3030,7 +3040,8 @@ class RhController extends AbstractController
                     ->setParameter('df', $date_fin);
             }
 
-            $data = $sql->execute()
+            $data = $sql->orderBy('date_fin', 'DESC')
+                ->execute()
                 ->fetchAll();
         }
         /**
@@ -3081,13 +3092,17 @@ class RhController extends AbstractController
          */
         if (!$search_active) {
             $data = $entity->Get([
+                "id_" . $option,
                 "personnel.id_personnel",
                 "remarques",
                 "date_debut",
                 "date_fin",
                 "personnel.nom",
                 "personnel.prenom"
-            ])->execute()->fetchAll();
+            ])
+                ->orderBy('date_fin', 'DESC')
+                ->setMaxResults(100)
+                ->execute()->fetchAll();
         }
         dump($data, $date_fin_envigeure);
         return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [

@@ -2970,6 +2970,7 @@ class RhController extends AbstractController
      */
     public function gestionAllaitementAndcongeMaternite(string $option, int $id = null, Request $request, Connection $connex): Response
     {
+        $name_suffix_id_entity = null;
         $entity = null;
         $pers = new \App\Model\GPAOModels\Personnel($connex);
         $data = null;
@@ -2994,10 +2995,11 @@ class RhController extends AbstractController
         }
 
         if ($option == "allaitement") {
+            $name_suffix_id_entity = $option;
             $entity = new \App\Model\GPAOModels\Allaitement($connex);
         } else {
             $entity = new \App\Model\GPAOModels\CongeMaternite($connex);
-            $option = "conge_maternite";
+            $name_suffix_id_entity = "conge_maternite";
         }
 
         if ($id) {
@@ -3092,7 +3094,7 @@ class RhController extends AbstractController
          */
         if (!$search_active) {
             $data = $entity->Get([
-                "id_" . $option,
+                "id_" . $name_suffix_id_entity,
                 "personnel.id_personnel",
                 "remarques",
                 "date_debut",

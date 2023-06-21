@@ -89,19 +89,22 @@ Allaitement et congé de maternité
                                  <div class="form-group">
                                             <tr>
                                                 {% if date_envigeure | date("m") < tabl.date_fin | date("m") or date_envigeure | date("d") < tabl.date_fin | date("d") %}
-                                                <td>{{tabl.id_personnel}}</td>
-                                                <td>{{tabl.remarques}}</td>
-                                                <td>{{tabl.date_debut|date("d/m/y")}}</td>
+                                                <td style="background:#1db978">{{tabl.id_personnel}}</td>
+                                                <td style="background:#1db978">{{tabl.remarques}}</td>
+                                                <td style="background:#1db978">{{tabl.date_debut|date("d/m/y")}}</td>
                                                 <td style="background:#1db978">{{ tabl.date_fin|date("d/m/y") }}</td>
-                                                <td>{{tabl.nom}}</td>
-                                                <td>{{tabl.prenom}}</td>
+                                                <td style="background:#1db978">{{tabl.nom}}</td>
+                                                <td style="background:#1db978">{{tabl.prenom}}</td>
+                                                <td title="Supprimer"><button class="btn btn-sm btn-dark" type="button" ><i class="fas fa-trash"></i></button>
                                                 {% else %}
-                                                <td>{{tabl.id_personnel}}</td>
-                                                <td>{{tabl.remarques}}</td>
-                                                <td>{{tabl.date_debut|date("d/m/y")}}</td>
+                                                <td style="background:#e76363">{{tabl.id_personnel}}</td>
+                                                <td style="background:#e76363">{{tabl.remarques}}</td>
+                                                <td style="background:#e76363">{{tabl.date_debut|date("d/m/y")}}</td>
                                                 <td style="background:#e76363">{{ tabl.date_fin|date("d/m/y") }}</td>
-                                                <td>{{tabl.nom}}</td>
-                                                <td>{{tabl.prenom}}</td>
+                                                <td style="background:#e76363">{{tabl.nom}}</td>
+                                                <td style="background:#e76363">{{tabl.prenom}}</td>
+                                                <td title="Supprimer"><button class="btn btn-sm btn-dark" type="button" ><i class="fas fa-trash"></i></button>
+                                                </td>
                                                 {% endif %}
                                                
                                             </tr>

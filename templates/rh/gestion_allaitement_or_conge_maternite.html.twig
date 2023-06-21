@@ -88,23 +88,44 @@ Allaitement et congé de maternité
                                {% for tabl in data %}
                                  <div class="form-group">
                                             <tr>
-                                                {% if date_envigeure | date("m") < tabl.date_fin | date("m") or date_envigeure | date("d") < tabl.date_fin | date("d") %}
+                                                {% if tabl.date_fin | date("d") > date_envigeure | date("d") or tabl.date_fin | date("m") > date_envigeure | date("m")  %}
                                                 <td style="background:#1db978">{{tabl.id_personnel}}</td>
                                                 <td style="background:#1db978">{{tabl.remarques}}</td>
-                                                <td style="background:#1db978">{{tabl.date_debut|date("d/m/y")}}</td>
-                                                <td style="background:#1db978">{{ tabl.date_fin|date("d/m/y") }}</td>
+                                                <td style="background:#1db978">{{tabl.date_debut}}</td>
+                                                <td style="background:#1db978">{{ tabl.date_fin }}</td>
                                                 <td style="background:#1db978">{{tabl.nom}}</td>
                                                 <td style="background:#1db978">{{tabl.prenom}}</td>
-                                                <td title="Supprimer"><button class="btn btn-sm btn-dark" type="button" ><i class="fas fa-trash"></i></button>
+                                                <td>
+                                                    {% if(option=="conge_maternite") %}
+                                                    <a href="{{option}}?id={{ tabl.id_conge_maternite }}" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i> 
+                                                    </a>
+                                                    {% else %}
+                                                    <a href="{{option}}?id={{ tabl.id_allaitement }}" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i> 
+                                                    </a>
+                                                        {% endif %}
+                                                </td>
                                                 {% else %}
                                                 <td style="background:#e76363">{{tabl.id_personnel}}</td>
                                                 <td style="background:#e76363">{{tabl.remarques}}</td>
-                                                <td style="background:#e76363">{{tabl.date_debut|date("d/m/y")}}</td>
-                                                <td style="background:#e76363">{{ tabl.date_fin|date("d/m/y") }}</td>
+                                                <td style="background:#e76363">{{tabl.date_debut}}</td>
+                                                
+                                                <td style="background:#e76363">{{ tabl.date_fin }}</td>
                                                 <td style="background:#e76363">{{tabl.nom}}</td>
                                                 <td style="background:#e76363">{{tabl.prenom}}</td>
-                                                <td title="Supprimer"><button class="btn btn-sm btn-dark" type="button" ><i class="fas fa-trash"></i></button>
-                                                </td>
+                                                    <td>
+                                                        {% if(option=="conge_maternite") %}
+                                                        <a href="?id={{ tabl.id_conge_maternite }}" class="btn btn-sm btn-danger">
+                                                            <i class="fas fa-trash"></i> 
+                                                        </a>
+                                                        {% else %}
+                                                        <a href="?id={{ tabl.id_allaitement }}" class="btn btn-sm btn-danger">
+                                                            <i class="fas fa-trash"></i> 
+                                                        </a>
+                                                        {% endif %}
+                                                    </td>
+                                                    
                                                 {% endif %}
                                                
                                             </tr>

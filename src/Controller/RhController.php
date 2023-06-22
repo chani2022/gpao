@@ -3044,7 +3044,7 @@ class RhController extends AbstractController
                 $sql->where('date_fin >= :date_fin')
                     ->setParameter('date_fin', $date_fin);
             } else {
-                $sql->where('date_fin BETWEEN :dD AND :df')
+                $sql->where('date_fin BETWEEN :dD AND :df OR date_debut BETWEEN :dD AND :df')
                     ->setParameter('dD', $date_debut)
                     ->setParameter('df', $date_fin);
             }

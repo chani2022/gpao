@@ -440,8 +440,6 @@ app_gestion_demande:
     path: /rh/gestion/demande/supplementaire
     controller: App\Controller\RhController::gestionDemande
 
-
-
 app_gestion_allaitement_conge_maternite:
     path: /rh/gestion/allaitement/{id}
     controller: App\Controller\RhController::gestionAllaitementAndcongeMaternite

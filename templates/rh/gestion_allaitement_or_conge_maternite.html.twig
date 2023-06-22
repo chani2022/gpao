@@ -95,17 +95,7 @@ Allaitement et congé de maternité
                                                 <td style="background:#1db978">{{ tabl.date_fin }}</td>
                                                 <td style="background:#1db978">{{tabl.nom}}</td>
                                                 <td style="background:#1db978">{{tabl.prenom}}</td>
-                                                <td>
-                                                    {% if(option=="conge_maternite") %}
-                                                    <a href="{{option}}?id={{ tabl.id_conge_maternite }}" class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> 
-                                                    </a>
-                                                    {% else %}
-                                                    <a href="{{option}}?id={{ tabl.id_allaitement }}" class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> 
-                                                    </a>
-                                                        {% endif %}
-                                                </td>
+                                                <td title="Supprimer"><button class="btn btn-sm btn-dark" type="button" ><i class="fas fa-trash"></i></button>
                                                 {% else %}
                                                 <td style="background:#e76363">{{tabl.id_personnel}}</td>
                                                 <td style="background:#e76363">{{tabl.remarques}}</td>
@@ -114,18 +104,9 @@ Allaitement et congé de maternité
                                                 <td style="background:#e76363">{{ tabl.date_fin }}</td>
                                                 <td style="background:#e76363">{{tabl.nom}}</td>
                                                 <td style="background:#e76363">{{tabl.prenom}}</td>
-                                                    <td>
-                                                        {% if(option=="conge_maternite") %}
-                                                        <a href="?id={{ tabl.id_conge_maternite }}" class="btn btn-sm btn-danger">
-                                                            <i class="fas fa-trash"></i> 
-                                                        </a>
-                                                        {% else %}
-                                                        <a href="?id={{ tabl.id_allaitement }}" class="btn btn-sm btn-danger">
-                                                            <i class="fas fa-trash"></i> 
-                                                        </a>
-                                                        {% endif %}
-                                                    </td>
-                                                    
+                                                <td title="Supprimer"><button  class="btn btn-sm btn-dark" type="button" ><i class="fas fa-trash"></i></button>
+                                                    {{dump(date_envigeure,tabl.date_fin,tabl.prenom)}} 
+                                                </td>
                                                 {% endif %}
                                                
                                             </tr>

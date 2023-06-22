@@ -1,421 +1,430 @@
 {% extends 'base-home.html.twig' %}
 
 {% block title %}
-Allaitement et congé de maternité
+	Allaitement et congé de maternité
 {% endblock %}
 
-{% block pageTitle %} 
-Allaitement et congé de maternité 
+{% block pageTitle %}
+	Allaitement et congé de maternité
 {% endblock %}
 
-{% block body %}  
+{% block body %}
+	<div class="col-lg-12 col-md-12">
+		<div class="row">
+			<div class="col-6">
+				<div class="card">
+					<div class="card-body">
+						{% form_theme form 'form-theme.html.twig' %}
 
-<div class="col-lg-12 col-md-12">
-    <div class="row">
-    <div class="col-6">
-        <div class="card">
-            <div class="card-body">
-            {% form_theme form 'form-theme.html.twig' %}
+						{{ form_start(form) }}
 
-                {{ form_start(form) }}
+						{{ form_errors(form) }}
 
-                {{ form_errors(form) }}
-                
-                    <div class="form-group">
-                    {{ form_row(form.personnel, {'attr': {'class': 'form-control matricule'}}) }}
-                    </div>
-                    <div class="form-group">
-                    {{ form_row(form.dates, {'attr': {'class': 'form-control','placeholder':'Date','name':'date','autocomplete':'off','readonly':'readonly'}}) }}
-                    </div>
-                    <div class="form-group">
-                    {{ form_row(form.remarques, {'attr': {'class': 'form-control'}}) }}
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <span class="fa fa-save"></span> Enregistrer
-                    </button>
-                {{ form_end(form) }}
-                </div>
-        </div>
-  </div>
-  <div class="col-lg-6 col-md-6">
-    <div class="card">
-        <div class="card-body">
-            {% for error in app.flashes('error_search') %}
-                <div class="alert alert-warning">
-                    {{ error }}
-                </div>
-            {% endfor %}
-           {# form search #}
-                <form method="post" action="{{option}}"  class="form" >
-                    <div class="form-group">
-                        <input readonly="readonly" type="text" name="search" value="{{date_search}}"  id="dates" placeholder="Date" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="envigueur" >
-                            <label class="form-check-label">
-                              En vigueur
-                            </label>
-                          </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary ml-2">
-                        Rechercher
-                    </button>
-                </form>
-        {# end form search #}
-    </div>
-</div>
-</div>
- 
-    <div class="col-lg-12 col-md-12">
-    <br/>
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive" >
-                    <table class="table">
-                            <thead style="background:#4272d7;color:#fff;">
-                                <tr>
-                                    <th>Matricule</th>
-                                    <th>Remarques</th>
-                                    <th>Date début</th>
-                                    <th>Date fin</th>
-                                    <th>Nom</th>
-                                    <th>Prénom</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                               {% for tabl in data %}
-                                 <div class="form-group">
-                                            <tr>
-                                                {% if tabl.date_fin | date("d") > date_envigeure | date("d") or tabl.date_fin | date("m") > date_envigeure | date("m")  %}
-                                                <td style="background:#1db978">{{tabl.id_personnel}}</td>
-                                                <td style="background:#1db978">{{tabl.remarques}}</td>
-                                                <td style="background:#1db978">{{tabl.date_debut}}</td>
-                                                <td style="background:#1db978">{{ tabl.date_fin }}</td>
-                                                <td style="background:#1db978">{{tabl.nom}}</td>
-                                                <td style="background:#1db978">{{tabl.prenom}}</td>
-                                                <td>
-                                                    {% if(option=="conge_maternite") %}
-                                                    <a href="{{option}}?id={{ tabl.id_conge_maternite }}" class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> 
-                                                    </a>
-                                                    {% else %}
-                                                    <a href="{{option}}?id={{ tabl.id_allaitement }}" class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-trash"></i> 
-                                                    </a>
-                                                        {% endif %}
-                                                </td>
-                                                {% else %}
-                                                <td style="background:#e76363">{{tabl.id_personnel}}</td>
-                                                <td style="background:#e76363">{{tabl.remarques}}</td>
-                                                <td style="background:#e76363">{{tabl.date_debut}}</td>
-                                                
-                                                <td style="background:#e76363">{{ tabl.date_fin }}</td>
-                                                <td style="background:#e76363">{{tabl.nom}}</td>
-                                                <td style="background:#e76363">{{tabl.prenom}}</td>
-                                                    <td>
-                                                        {% if(option=="conge_maternite") %}
-                                                        <a href="?id={{ tabl.id_conge_maternite }}" class="btn btn-sm btn-danger">
-                                                            <i class="fas fa-trash"></i> 
-                                                        </a>
-                                                        {% else %}
-                                                        <a href="?id={{ tabl.id_allaitement }}" class="btn btn-sm btn-danger">
-                                                            <i class="fas fa-trash"></i> 
-                                                        </a>
-                                                        {% endif %}
-                                                    </td>
-                                                    
-                                                {% endif %}
-                                               
-                                            </tr>
-                                           
-                                        </div>
-                                    {% endfor %}
+						<div class="form-group">
+							{{ form_row(form.personnel, {'attr': {'class': 'form-control matricule'}}) }}
+						</div>
+						<div class="form-group">
+							{{ form_row(form.dates, {'attr': {'class': 'form-control','placeholder':'Date','name':'date','autocomplete':'off','readonly':'readonly'}}) }}
+						</div>
+						<div class="form-group">
+							{{ form_row(form.remarques, {'attr': {'class': 'form-control'}}) }}
+						</div>
 
-                            </tbody>
-                        
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+						<button type="submit" class="btn btn-primary">
+							<span class="fa fa-save"></span>
+							Enregistrer
+						</button>
+						{{ form_end(form) }}
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6 col-md-6">
+				<div class="card">
+					<div class="card-body">
+						{% for error in app.flashes('error_search') %}
+							<div class="alert alert-warning">
+								{{ error }}
+							</div>
+						{% endfor %}
+						{# form search #}
+						<form method="post" action="{{option}}" class="form">
+							<div class="form-group">
+								<input readonly="readonly" type="text" name="search" value="{{date_search}}" id="dates" placeholder="Date" class="form-control" required/>
+							</div>
+							<div class="form-group">
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" name="envigueur">
+									<label class="form-check-label">
+										En vigueur
+									</label>
+								</div>
+							</div>
+							<button type="submit" class="btn btn-primary ml-2">
+								Rechercher
+							</button>
+						</form>
+						{# end form search #}
+					</div>
+				</div>
+			</div>
 
-{% endblock %}
+			<div class="col-lg-12 col-md-12">
+				<br/>
+				<div class="card">
+					<div class="card-body">
+						<div class="table-responsive">
+							<table class="table">
+								<thead style="background:#4272d7;color:#fff;">
+									<tr>
+										<th>Matricule</th>
+										<th>Remarques</th>
+										<th>Date début</th>
+										<th>Date fin</th>
+										<th>Nom</th>
+										<th>Prénom</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for tabl in data %}
+										{% set style = "background:#1db978" %}
+										{% set path = "app_gestion_allaitement_conge_maternite" %}
+										{% set id_delete = "id_allaitement" %}
+										{% if tabl.date_fin < date_envigeure %}
+											{% set style = "background:#e76363" %}
+										{% endif %}
+										{% if option == "conge" %}
+											{% set path = "app_gestion_conge_maternite" %}
+											{% set id_delete = "id_conge_maternite" %}
+										{% endif %}
+										<div class="form-group">
+											<tr>
+												{# {% if tabl.date_fin | date("d") > date_envigeure | date("d") or tabl.date_fin | date("m") > date_envigeure | date("m")  %} #}
+												<td style="{{ style }}">{{tabl.id_personnel}}</td>
+												<td style="{{ style }}">{{tabl.remarques}}</td>
+												<td style="{{ style }}">{{tabl.date_debut}}</td>
+												<td style="{{ style }}">{{ tabl.date_fin }}</td>
+												<td style="{{ style }}">{{tabl.nom}}</td>
+												<td style="{{ style }}">{{tabl.prenom}}</td>
+												<td>
+													<a href="{{ path (path, {id: tabl[id_delete] }) }}" class="btn btn-sm btn-danger">
+														<i class="fas fa-trash"></i>
+													</a>
+												</td>
+											</tr>
+										</div>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
 
-{% block javascripts %}
-    
-
-<script>
-        $("#form_dates").daterangepicker({
-                autoUpdateInput:false,
-                locale:{
-                    format: "DD/MM/YYYY",
-                    separator: " - ",
-                    applyLabel: "Appliquer",
-                    cancelLabel: "Annuler",
-                    fromLabel: "Da",
-                    toLabel: "A",
-                    customRangeLabel: "Plage personnalisée",
-                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
-                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
-                    firstDay: 1
-                },
-                
-            });
-            
-            $('#form_dates').on('apply.daterangepicker', function(ev, picker) {
-            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
-            });
-    </script>
-
-     <script>
-        $(".DateException_avec_interval").daterangepicker({
-                autoUpdateInput:false,
-                locale:{
-                    format: "DD/MM/YYYY",
-                    separator: " - ",
-                    applyLabel: "Appliquer",
-                    cancelLabel: "Annuler",
-                    fromLabel: "Da",
-                    toLabel: "A",
-                    customRangeLabel: "Plage personnalisée",
-                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
-                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
-                    firstDay: 1
-                },
-                
-            });
-            
-            $('.DateException_avec_interval').on('apply.daterangepicker', function(ev, picker) {
-            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
-            });
-    </script>
-
-    
-    
-<script>
-    $('select#form_personnel').select2({matcher: select2matchCustomUser});
-
-    /*On va utiliser le système de recherche classique du plugin select2*/
-var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
-function select2matchCustomUser(params, data) {
-    /* Si l'option est "Autre" on l'affiche toujours */
-    if (params.term && data.id == "autre") {
-        return data;
-    }
-    /* Sinon utilisation de la recherche classique */
-    return defaultMatcher(params, data);
+		{% endblock %}
+		{% block javascripts %}
+			<script>
+				$("#form_dates").daterangepicker({
+autoUpdateInput: false,
+locale: {
+format: "DD/MM/YYYY",
+separator: " - ",
+applyLabel: "Appliquer",
+cancelLabel: "Annuler",
+fromLabel: "Da",
+toLabel: "A",
+customRangeLabel: "Plage personnalisée",
+daysOfWeek: [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+monthNames: [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+firstDay: 1
 }
-</script>
-<script>
-$(document).ready(function () {
-    var DatePickerLocal = {
-    "direction": "ltr",
-    "format": "DD/MM/YYYY",
-    "separator": " -",
-    "applyLabel": "Appliquer",
-    "cancelLabel": "Annuler",
-    "fromLabel": "Da",
-    "toLabel": "A",
-    "customRangeLabel": "Plage personnalisée",
-    "daysOfWeek": [
-    "Di",
-    "Lu",
-    "Ma",
-    "Me",
-    "Jeu",
-    "Ve",
-    "Sa"
-    ],
-    "monthNames": [
-    "Janvier",
-    "Février",
-    "Mars",
-    "Avril",
-    "Mai",
-    "Juin",
-    "Juillet",
-    "Août",
-    "Septembre",
-    "Octobre",
-    "Novembre",
-    "Décembre"
-    ],
-    "firstDay": 1
-    };
-    
-    $("#dates").daterangepicker({
-    autoUpdateInput: false,
-    ranges: {
-    'Aujourd\'hui': [
-    moment(), moment()
-    ],
-    'Hier': [
-    moment().subtract(1, 'days'),
-    moment().subtract(1, 'days')
-    ],
-    'Les 7 jours derniers': [
-    moment().subtract(6, 'days'),
-    moment()
-    ],
-    'Les 30 jours derniers': [
-    moment().subtract(29, 'days'),
-    moment()
-    ],
-    'Ce mois-ci': [
-    moment().startOf('month'), moment().endOf('month')
-    ],
-    'Le mois dernier': [
-    moment().subtract(1, 'month').startOf('month'),
-    moment().subtract(1, 'month').endOf('month')
-    ]
-    },
-    locale: {
-    format: "YYYY-MM-DD",
-    separator: " - ",
-    applyLabel: "Appliquer",
-    cancelLabel: "Annuler",
-    fromLabel: "Da",
-    toLabel: "A",
-    customRangeLabel: "Plage personnalisée",
-    daysOfWeek: [
-    "Di",
-    "Lu",
-    "Ma",
-    "Me",
-    "Jeu",
-    "Ve",
-    "Sa"
-    ],
-    monthNames: [
-    "Janvier",
-    "Février",
-    "Mars",
-    "Avril",
-    "Mai",
-    "Juin",
-    "Juillet",
-    "Août",
-    "Septembre",
-    "Octobre",
-    "Novembre",
-    "Décembre"
-    ],
-    firstDay: 1
-    }
-    });
-    
-    $('#dates').on('apply.daterangepicker', function (ev, picker) {
-    $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-    });
-    });
-</script>
-<script>
-$(document).ready(function () {
-    var DatePickerLocal = {
-    "direction": "ltr",
-    "format": "YYYY-MM-DD",
-    "separator": " -",
-    "applyLabel": "Appliquer",
-    "cancelLabel": "Annuler",
-    "fromLabel": "Da",
-    "toLabel": "A",
-    "customRangeLabel": "Plage personnalisée",
-    "daysOfWeek": [
-    "Di",
-    "Lu",
-    "Ma",
-    "Me",
-    "Jeu",
-    "Ve",
-    "Sa"
-    ],
-    "monthNames": [
-    "Janvier",
-    "Février",
-    "Mars",
-    "Avril",
-    "Mai",
-    "Juin",
-    "Juillet",
-    "Août",
-    "Septembre",
-    "Octobre",
-    "Novembre",
-    "Décembre"
-    ],
-    "firstDay": 1
-    };
-    $("#form_date_sup").daterangepicker({ // autoUpdateInput:false,
-    singleDatePicker: true,
-    locale: {
-    
-    format: "YYYY-MM-DD",
-    separator: " - ",
-    applyLabel: "Appliquer",
-    cancelLabel: "Annuler",
-    fromLabel: "Da",
-    toLabel: "A",
-    customRangeLabel: "Plage personnalisée",
-    daysOfWeek: [
-    "Di",
-    "Lu",
-    "Ma",
-    "Me",
-    "Jeu",
-    "Ve",
-    "Sa"
-    ],
-    monthNames: [
-    "Janvier",
-    "Février",
-    "Mars",
-    "Avril",
-    "Mai",
-    "Juin",
-    "Juillet",
-    "Août",
-    "Septembre",
-    "Octobre",
-    "Novembre",
-    "Décembre"
-    ],
-    firstDay: 1
-    }
-    
-    });
-    
-    $('#form_date_sup').on('apply.daterangepicker', function (ev, picker) {
-    $(this).val(picker.startDate.format('YYYY-MM-DD'));
-    });
-    });
-    
-    
-    $(document).ready(function () {
-    
-    /*au changement du champs user on met à jour l'affichage des champs*/
-    
-    /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
-    $('select#form_personnel').select2({matcher: select2matchCustomUser});
-    $('select#form_etat').select2({matcher: select2matchCustomUser});
-    
-    /*initialisation de 'laffichage des champs*/
-    
-    });
-    
-    /*On va utiliser le système de recherche classique du plugin select2*/
-    var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
-    function select2matchCustomUser(params, data) { /* Si l'option est "Autre" on l'affiche toujours */
-    if (params.term && data.id == "autre") {
-    return data;
-    }
-    /* Sinon utilisation de la recherche classique */
-    return defaultMatcher(params, data);
-    }
-    </script>
-    
+
+});
+
+$('#form_dates').on('apply.daterangepicker', function (ev, picker) {
+$(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+});
+			</script>
+			<script>
+				$(".DateException_avec_interval").daterangepicker({
+autoUpdateInput: false,
+locale: {
+format: "DD/MM/YYYY",
+separator: " - ",
+applyLabel: "Appliquer",
+cancelLabel: "Annuler",
+fromLabel: "Da",
+toLabel: "A",
+customRangeLabel: "Plage personnalisée",
+daysOfWeek: [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+monthNames: [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+firstDay: 1
+}
+
+});
+
+$('.DateException_avec_interval').on('apply.daterangepicker', function (ev, picker) {
+$(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+});
+			</script>
+			<script>
+				$('select#form_personnel').select2({matcher: select2matchCustomUser});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) { /* Si l'option est "Autre" on l'affiche toujours */
+if (params.term && data.id == "autre") {
+return data;
+}
+/* Sinon utilisation de la recherche classique */
+return defaultMatcher(params, data);
+}
+			</script>
+			<script>
+				$(document).ready(function () {
+var DatePickerLocal = {
+"direction": "ltr",
+"format": "DD/MM/YYYY",
+"separator": " -",
+"applyLabel": "Appliquer",
+"cancelLabel": "Annuler",
+"fromLabel": "Da",
+"toLabel": "A",
+"customRangeLabel": "Plage personnalisée",
+"daysOfWeek": [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+"monthNames": [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+"firstDay": 1
+};
+
+$("#dates").daterangepicker({
+autoUpdateInput: false,
+ranges: {
+'Aujourd\'hui': [
+moment(), moment()
+],
+'Hier': [
+moment().subtract(1, 'days'),
+moment().subtract(1, 'days')
+],
+'Les 7 jours derniers': [
+moment().subtract(6, 'days'),
+moment()
+],
+'Les 30 jours derniers': [
+moment().subtract(29, 'days'),
+moment()
+],
+'Ce mois-ci': [
+moment().startOf('month'), moment().endOf('month')
+],
+'Le mois dernier': [
+moment().subtract(1, 'month').startOf('month'),
+moment().subtract(1, 'month').endOf('month')
+]
+},
+locale: {
+format: "YYYY-MM-DD",
+separator: " - ",
+applyLabel: "Appliquer",
+cancelLabel: "Annuler",
+fromLabel: "Da",
+toLabel: "A",
+customRangeLabel: "Plage personnalisée",
+daysOfWeek: [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+monthNames: [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+firstDay: 1
+}
+});
+
+$('#dates').on('apply.daterangepicker', function (ev, picker) {
+$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+});
+});
+			</script>
+			<script>
+				$(document).ready(function () {
+var DatePickerLocal = {
+"direction": "ltr",
+"format": "YYYY-MM-DD",
+"separator": " -",
+"applyLabel": "Appliquer",
+"cancelLabel": "Annuler",
+"fromLabel": "Da",
+"toLabel": "A",
+"customRangeLabel": "Plage personnalisée",
+"daysOfWeek": [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+"monthNames": [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+"firstDay": 1
+};
+$("#form_date_sup").daterangepicker({ // autoUpdateInput:false,
+singleDatePicker: true,
+locale: {
+
+format: "YYYY-MM-DD",
+separator: " - ",
+applyLabel: "Appliquer",
+cancelLabel: "Annuler",
+fromLabel: "Da",
+toLabel: "A",
+customRangeLabel: "Plage personnalisée",
+daysOfWeek: [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+monthNames: [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+firstDay: 1
+}
+
+});
+
+$('#form_date_sup').on('apply.daterangepicker', function (ev, picker) {
+$(this).val(picker.startDate.format('YYYY-MM-DD'));
+});
+});
 
 
-{% endblock %}
+$(document).ready(function () {
+
+/*au changement du champs user on met à jour l'affichage des champs*/
+
+/*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
+$('select#form_personnel').select2({matcher: select2matchCustomUser});
+$('select#form_etat').select2({matcher: select2matchCustomUser});
+
+/*initialisation de 'laffichage des champs*/
+
+});
+
+/*On va utiliser le système de recherche classique du plugin select2*/
+var defaultMatcher = $.fn.select2.defaults.defaults.matcher;
+function select2matchCustomUser(params, data) { /* Si l'option est "Autre" on l'affiche toujours */
+if (params.term && data.id == "autre") {
+return data;
+}
+/* Sinon utilisation de la recherche classique */
+return defaultMatcher(params, data);
+}
+			</script>
+		{% endblock %}

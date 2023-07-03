@@ -6,13 +6,16 @@ use App\Entity\Interne;
 use App\Entity\Visiteur;
 use App\Form\InterneType;
 use App\Form\VisiteurType;
+use App\Model\GPAOModels\Personnel;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class SecuriteController extends AbstractController
 {
@@ -35,7 +38,7 @@ class SecuriteController extends AbstractController
 
         $builder_search = $this->createFormBuilder();
         $form_search_date = $builder_search->add('date_search', TextType::class, [
-            "required"=>false
+            "required" => false
         ])->getForm();
 
         $newInsert = true;
@@ -93,7 +96,7 @@ class SecuriteController extends AbstractController
          */
         $form_search->handleRequest($request);
         $data = "";
-        if($form_search->isSubmitted() && $form_search->isValid()) {
+        if ($form_search->isSubmitted() && $form_search->isValid()) {
             $data = $form_search->getData();
             $data = $data["search"];
             /**
@@ -107,17 +110,17 @@ class SecuriteController extends AbstractController
         $debut = "";
         $fin = "";
         $form_search_date->handleRequest($request);
-        if($form_search_date->isSubmitted() and $form_search_date->isValid()){
+        if ($form_search_date->isSubmitted() and $form_search_date->isValid()) {
             $data = $form_search_date->getData();
             $data = $data["date_search"];
 
-            if(stristr($data, " - ")){
+            if (stristr($data, " - ")) {
                 $debut = explode("-", $data)[0];
-                $debut = str_replace("/","-", $debut);
+                $debut = str_replace("/", "-", $debut);
                 $fin = explode("-", $data)[1];
-                $fin = str_replace("/","-", $fin);
-            }else{
-                $debut = str_replace("/","-", $data);
+                $fin = str_replace("/", "-", $fin);
+            } else {
+                $debut = str_replace("/", "-", $data);
                 $fin = $debut;
             }
 
@@ -126,21 +129,20 @@ class SecuriteController extends AbstractController
              */
             $isSearchDate = true;
             $isSearchClicked = true;
-
         }
         if ($isSearchClicked) {
-            if($isSearchDate){
-                if($debut == "" and $fin == ""){
+            if ($isSearchDate) {
+                if ($debut == "" and $fin == "") {
                     $list_visiteur = $manager->getRepository(Visiteur::class)->findDataHierAndToDate();
-                }else {
+                } else {
                     $list_visiteur = $manager->getRepository(Visiteur::class)->searchByDate($debut, $fin);
                 }
                 //on reinitialise le boolea
                 $isSearchDate = false;
-            }else {
+            } else {
                 $list_visiteur = $manager->getRepository(Visiteur::class)->searchVisiteur($data);
             }
-        }else{
+        } else {
             $list_visiteur = $manager->getRepository(Visiteur::class)->findDataHierAndToDate();
             //$list_visiteur = $manager->getRepository(Visiteur::class)->findAll();
 
@@ -149,7 +151,7 @@ class SecuriteController extends AbstractController
             'form' => $form->createView(),
             'list_visiteur' => $list_visiteur,
             "form_search" => $form_search->createView(),
-            'form_search_by_date'=> $form_search_date->createView()
+            'form_search_by_date' => $form_search_date->createView()
         ]);
     }
 
@@ -170,7 +172,7 @@ class SecuriteController extends AbstractController
 
         $builder_search = $this->createFormBuilder();
         $form_search_date = $builder_search->add('date_search', TextType::class, [
-            "required"=>false
+            "required" => false
         ])->getForm();
 
 
@@ -214,22 +216,22 @@ class SecuriteController extends AbstractController
         /**
          * search by date
          */
-        $debut="";
-        $fin="";
+        $debut = "";
+        $fin = "";
         $form_search_date->handleRequest($request);
-        if($form_search_date->isSubmitted() and $form_search_date->isValid()){
+        if ($form_search_date->isSubmitted() and $form_search_date->isValid()) {
             $data = $form_search_date->getData();
             $data = $data["date_search"];
             /**
              * si interval de date, on la scie
              */
-            if(stristr($data, " - ")){
+            if (stristr($data, " - ")) {
                 $debut = explode("-", $data)[0];
-                $debut = str_replace("/","-", $debut);
+                $debut = str_replace("/", "-", $debut);
                 $fin = explode("-", $data)[1];
-                $fin = str_replace("/","-", $fin);
-            }else{
-                $debut = str_replace("/","-", $data);
+                $fin = str_replace("/", "-", $fin);
+            } else {
+                $debut = str_replace("/", "-", $data);
                 $fin = $debut;
             }
             /**
@@ -240,25 +242,50 @@ class SecuriteController extends AbstractController
         }
 
         if ($isSearchClicked) {
-            if($isSearchDate){
+            if ($isSearchDate) {
                 $list_visiteur = $manager->getRepository(Interne::class)->searchByDate($debut, $fin);
                 //on reinitialise le boolean
                 $isSearchDate = false;
-            }else {
+            } else {
                 $list_visiteur = $manager->getRepository(Interne::class)->searchInterne($data);
             }
-        }else{
+        } else {
             //$list_visiteur = $manager->getRepository(Interne::class)->findAll();
             $list_visiteur = $manager->getRepository(Interne::class)->findDataHierAndToDate();
-
         }
 
         return $this->render('visiteur/interne.html.twig', [
             "form" => $form->createView(),
             'list_visiteur' => $list_visiteur,
             'form_search' => $form_search->createView(),
-            'form_search_by_date'=> $form_search_date->createView()
+            'form_search_by_date' => $form_search_date->createView()
         ]);
     }
+    /**
+     * @Route("/security/identification", name="app_securite_identification")
+     */
+    public function identificationPersonne(Request $request, Connection $connex): Response
+    {
+        $pers = new Personnel($connex);
+        $personnel = null;
 
+        $id_personnel = $request->query->get('id');
+        /**
+         * recherche
+         */
+        if ($id_personnel) {
+            $personnel = $pers->Get([
+                "nom",
+                "prenom",
+                "id_personnel",
+                "photo",
+                "nom_equipe",
+                "login"
+            ])->execute()->fetch();
+        }
+
+        return $this->render("securite/identification.html.twig", [
+            "personnel" => $personnel
+        ]);
+    }
 }

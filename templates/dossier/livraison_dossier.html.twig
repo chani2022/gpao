@@ -100,7 +100,22 @@
 					</tr>
 				</thead>
 				<tbody>
-					
+                    {{dump(livraisons)}}
+					{% for tabl in livraisons %}
+						<div class="form-group">
+							<tr>
+								<td>{{tabl.nom_dossier}}</td>
+                                <td>{{tabl.date_livraison|date("d/m/Y") }}</td>
+                                <td>{{tabl.volumes}}</td>
+                                <td>{{tabl.observations}}</td>
+                                <td>
+									<a href="{{ path('app_dossier_livraison', {'id': tabl.id_livraison_dossier}) }}">
+										<i class="fas fa-edit alt"></i>
+									</a>
+								</td>
+							</tr>
+						</div>
+					{% endfor %}
 				</tbody>
 			</table>
 		</div>

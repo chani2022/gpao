@@ -8844,7 +8844,7 @@ class DossierController extends AbstractController
          */
         if ($request->query->get('nom_dossier') && $request->query->get('dates')) {
             if (empty($request->query->get('nom_dossier')) && empty($request->query->get('dates'))) {
-                $this->addFlash('danger', "Tous les champs sont obligatoires");
+                $this->addFlash('danger', "Veuillez renseigner au moins une champ");
                 return $this->redirectToRoute("app_dossier_livraison");
             }
 
@@ -8949,7 +8949,7 @@ class DossierController extends AbstractController
                     ->fetch();
 
                 if ($data_livraison) {
-                    $this->addFlash("danger", "Ce dossier nommée " . $nom_dossier . " existe déjàs");
+                    $this->addFlash("danger", "Ce dossier nommée " . $nom_dossier . " existe déjà");
                     return $this->redirectToRoute("app_dossier_livraison");
                 }
                 /**
@@ -8958,7 +8958,7 @@ class DossierController extends AbstractController
                 $livraison->insertData([
                     "nom_dossier" => $nom_dossier,
                     "date_livraison" => $date_livraison,
-                    "volume" => $volume,
+                    "volumes" => $volume,
                     "observations" => $observations
                 ])->execute();
             }
@@ -8975,7 +8975,7 @@ class DossierController extends AbstractController
                 ->execute()
                 ->fetchAll();
         }
-
+        dump($livraisons);
         return $this->render("dossier/livraison_dossier.html.twig", [
             "form" => $form->createView(),
             "livraisons" => $livraisons

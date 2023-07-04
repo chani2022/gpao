@@ -361,6 +361,12 @@ class MainController extends AbstractController
                         "roles" => [],
                         "icon" => "zmdi zmdi-walk"
                     ],
+                    [
+                        "name" => "Identification",
+                        "routes" => "app_securite_identification",
+                        "roles" => [],
+                        "icon" => "zmdi zmdi-walk"
+                    ],
 
                 ]
             ],

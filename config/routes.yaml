@@ -440,19 +440,19 @@ app_gestion_demande:
     path: /rh/gestion/demande/supplementaire
     controller: App\Controller\RhController::gestionDemande
 
-
-
 app_gestion_allaitement_conge_maternite:
-    path: /rh/gestion/allaitement
+    path: /rh/gestion/allaitement/{id}
     controller: App\Controller\RhController::gestionAllaitementAndcongeMaternite
     defaults:
         option: allaitement
+        id: null
 
 app_gestion_conge_maternite:
-    path: /rh/gestion/conge
+    path: /rh/gestion/conge/{id}
     controller: App\Controller\RhController::gestionAllaitementAndcongeMaternite
     defaults:
         option: conge
+        id: null
 
 
 

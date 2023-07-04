@@ -2977,6 +2977,7 @@ class RhController extends AbstractController
         $search_active = false;
         $personnels = [];
         $date_fin_envigeure = null;
+        $path_redirect = null;
 
         $filter = [
             "personnel.id_personnel",
@@ -2997,17 +2998,22 @@ class RhController extends AbstractController
         if ($option == "allaitement") {
             $name_suffix_id_entity = $option;
             $entity = new \App\Model\GPAOModels\Allaitement($connex);
+            $path_redirect = "app_gestion_allaitement_conge_maternite";
         } else {
             $entity = new \App\Model\GPAOModels\CongeMaternite($connex);
             $name_suffix_id_entity = "conge_maternite";
+            $path_redirect = "app_gestion_conge_maternite";
         }
-
+        /**
+         * suppression
+         */
         if ($id) {
             $entity->deleteData()
-                ->where('id_' . $option . ' = :id_delete')
+                ->where('id_' . $name_suffix_id_entity . ' = :id_delete')
                 ->setParameter("id_delete", $id)
                 ->execute();
-            $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+
+            return $this->redirectToRoute($path_redirect, ['option' => $option]);
         }
         /**
          * search
@@ -3023,13 +3029,14 @@ class RhController extends AbstractController
 
             if (strtotime($date_debut) > strtotime($date_fin)) {
                 $this->addFlash('error', "La date de debut doit être inférieur à la date de fin");
-                $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+                return $this->redirectToRoute($path_redirect, ['option' => $option]);
             }
 
             $search_active = true;
             $filter[] = 'date_debut';
             $filter[] = 'date_fin';
             $filter[] = 'remarques';
+            $filter[] = $option == 'allaitement' ? 'id_allaitement' : 'id_conge_maternite';
 
             $sql = $entity->Get($filter);
 
@@ -3037,11 +3044,10 @@ class RhController extends AbstractController
                 $sql->where('date_fin >= :date_fin')
                     ->setParameter('date_fin', $date_fin);
             } else {
-                $sql->where('date_fin BETWEEN :dD AND :df')
+                $sql->where('date_fin BETWEEN :dD AND :df OR date_debut BETWEEN :dD AND :df')
                     ->setParameter('dD', $date_debut)
                     ->setParameter('df', $date_fin);
             }
-
             $data = $sql
                 ->orderBy('date_fin', 'DESC')
                 ->execute()
@@ -3088,7 +3094,7 @@ class RhController extends AbstractController
                 "remarques" => $remarques
             ])->execute();
 
-            $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+            return $this->redirectToRoute($path_redirect, ['option' => $option]);
         }
         /**
          * default data
@@ -3107,13 +3113,12 @@ class RhController extends AbstractController
                 ->setMaxResults(100)
                 ->execute()->fetchAll();
         }
-        dump($data, $date_fin_envigeure);
         return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
             "form" => $form->createView(),
             'option' => $option,
             "date_search" => $date_search,
             "data" => $data,
-            "date_envigeure" => $date_fin_envigeure ? $date_fin_envigeure : date('Y-m-d')
+            "date_envigeure" => $date_fin_envigeure ? $date_fin_envigeure : date('Y-m-d'),
         ]);
     }
 }

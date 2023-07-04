@@ -455,12 +455,13 @@ app_gestion_conge_maternite:
         id: null
 
 app_dossier_livraison:
-    path: /dossier/livraisionDossier
+    path: /dossier/livraisionDossier/{id}
     controller: App\Controller\DossierController::livraisionDossier
+    defaults:
+        id: null
+    
 
-app_securite_identification:
-    path: /security/identification
-    controller: App\Controller\SecuriteController::identificationPersonne
+
 
 
 

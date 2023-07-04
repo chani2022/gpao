@@ -101,6 +101,9 @@
 				</thead>
 				<tbody>
                    {% for tabl in livraisons %}
+                   {% set path = "app_dossier_livraison" %}
+                    {% set id_ = "id_livraison_dossier" %}
+
 						<div class="form-group">
 							<tr>
 								<td>{{tabl.nom_dossier}}</td>
@@ -108,9 +111,9 @@
                                 <td>{{tabl.volumes}}</td>
                                 <td>{{tabl.observations}}</td>
                                 <td>
-									<a href="{{ path('app_dossier_livraison') }}/{{tabl.id_livraison_dossier}}">
-										<i class="fas fa-edit alt"></i>
-									</a>
+                                    <a href="{{ path('app_dossier_livraison', {'id':tabl.id_livraison_dossier}  )  }}">
+                                        <i class="fas fa-edit alt"></i>
+                                    <a> 
 								</td>
 							</tr>
 						</div>

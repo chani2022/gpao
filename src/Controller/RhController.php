@@ -3082,10 +3082,26 @@ class RhController extends AbstractController
             $remarques = $data['remarques'];
 
             if (strtotime($date_debut) > strtotime($date_fin)) {
-                $this->addFlash('error', "La date de debut doit être inférieur à la date de fin");
-                $this->redirectToRoute("app_gestion_allaitement_conge_maternite", ['option' => $option]);
+                $this->addFlash('danger', "La date de debut doit être inférieur à la date de fin");
+                return $this->redirectToRoute($path_redirect, ['option' => $option]);
             }
+            /**
+             * verification si sa date de congé n'est pas encore expirée
+             */
+            $user = $entity->Get([
+                "personnel.id_personnel"
+            ])->where('personnel.id_personnel = :id_personnel')
+                ->andWhere('date_debut BETWEEN :date_debut AND :date_fin')
+                ->orWhere('date_fin BETWEEN :date_debut AND :date_fin')
+                ->setParameter('id_personnel', $id_personnel)
+                ->setParameter('date_debut', $date_debut)
+                ->setParameter('date_fin', $date_fin)
+                ->execute()->fetch();
 
+            if ($user) {
+                $this->addFlash('danger', "Impossible d'insérer le congé du matricule " . $id_personnel . " car sa date de congé n'a pas encore expiré");
+                return $this->redirectToRoute($path_redirect, ['option' => $option]);
+            }
 
             $entity->insertData([
                 "id_personnel" => $id_personnel,

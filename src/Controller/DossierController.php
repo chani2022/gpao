@@ -27,6 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Model\GPAOModels\DemandeSupplementaire;
 use App\Model\GPAOModels\Dossier as GPAODossier;
 use App\Model\GPAOModels\FichiersHistoriqueModif;
+use App\Model\GPAOModels\LivraisonDossier;
 use Symfony\Component\Routing\Annotation\Route;
 
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
@@ -41,6 +42,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 /**
@@ -8823,6 +8826,159 @@ class DossierController extends AbstractController
             "dossier_search" => $dossier_search,
             "personnels" => $pers_data,
             "dossiers" => $dossier_data
+        ]);
+    }
+    /**
+     * @Route("/dossier/livraison/{id}", name="app_dossier_livraison")
+     */
+    public function livraisionDossier(Request $request, Connection $connex, int $id = null): Response
+    {
+        $livraison = new LivraisonDossier($connex);
+        $livraisons = null;
+        $data_livraison = null;
+        $search_active = false;
+
+
+        /**
+         * search
+         */
+        if ($request->query->get('nom_dossier') && $request->query->get('dates')) {
+            if (empty($request->query->get('nom_dossier')) && empty($request->query->get('dates'))) {
+                $this->addFlash('danger', "Tous les champs sont obligatoires");
+                return $this->redirectToRoute("app_dossier_livraison");
+            }
+
+            $search_active = true;
+
+            $queryBuilderLivraison = $livraison->Get();
+
+            if ($request->query->get('nom_dossier')) {
+                $queryBuilderLivraison->where('nom_dossier LIKE :nom_dossier')
+                    ->setParameter('nom_dossier', '%' . $request->query->get('nom_dossier'));
+            }
+            if ($request->query->get('dates')) {
+                $dates = explode(" - ", $request->query->get('dates'));
+                $queryBuilderLivraison->where('date_livraison BETWEEN :d AND :f')
+                    ->setParameter('d', $dates[0])
+                    ->setParameter('f', $dates[1]);
+            } else {
+                $dates = explode(" - ", $request->query->get('dates'));
+                $queryBuilderLivraison->where('nom_dossier LIKE :nom_dossier')
+                    ->setParameter('nom_dossier', '%' . $request->query->get('nom_dossier'))
+                    ->andWhere('date_livraison BETWEEN :d AND :f')
+                    ->setParameter('d', $dates[0])
+                    ->setParameter('f', $dates[1]);
+            }
+
+            $livraisons = $queryBuilderLivraison->orderBy('date_livraison', "DESC")
+                ->execute()
+                ->fetchAll();
+        }
+        /**
+         * mise a jour livraison
+         */
+        if ($id) {
+            $data_livraison = $livraison->Get()
+                ->where('id_livraison_dossier = :id_livraison')
+                ->setParameter('id_livraison', $id)
+                ->execute()
+                ->fetch();
+        }
+
+        $form = $this->createFormBuilder()
+            ->add('nom_dossier', TextType::class, [
+                "required" => true,
+                "attr" => [
+                    "value" => $data_livraison ? $data_livraison['nom_dossier'] : null
+                ]
+            ])
+            ->add('date_livraison', TextType::class, [
+                "required" => true,
+                "attr" => [
+                    "value" => $data_livraison ? $data_livraison['date_livraison'] : null
+                ]
+            ])
+            ->add('volume', IntegerType::class, [
+                "required" => true,
+                "attr" => [
+                    "value" => $data_livraison ? $data_livraison['volume'] : null
+                ]
+            ])
+            ->add('observations', TextareaType::class, [
+                "required" => false,
+                "attr" => [
+                    "value" => $data_livraison ? $data_livraison['observations'] : null
+                ]
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $msg = " a été bien insérée";
+
+            $data = $form->getData();
+
+            $nom_dossier = $data['nom_dossier'];
+            $date_livraison = $data["date_livraison"];
+            $volume = $data["volume"];
+            $observations = $data["observations"];
+
+            /**
+             * mise a jour
+             */
+            if ($id) {
+                $livraison->updateData([
+                    "nom_dossier" => $nom_dossier,
+                    "date_livraison" => $date_livraison,
+                    "volume" => $volume,
+                    "observations" => $observations
+                ], [
+                    "id_livraison_dossier" => $id
+                ])->execute();
+
+                $msg = " a été bien modifiée";
+            } else {
+                /**
+                 * eviter le doublant du nom du dossier
+                 */
+                $data_livraison = $livraison->Get()
+                    ->where('nom_dossier = :nom')
+                    ->setParameter('nom', $nom_dossier)
+                    ->execute()
+                    ->fetch();
+
+                if ($data_livraison) {
+                    $this->addFlash("danger", "Ce dossier nommée " . $nom_dossier . " existe déjàs");
+                    return $this->redirectToRoute("app_dossier_livraison");
+                }
+                /**
+                 * insertion
+                 */
+                $livraison->insertData([
+                    "nom_dossier" => $nom_dossier,
+                    "date_livraison" => $date_livraison,
+                    "volume" => $volume,
+                    "observations" => $observations
+                ])->execute();
+            }
+            $this->addFlash("success", "Dossier " . $nom_dossier . "" . $msg);
+            return $this->redirectToRoute("app_dossier_livraison");
+        }
+        /**
+         * aucune recherche effectuée
+         */
+        if (!$search_active) {
+            $livraisons = $livraison->Get()
+                ->orderBy('date_livraison', "DESC")
+                ->setMaxResults(100)
+                ->execute()
+                ->fetchAll();
+        }
+
+        return $this->render("dossier/livraison_dossier.html.twig", [
+            "form" => $form->createView(),
+            "livraisons" => $livraisons
         ]);
     }
 }

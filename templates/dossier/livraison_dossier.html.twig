@@ -66,15 +66,15 @@
 								{{ success }}
 							</div>
 						{% endfor %}
-						{% set date_livraison = app.session.get('date_livraison') %}
+						{% set date_livraison = app.session.get('dates') %}
 						{% set nom_dossier = app.session.get('nom_dossier') %}
 						{# form search #}
-						<form method="post" action="{{ path('app_dossier_livraison', { 'slug' : 'search' }) }}" class="form">
+						<form method="get" action="{{ path('app_dossier_livraison') }}" class="form">
 						<div class="form-group">
 							<input type="text" name="nom_dossier" value="{{nom_dossier}}" placeholder="Dossier" class="form-control" />
 						</div>
 						<div class="form-group">
-							<input readonly="readonly" type="text" name="date_livraison" value="{{date_livraison}}" id="dates" placeholder="Date" class="form-control"  required="required"/>
+							<input readonly="readonly" type="text" name="dates" value="{{date_livraison}}" id="dates" placeholder="Date" class="form-control"  required="required"/>
 						</div>
 						<button type="submit" class="btn btn-primary ml-2">
 							Rechercher

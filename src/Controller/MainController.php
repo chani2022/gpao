@@ -333,6 +333,12 @@ class MainController extends AbstractController
                         "roles" => [],
                         "icon" => "zmdi zmdi-chart"
                     ],
+                    [
+                        "name" => "Livraison",
+                        "routes" => "app_dossier_livraison",
+                        "roles" => [],
+                        "icon" => "zmdi zmdi-chart"
+                    ],
 
                 ]
             ],

@@ -454,6 +454,10 @@ app_gestion_conge_maternite:
         option: conge
         id: null
 
+app_dossier_livraison:
+    path: /dossier/livraisionDossier
+    controller: App\Controller\DossierController::livraisionDossier
+
 
 
 

@@ -8842,26 +8842,24 @@ class DossierController extends AbstractController
         /**
          * search
          */
-        if ($request->query->get('nom_dossier') && $request->query->get('dates')) {
-            if (empty($request->query->get('nom_dossier')) && empty($request->query->get('dates'))) {
-                $this->addFlash('danger', "Veuillez renseigner au moins une champ");
-                return $this->redirectToRoute("app_dossier_livraison");
-            }
+        // dump(empty($request->query->get('nom_dossier')), empty($request->query->get('dates')));
+        if ($request->query->get('nom_dossier') || $request->query->get('dates')) {
 
             $search_active = true;
 
             $queryBuilderLivraison = $livraison->Get();
 
-            if ($request->query->get('nom_dossier')) {
+            if (!empty($request->query->get('nom_dossier')) && empty($request->query->get('dates'))) {
                 $queryBuilderLivraison->where('nom_dossier LIKE :nom_dossier')
-                    ->setParameter('nom_dossier', '%' . $request->query->get('nom_dossier'));
+                    ->setParameter('nom_dossier', '%' . strtoupper($request->query->get('nom_dossier')) . '%');
             }
-            if ($request->query->get('dates')) {
+            if (!empty($request->query->get('dates')) && empty($request->query->get('nom_dossier'))) {
                 $dates = explode(" - ", $request->query->get('dates'));
                 $queryBuilderLivraison->where('date_livraison BETWEEN :d AND :f')
                     ->setParameter('d', $dates[0])
                     ->setParameter('f', $dates[1]);
-            } else {
+            }
+            if (!empty($request->query->get('dates')) && !empty($request->query->get('nom_dossier'))) {
                 $dates = explode(" - ", $request->query->get('dates'));
                 $queryBuilderLivraison->where('nom_dossier LIKE :nom_dossier')
                     ->setParameter('nom_dossier', '%' . $request->query->get('nom_dossier'))
@@ -8919,7 +8917,7 @@ class DossierController extends AbstractController
 
             $data = $form->getData();
 
-            $nom_dossier = $data['nom_dossier'];
+            $nom_dossier = strtoupper($data['nom_dossier']);
             $date_livraison = $data["date_livraison"];
             $volume = $data["volume"];
             $observations = $data["observations"];

@@ -211,33 +211,10 @@ $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.forma
 </script>
 
 <script>
-    $("#form_date_livraison").daterangepicker({
-autoUpdateInput: false,
-ranges: {
-'Aujourd\'hui': [
-moment(), moment()
-],
-'Hier': [
-moment().subtract(1, 'days'),
-moment().subtract(1, 'days')
-],
-'Les 7 jours derniers': [
-moment().subtract(6, 'days'),
-moment()
-],
-'Les 30 jours derniers': [
-moment().subtract(29, 'days'),
-moment()
-],
-'Ce mois-ci': [
-moment().startOf('month'), moment().endOf('month')
-],
-'Le mois dernier': [
-moment().subtract(1, 'month').startOf('month'),
-moment().subtract(1, 'month').endOf('month')
-]
-},
+   $("#form_date_livraison").daterangepicker({ // autoUpdateInput:false,
+singleDatePicker: true,
 locale: {
+
 format: "YYYY-MM-DD",
 separator: " - ",
 applyLabel: "Appliquer",
@@ -270,10 +247,11 @@ monthNames: [
 ],
 firstDay: 1
 }
+
 });
 
 $('#form_date_livraison').on('apply.daterangepicker', function (ev, picker) {
-$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+$(this).val(picker.startDate.format('YYYY-MM-DD'));
 });
 
 </script>

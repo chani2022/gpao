@@ -458,6 +458,10 @@ app_dossier_livraison:
     path: /dossier/livraisionDossier
     controller: App\Controller\DossierController::livraisionDossier
 
+app_securite_identification:
+    path: /security/identification
+    controller: App\Controller\SecuriteController::identificationPersonne
+
 
 
 

@@ -8899,14 +8899,12 @@ class DossierController extends AbstractController
             ->add('volume', IntegerType::class, [
                 "required" => true,
                 "attr" => [
-                    "value" => $data_livraison ? $data_livraison['volume'] : null
+                    "value" => $data_livraison ? $data_livraison['volumes'] : null
                 ]
             ])
             ->add('observations', TextareaType::class, [
                 "required" => false,
-                "attr" => [
-                    "value" => $data_livraison ? $data_livraison['observations'] : null
-                ]
+                "data" => $data_livraison ? $data_livraison['observations'] : null
             ])
             ->getForm();
 
@@ -8929,7 +8927,7 @@ class DossierController extends AbstractController
                 $livraison->updateData([
                     "nom_dossier" => $nom_dossier,
                     "date_livraison" => $date_livraison,
-                    "volume" => $volume,
+                    "volumes" => $volume,
                     "observations" => $observations
                 ], [
                     "id_livraison_dossier" => $id

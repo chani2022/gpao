@@ -3012,7 +3012,7 @@ class RhController extends AbstractController
                 ->where('id_' . $name_suffix_id_entity . ' = :id_delete')
                 ->setParameter("id_delete", $id)
                 ->execute();
-
+            $this->addFlash("danger", 'Le congé du matricule '.$id.' a été effacé avec succes');
             return $this->redirectToRoute($path_redirect, ['option' => $option]);
         }
         /**
@@ -3081,7 +3081,7 @@ class RhController extends AbstractController
             $date_fin = explode(' - ', $dates)[1];
             $remarques = $data['remarques'];
 
-            if (strtotime($date_debut) > strtotime($date_fin)) {
+            if ($date_debut > $date_fin) {
                 $this->addFlash('danger', "La date de debut doit être inférieur à la date de fin");
                 return $this->redirectToRoute($path_redirect, ['option' => $option]);
             }
@@ -3091,11 +3091,9 @@ class RhController extends AbstractController
             $user = $entity->Get([
                 "personnel.id_personnel"
             ])->where('personnel.id_personnel = :id_personnel')
-                ->andWhere('date_debut BETWEEN :date_debut AND :date_fin')
-                ->orWhere('date_fin BETWEEN :date_debut AND :date_fin')
+                ->andWhere('date_fin >= :date_fin')
                 ->setParameter('id_personnel', $id_personnel)
-                ->setParameter('date_debut', $date_debut)
-                ->setParameter('date_fin', $date_fin)
+                ->setParameter('date_fin', date("Y-m-d"))
                 ->execute()->fetch();
 
             if ($user) {
@@ -3109,7 +3107,7 @@ class RhController extends AbstractController
                 "date_fin" => $date_fin,
                 "remarques" => $remarques
             ])->execute();
-
+            $this->addFlash('success', "Le congé du matricule " . $id_personnel . "a été inséré avec succes");
             return $this->redirectToRoute($path_redirect, ['option' => $option]);
         }
         /**

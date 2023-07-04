@@ -1,0 +1,283 @@
+{% extends 'base-home.html.twig' %}
+{% block title %}Livraison dossier
+{% endblock %}
+
+{% block pageTitle %}
+	Livraison dossier
+{% endblock %}
+
+{% block body %}
+	<div class="col-lg-12 col-md-12">
+		<div class="row">
+			<div class="col-lg-6 col-md-6">
+				<div class="card">
+					<div class="card-body">
+                       	{% for message in app.flashes('success') %}
+							<div class="alert alert-success">
+								{{ message }}
+							</div>
+						{% endfor %}
+						{% for message in app.flashes('danger') %}
+							<div class="alert alert-warning">
+								{{ message }}
+							</div>
+						{% endfor %}
+						{% form_theme form 'form-theme.html.twig' %}
+						{# form save and edit #}
+						{{ form_start(form) }}
+						{{ form_errors(form) }}
+						
+						
+                        <div class="form-group">
+							{{ form_row(form.nom_dossier, {'label': '','attr': {'class': 'form-control'}}) }}
+						</div>
+                        <div class="form-group">
+							{{ form_row(form.date_livraison, {'label': 'Date livraison','attr': {'class': 'form-control','readonly ':'readonly','placeholder': 'Date'}}) }}
+						</div>
+                        <div class="form-group">
+							{{ form_row(form.volume, {'label': '','attr': {'class': 'form-control'}}) }}
+						</div>
+                        <div class="form-group">
+							{{ form_row(form.observations, {'label': '','attr': {'class': 'form-control'}}) }}
+						</div>
+						<button type="submit" class="btn btn-primary">
+							<span class="fa fa-save"></span>
+							Enregistrer
+						</button>
+						{{ form_end(form) }}
+						{# endform #}
+					</div>
+				</div>
+
+			</div>
+
+
+			<div class="col-lg-6 col-md-6">
+				<div class="card">
+
+					<div class="card-body">
+						{% for error in app.flashes('danger') %}
+							<div class="alert alert-warning">
+								{{ error }}
+							</div>
+						{% endfor %}
+                        {% for success in app.flashes('success') %}
+							<div class="alert alert-warning">
+								{{ success }}
+							</div>
+						{% endfor %}
+						{% set date_livraison = app.session.get('date_livraison') %}
+						{% set nom_dossier = app.session.get('nom_dossier') %}
+						{# form search #}
+						<form method="post" action="{{ path('app_dossier_livraison', { 'slug' : 'search' }) }}" class="form">
+						<div class="form-group">
+							<input type="text" name="nom_dossier" value="{{nom_dossier}}" placeholder="Dossier" class="form-control" />
+						</div>
+						<div class="form-group">
+							<input readonly="readonly" type="text" name="date_livraison" value="{{date_livraison}}" id="dates" placeholder="Date" class="form-control"  required="required"/>
+						</div>
+						<button type="submit" class="btn btn-primary ml-2">
+							Rechercher
+						</button>
+					</form>
+					{# end form search #}
+				</div>
+			</div>
+		</div>
+	</div>
+</div></div><div class="col-lg-12 col-md-12">
+<br/>
+<div class="card">
+	<div class="card-body">
+		<div class="table-responsive">
+			<table class="table">
+				<thead class="thead-light">
+					<tr>
+						<th>Dossier</th>
+						<th>Date de livraison</th>
+						<th>Volume</th>
+						<th>observations</th>
+					</tr>
+				</thead>
+				<tbody>
+					
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div></div></div>{% endblock %}{% block javascripts %}
+<script>
+$(document).ready(function () {
+var DatePickerLocal = {
+"direction": "ltr",
+"format": "DD/MM/YYYY",
+"separator": " -",
+"applyLabel": "Appliquer",
+"cancelLabel": "Annuler",
+"fromLabel": "Da",
+"toLabel": "A",
+"customRangeLabel": "Plage personnalisée",
+"daysOfWeek": [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+"monthNames": [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+"firstDay": 1
+};
+
+$("#dates").daterangepicker({
+autoUpdateInput: false,
+ranges: {
+'Aujourd\'hui': [
+moment(), moment()
+],
+'Hier': [
+moment().subtract(1, 'days'),
+moment().subtract(1, 'days')
+],
+'Les 7 jours derniers': [
+moment().subtract(6, 'days'),
+moment()
+],
+'Les 30 jours derniers': [
+moment().subtract(29, 'days'),
+moment()
+],
+'Ce mois-ci': [
+moment().startOf('month'), moment().endOf('month')
+],
+'Le mois dernier': [
+moment().subtract(1, 'month').startOf('month'),
+moment().subtract(1, 'month').endOf('month')
+]
+},
+locale: {
+format: "YYYY-MM-DD",
+separator: " - ",
+applyLabel: "Appliquer",
+cancelLabel: "Annuler",
+fromLabel: "Da",
+toLabel: "A",
+customRangeLabel: "Plage personnalisée",
+daysOfWeek: [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+monthNames: [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+firstDay: 1
+}
+});
+
+$('#dates').on('apply.daterangepicker', function (ev, picker) {
+$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+});
+});
+</script>
+
+<script>
+    $("#form_date_livraison").daterangepicker({
+autoUpdateInput: false,
+ranges: {
+'Aujourd\'hui': [
+moment(), moment()
+],
+'Hier': [
+moment().subtract(1, 'days'),
+moment().subtract(1, 'days')
+],
+'Les 7 jours derniers': [
+moment().subtract(6, 'days'),
+moment()
+],
+'Les 30 jours derniers': [
+moment().subtract(29, 'days'),
+moment()
+],
+'Ce mois-ci': [
+moment().startOf('month'), moment().endOf('month')
+],
+'Le mois dernier': [
+moment().subtract(1, 'month').startOf('month'),
+moment().subtract(1, 'month').endOf('month')
+]
+},
+locale: {
+format: "YYYY-MM-DD",
+separator: " - ",
+applyLabel: "Appliquer",
+cancelLabel: "Annuler",
+fromLabel: "Da",
+toLabel: "A",
+customRangeLabel: "Plage personnalisée",
+daysOfWeek: [
+"Di",
+"Lu",
+"Ma",
+"Me",
+"Jeu",
+"Ve",
+"Sa"
+],
+monthNames: [
+"Janvier",
+"Février",
+"Mars",
+"Avril",
+"Mai",
+"Juin",
+"Juillet",
+"Août",
+"Septembre",
+"Octobre",
+"Novembre",
+"Décembre"
+],
+firstDay: 1
+}
+});
+
+$('#form_date_livraison').on('apply.daterangepicker', function (ev, picker) {
+$(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+});
+
+</script>
+
+
+
+{% endblock %}

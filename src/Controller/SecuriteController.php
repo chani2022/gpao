@@ -269,7 +269,7 @@ class SecuriteController extends AbstractController
         $pers = new Personnel($connex);
         $personnel = null;
 
-        $id_personnel = $request->query->get('id');
+        $id_personnel = $request->query->get('id_personnel');
         /**
          * recherche
          */
@@ -281,11 +281,14 @@ class SecuriteController extends AbstractController
                 "photo",
                 "nom_equipe",
                 "login"
-            ])->execute()->fetch();
+            ])->where('id_personnel = :id_personnel')
+                ->setParameter('id_personnel', $id_personnel)
+                ->execute()->fetch();
         }
-
+        dump($personnel, $id_personnel);
         return $this->render("securite/identification.html.twig", [
-            "personnel" => $personnel
+            "personnel" => $personnel,
+            "id_personnel" => $id_personnel
         ]);
     }
 }

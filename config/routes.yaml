@@ -459,6 +459,12 @@ app_dossier_livraison:
     controller: App\Controller\DossierController::livraisionDossier
     defaults:
         id: null
+
+app_securite_identification:
+    path: /securite/identificationPersonne/{id}
+    controller: App\Controller\SecuriteController::identificationPersonne
+    defaults:
+        id: null
     
 
 

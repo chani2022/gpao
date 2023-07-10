@@ -7,6 +7,9 @@ use App\Entity\Visiteur;
 use App\Form\InterneType;
 use App\Form\VisiteurType;
 use App\Model\GPAOModels\Personnel;
+use App\Model\GPAOModels\Pointage;
+use App\Model\GPAOModels\TypePointage;
+use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,13 +26,15 @@ class SecuriteController extends AbstractController
     /**
      * @Security("is_granted('ROLE_RH')")
      */
-    public function visiteur($paramDefaults = 0, Request $request, EntityManagerInterface $manager)
+    public function visiteur($paramDefaults = 0, int $id, Request $request, EntityManagerInterface $manager)
     {
         $isSearchClicked = false;
         $isSearchDate = false;
         $list_visiteur = [];
         $visiteur = new Visiteur();
-        $form = $this->createForm(VisiteurType::class, $visiteur);
+        $form = $this->createForm(VisiteurType::class, $visiteur, [
+            "id" => $id
+        ]);
 
         $builder = $this->createFormBuilder();
         $form_search = $builder->add("search", TextType::class, [
@@ -158,7 +163,7 @@ class SecuriteController extends AbstractController
     /**
      * @Security("is_granted('ROLE_RH')")
      */
-    public function interne($paramDefaults = 0, Request $request, EntityManagerInterface $manager)
+    public function interne($paramDefaults = 0, int $id = null, Request $request, EntityManagerInterface $manager)
     {
         $list_visiteur = [];
         $interne = new Interne();
@@ -176,13 +181,18 @@ class SecuriteController extends AbstractController
         ])->getForm();
 
 
-        $form = $this->createForm(InterneType::class, $interne);
+        $form = $this->createForm(InterneType::class, $interne, [
+            'id' => $id
+        ]);
         /**
          * suppression
          */
         if ($paramDefaults == 2) {
-            $id_user = $request->query->get('id');
-            $get = $manager->getRepository(Interne::class)->find($id_user);
+            // $id_user = $request->query->get('id');
+
+            // dd($id_user);
+            // dd($id);
+            $get = $manager->getRepository(Interne::class)->find($id);
 
             if ($get !== null) {
                 $manager->remove($get);
@@ -261,13 +271,15 @@ class SecuriteController extends AbstractController
             'form_search_by_date' => $form_search_date->createView()
         ]);
     }
-    /**
-     * @Route("/security/identification", name="app_securite_identification")
-     */
+
     public function identificationPersonne(Request $request, Connection $connex): Response
     {
         $pers = new Personnel($connex);
+        $point = new Pointage($connex);
+        $type_pointage = new TypePointage($connex);
         $personnel = null;
+        $retard = null;
+        $retard_pause = null;
 
         $id_personnel = $request->query->get('id_personnel');
         /**
@@ -280,15 +292,59 @@ class SecuriteController extends AbstractController
                 "id_personnel",
                 "photo",
                 "nom_equipe",
-                "login"
+                "login",
+                "type_pointage.id_type_pointage"
             ])->where('id_personnel = :id_personnel')
                 ->setParameter('id_personnel', $id_personnel)
                 ->execute()->fetch();
+
+            if ($request->query->get('type')) {
+                $type = $request->query->get('type');
+
+                $pointage = $point->Get([
+                    "personnel.id_personnel",
+                    "retard",
+                    "total_pause",
+                    "sortie_pause",
+                    "entree_pause"
+                ])
+                    ->where('personnel.id_personnel = :id_personnel')
+                    ->andWhere('date_debut = :d')
+                    ->setParameter('d', new DateTime())
+                    ->setParameter('id_personnel', $id_personnel)
+                    ->orderBy("date_debut", "ASC")
+                    ->execute()
+                    ->fetch();
+                dump($pointage);
+                if ($type == "retard") {
+                    $retard = $pointage["retard"];
+                } else {
+                    $max_pause = new \DateTime("00:10:00");
+                    $array_max_pause = explode(':', $max_pause->format("H:i:s"));
+                    $array_time_sortie = explode(":", $pointage["sortie_pause"]);
+                    $entree_pause = new \DateTime($pointage["entree_pause"]);
+                    $heure_pause = $entree_pause->sub(new \DateInterval("PT" . $array_time_sortie[0] . "H" . $array_time_sortie[1] . "M" . $array_time_sortie[2] . "S"));
+
+                    if ($heure_pause->getTimestamp() > strtotime("00:10:00")) {
+                        $retard_pause = $heure_pause->sub(new \DateInterval("PT" . $array_max_pause[0] . "H" . $array_max_pause[1] . "M" . $array_max_pause[2] . "S"))->format("H:i:s");
+                    }
+                    // $array_total_pause = explode(':', $max_pause->sub(new \DateInterval("PT" . $array_diff[0] . "H" . $array_diff[1] . "M" . $array_diff[2] . "S"))->format("H:is"));
+
+                    // $retard_pause = $max_pause->sub(new \DateInterval("PT" . $array_total_pause[0] . "H" . $array_total_pause[1] . "M" . $array_total_pause[2] . "S"));
+
+                    // dd($retard_pause);
+                    // if ($retard_pause < 0) {
+                    //     $retard_pause = date('H:i:s', $retard_pause);
+                    // }
+                }
+            }
         }
-        dump($personnel, $id_personnel);
+        dump($personnel, $id_personnel, $retard, $retard_pause);
         return $this->render("securite/identification.html.twig", [
             "personnel" => $personnel,
-            "id_personnel" => $id_personnel
+            "id_personnel" => $id_personnel,
+            'retard' => $retard,
+            "retard_pause" => $retard_pause
         ]);
     }
 }

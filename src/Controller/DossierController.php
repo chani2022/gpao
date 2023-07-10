@@ -7993,7 +7993,7 @@ class DossierController extends AbstractController
 
         $user = new Personnel($connex);
         $users = $user->Get(
-            ["id_personnel", "nom", "prenom", "id_type_pointage"]
+            ["id_personnel", "nom", "prenom", "personnel.id_type_pointage"]
         )
             ->where('id_personnel > 0 and actif = \'Oui\'')
             ->andWhere('personnel.nom_fonction IN (\'OP 1\',\'OP 2\',\'CORE 1\',\'CORE 2\')')

@@ -17,24 +17,22 @@ class VisiteurType extends AbstractType
     {
         $builder
             ->add('nom', TextType::class, [
-                "required"=>false
+                "required" => false
             ])
-            ->add('prenom', TextType::class,[
-                "required"=>false
+            ->add('prenom', TextType::class, [
+                "required" => false
             ])
-            ->add('cin', TextType::class,[
-                "required"=>false
+            ->add('cin', TextType::class, [
+                "required" => false
             ])
             ->add("motif", TextareaType::class, [
-                "required"=>false
+                "required" => false
             ])
             ->add('fileName', HiddenType::class, [
-                "required"=>false
+                "required" => false
             ])
             ->add('heureEntrer', HiddenType::class)
-            ->add('heureSortie', HiddenType::class)
-
-        ;
+            ->add('heureSortie', HiddenType::class);
     }
 
     public function configureOptions(OptionsResolver $resolver)

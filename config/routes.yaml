@@ -290,12 +290,15 @@ visiteur:
 
 #Sortie avant heure
 interne:
-    path: /interne/{paramDefaults}
+    path: /interne/{paramDefaults}/{id}
     controller: App\Controller\SecuriteController::interne
     options:
       expose: true
     defaults:
       paramDefaults: 0
+      id: null
+    requirements:
+      id: \d+
       
 absence_imprevu:
     path: /absence/imprevu

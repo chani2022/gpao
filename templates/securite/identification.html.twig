@@ -96,11 +96,11 @@
                       
                     </div>
                     <div class="col-md-8">
-                     
-                      <a href="{{ path('interne', {'paramDefaults': '0'}) ~ '/' ~ id_personnel }}" class="btn btn-primary ml-2">
-                        Sortie avant l'heure
+                      <a href="{{ path('interne_duplicate', {'paramDefaults': '0', 'id_personnel': id_personnel}) }}" class="btn btn-primary ml-2">
+                        Sortie avant l'heure 
                     </a>
-                                         
+                    
+                    
                     <button type="submit" class="btn btn-primary ml-2">
                       Retard pause
                   </button>

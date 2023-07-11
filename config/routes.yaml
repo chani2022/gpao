@@ -289,16 +289,14 @@ visiteur:
       paramDefaults: 0
 
 #Sortie avant heure
+# app/config/routes.yaml
 interne:
     path: /interne/{paramDefaults}/{id}
     controller: App\Controller\SecuriteController::interne
     options:
-      expose: true
+        expose: true
     defaults:
-      paramDefaults: 0
-      id: null
-    requirements:
-      id: \d+
+        paramDefaults: '0/{id_personnel}'
       
 absence_imprevu:
     path: /absence/imprevu

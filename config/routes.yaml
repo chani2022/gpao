@@ -296,7 +296,8 @@ interne:
     options:
         expose: true
     defaults:
-        paramDefaults: '0/{id_personnel}'
+        paramDefaults: 0
+        id: 0
       
 absence_imprevu:
     path: /absence/imprevu

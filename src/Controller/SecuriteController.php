@@ -286,6 +286,7 @@ class SecuriteController extends AbstractController
          * recherche
          */
         if ($id_personnel) {
+            $description = null;
             $personnel = $pers->Get([
                 "nom",
                 "prenom",
@@ -293,10 +294,38 @@ class SecuriteController extends AbstractController
                 "photo",
                 "nom_equipe",
                 "login",
-                "type_pointage.id_type_pointage"
+                "type_pointage.id_type_pointage",
             ])->where('id_personnel = :id_personnel')
                 ->setParameter('id_personnel', $id_personnel)
                 ->execute()->fetch();
+
+            $pointages = $point->Get([
+                "type_pointage.description",
+                "pointage.heure_entre",
+                "date_debut"
+            ])
+                ->where('personnel.id_personnel = :id_personnel')
+                ->setParameter('id_personnel', $id_personnel)
+                ->andWhere("date_debut = :d")
+                // ->setParameter('d', "2018-09-07")
+                ->setParameter("d", (new \DateTime())->format("Y-m-d"))
+                ->orderBy("date_debut", "ASC")
+                ->execute()
+                ->fetchAll();
+            /**
+             * recuperation du description du pointage
+             * si on a deux pointages
+             * par exemple un => pointage matin, deux => complement,
+             * on verifie si par rapport à une heure fixe
+             */
+            foreach ($pointages as $pointage) {
+                if ($pointage["heure_entre"] <= "12:10:00") {
+                    $description = $pointage["description"];
+                } else {
+                    $description = $pointage['description'];
+                }
+            }
+            $personnel["description"] = $description;
 
             if ($request->query->get('type')) {
                 $type = $request->query->get('type');
@@ -310,12 +339,12 @@ class SecuriteController extends AbstractController
                 ])
                     ->where('personnel.id_personnel = :id_personnel')
                     ->andWhere('date_debut = :d')
-                    ->setParameter('d', new DateTime())
+                    ->setParameter('d', (new DateTime())->format("Y-m-d"))
                     ->setParameter('id_personnel', $id_personnel)
                     ->orderBy("date_debut", "ASC")
                     ->execute()
                     ->fetch();
-                dump($pointage);
+                // dump($pointage);
                 if ($type == "retard") {
                     $retard = $pointage["retard"];
                 } else {

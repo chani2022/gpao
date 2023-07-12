@@ -1,132 +1,121 @@
 {% extends 'base-home.html.twig' %}
-{% block title %}Identification{% endblock %}
+{% block title %}Identification
+{% endblock %}
 
-{% block pageTitle %} Identification {% endblock %}
+{% block pageTitle %}
+	Identification
+{% endblock %}
 
 {% block body %}
 
+	<div class="col-lg-12 col-md-12">
+		<div class="row">
+			<div class="col-lg-6 col-md-6">
+				<div class="card">
+
+					<div
+						class="card-body">
+
+						{# form search #}
+						{% set id_personnel = app.session.get('id_personnel') %}
+						<form method="get" action="{{ path('app_securite_identification') }}" class="form">
+							<div class="form-group">
+								<input type="text" name="id_personnel" value="{{id_personnel}}" placeholder="Matricule" class="form-control"/>
+							</div>
+							<button type="submit" class="btn btn-primary ml-2">
+								Rechercher
+							</button>
+						</form>
+						{# end form search #}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div></div><br/>{% if personnel!=null %}
+{% set nom = personnel['nom'] %}
+{% set prenom = personnel['prenom'] %}
+{% set id_personnel = personnel['id_personnel'] %}
+{% set photo = personnel['photo'] %}
+{% set nom_equipe = personnel['nom_equipe'] %}
+{% set login = personnel['login'] %}
 <div class="col-lg-12 col-md-12">
-    <div class="row">
-        <div class="col-lg-6 col-md-6">
-            <div class="card">
+	<div class="row">
+		<div class="col-lg-6 col-md-6">
+			<div class="card mb-3" style="border-radius: .5rem;">
+				<div class="row g-0">
+					<div style="background:#f8f9fb" class="col-md-4 gradient-custom text-center" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
+						<img src="http://192.168.8.3/public/user_photo/{{photo}}" alt="Avatar" class="img-fluid my-5" style="width: 80px;">
 
-                <div class="card-body">
-                    
-                    {# form search #}
-                    {% set id_personnel = app.session.get('id_personnel') %}
-                    <form method="get" action="{{ path('app_securite_identification') }}" class="form">
-                    <div class="form-group">
-                        <input type="text" name="id_personnel" value="{{id_personnel}}" placeholder="Matricule" class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-primary ml-2">
-                        Rechercher
-                    </button>
-                </form>
-                {# end form search #}
-            </div>
-        </div>
-    </div>
-</div>
-</div></div>
-</div>
+						<h6 style="font-size:12px">{{nom }}</h6>
+						<p>{{prenom }}</p>
+						<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong">
+							<li class="fas fa-eye"></li>&nbsp;Agrandir la photo
+						</button>
 
-<br/>
-{% if personnel!=null %}
-                        {% set nom = personnel['nom'] %}
-                        {% set prenom = personnel['prenom'] %}
-                        {% set id_personnel = personnel['id_personnel'] %}
-                        {% set photo = personnel['photo'] %}
-                        {% set nom_equipe = personnel['nom_equipe'] %}
-                        {% set login = personnel['login'] %}
-<div class="col-lg-12 col-md-12">
-    <div class="row">
-        <div class="col-lg-6 col-md-6">
-                <div class="card mb-3" style="border-radius: .5rem;">
-                  <div class="row g-0">
-                    <div style="background:#f8f9fb" class="col-md-4 gradient-custom text-center"
-                      style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
-                      <img src="http://192.168.8.3/public/user_photo/{{photo}}"  alt="Avatar" class="img-fluid my-5" style="width: 80px;" >
-                   
-                      <h6 style="font-size:12px">{{nom }}</h6>
-                      <p>{{prenom }}</p>
-                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong">
-                    <li class="fas fa-eye"></li>&nbsp;Agrandir la photo
-                  </button>
+						<!-- Modal -->
+						<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+									<div class="modal-body">
+										<img src="http://192.168.8.3/public/user_photo/{{photo}}" alt="Avatar" class="img-fluid my-5">
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-8">
+						<div class="card-body p-4">
+							<div class="row pt-1">
+								<div class="col-8 mb-3">
+									<h6>Matricule</h6>
+									<p class="text-muted">{{id_personnel }}</p>
+								</div>
+								<div class="col-8 mb-3">
+									<h6>Equipe</h6>
+									<p class="text-muted">{{nom_equipe }}</p>
+								</div>
+							</div>
+							<div class="row pt-1">
+								<div class="col-8 mb-3">
+									<h6>Identification</h6>
+									<p class="text-muted">{{login }}</p>
+								</div>
 
-                  <!-- Modal -->
-                  <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                        </div>
-                        <div class="modal-body">
-                          <img src="http://192.168.8.3/public/user_photo/{{photo}}"  alt="Avatar" class="img-fluid my-5"  >
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                    </div>
-                    <div class="col-md-8">
-                      <div class="card-body p-4">
-                        <div class="row pt-1">
-                          <div class="col-8 mb-3">
-                            <h6>Matricule</h6>
-                            <p class="text-muted">{{id_personnel }}</p>
-                          </div>
-                          <div class="col-8 mb-3">
-                            <h6>Equipe</h6>
-                            <p class="text-muted">{{nom_equipe }}</p>
-                          </div>
-                        </div>
-                        <div class="row pt-1">
-                          <div class="col-8 mb-3">
-                            <h6>Identification</h6>
-                            <p class="text-muted">{{login }}</p>
-                          </div>
-                          
-                        </div>
-                        
-                      </div>
-                      
-                    </div>
-                    <div class="col-md-8">
-                     
-                      <a href="{{ path('interne', {'paramDefaults': '0'}) ~ '/' ~ id_personnel }}" class="btn btn-primary ml-2">
-                        Sortie avant l'heure
-                    </a>
-                                         
-                    <button type="submit" class="btn btn-primary ml-2">
-                      Retard pause
-                  </button>
-                  <button type="submit" class="btn btn-primary ml-2">
-                    Retard
-                </button>
-                    </div>
-                    
-                  </div>
-                 
-            <br/>
-                </div>
-                
+							</div>
 
-        </div>
-        {% endif %}
+						</div>
 
-        
-</div>
-</div></div>
+					</div>
+					<div class="col-md-8">
+						<a title="" href="{{ path('interne', {'id': id_personnel, paramDefaults:0}) }}" class="btn btn-primary ml-2">
+							Sortie avant l'heure
+						</a>
 
-</div>
+						<button type="submit" class="btn btn-primary ml-2">
+							Retard pause
+						</button>
+						<button type="submit" class="btn btn-primary ml-2">
+							Retard
+						</button>
+					</div>
+
+				</div>
+
+				<br/>
+			</div>
 
 
+		</div>
+	{% endif %}
 
-{% endblock %}
-{% block javascripts %}
-   
-{% endblock %}
+
+</div></div></div></div>{% endblock %}{% block javascripts %}{% endblock %}

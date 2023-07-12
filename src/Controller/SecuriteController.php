@@ -6,6 +6,7 @@ use App\Entity\Interne;
 use App\Entity\Visiteur;
 use App\Form\InterneType;
 use App\Form\VisiteurType;
+use App\Model\GPAOModels\EquipeTacheOperateur;
 use App\Model\GPAOModels\Personnel;
 use App\Model\GPAOModels\Pointage;
 use App\Model\GPAOModels\TypePointage;
@@ -276,8 +277,8 @@ class SecuriteController extends AbstractController
     {
         $pers = new Personnel($connex);
         $point = new Pointage($connex);
-        $type_pointage = new TypePointage($connex);
-        $personnel = null;
+        // $tacheOperateur = new EquipeTacheOperateur($connex);
+        $pointage_one = null;
         $retard = null;
         $retard_pause = null;
 
@@ -286,23 +287,28 @@ class SecuriteController extends AbstractController
          * recherche
          */
         if ($id_personnel) {
-            $description = null;
-            $personnel = $pers->Get([
-                "nom",
-                "prenom",
-                "id_personnel",
-                "photo",
-                "nom_equipe",
-                "login",
-                "type_pointage.id_type_pointage",
-            ])->where('id_personnel = :id_personnel')
-                ->setParameter('id_personnel', $id_personnel)
-                ->execute()->fetch();
+            // dd(
+            //     $pers->Get()->execute()->fetch()
+            // );
+            // $personnel = $pers->Get(["equipe_tache_operateur.*"])->where('id_personnel = :id_personnel')
+            //     ->setParameter('id_personnel', $id_personnel)
+            //     ->execute()->fetch();
+            // dd($personnel);
 
             $pointages = $point->Get([
+                "nom",
+                "prenom",
+                "personnel.id_personnel",
+                "photo",
+                "login",
                 "type_pointage.description",
                 "pointage.heure_entre",
-                "date_debut"
+                "date_debut",
+                "retard",
+                "total_pause",
+                "sortie_pause",
+                "entree_pause",
+                "description"
             ])
                 ->where('personnel.id_personnel = :id_personnel')
                 ->setParameter('id_personnel', $id_personnel)
@@ -312,6 +318,11 @@ class SecuriteController extends AbstractController
                 ->orderBy("date_debut", "ASC")
                 ->execute()
                 ->fetchAll();
+            // dd($pointages);
+            if (count($pointages) == 0) {
+                $this->addFlash("danger", "Aucune pointage du matricule " . $id_personnel . " a été detectée aujourd'hui");
+                return $this->redirectToRoute("app_securite_identification");
+            }
             /**
              * recuperation du description du pointage
              * si on a deux pointages
@@ -319,58 +330,45 @@ class SecuriteController extends AbstractController
              * on verifie si par rapport à une heure fixe
              */
             foreach ($pointages as $pointage) {
-                if ($pointage["heure_entre"] <= "12:10:00") {
-                    $description = $pointage["description"];
-                } else {
-                    $description = $pointage['description'];
+                if ($pointage["heure_entre"] < "12:10:00" && $pointage["heure_entre"] < (new DateTime())->format("H:i:s")) {
+                    $pointage_one = $pointage;
+                    // $description = $pointage["description"];
+                }
+                if ($pointage["heure_entre"] > "12:10:00" && $pointage["heure_entre"] < (new DateTime())->format("H:i:s")) {
+                    // $description = $pointage['description'];
+                    $pointage_one = $pointage;
                 }
             }
-            $personnel["description"] = $description;
+
+            $pers = $pers->Get(["nom_equipe"])
+                ->where('id_personnel = :id')
+                ->setParameter('id', $id_personnel)
+                ->execute()
+                ->fetch();
+            $pointage_one["nom_equipe"] = $pers["nom_equipe"];
+            // $personnel["description"] = $description;
 
             if ($request->query->get('type')) {
                 $type = $request->query->get('type');
 
-                $pointage = $point->Get([
-                    "personnel.id_personnel",
-                    "retard",
-                    "total_pause",
-                    "sortie_pause",
-                    "entree_pause"
-                ])
-                    ->where('personnel.id_personnel = :id_personnel')
-                    ->andWhere('date_debut = :d')
-                    ->setParameter('d', (new DateTime())->format("Y-m-d"))
-                    ->setParameter('id_personnel', $id_personnel)
-                    ->orderBy("date_debut", "ASC")
-                    ->execute()
-                    ->fetch();
-                // dump($pointage);
                 if ($type == "retard") {
-                    $retard = $pointage["retard"];
+                    $retard = $pointage_one["retard"];
                 } else {
                     $max_pause = new \DateTime("00:10:00");
                     $array_max_pause = explode(':', $max_pause->format("H:i:s"));
-                    $array_time_sortie = explode(":", $pointage["sortie_pause"]);
-                    $entree_pause = new \DateTime($pointage["entree_pause"]);
+                    $array_time_sortie = explode(":", $pointage_one["sortie_pause"]);
+                    $entree_pause = new \DateTime($pointage_one["entree_pause"]);
                     $heure_pause = $entree_pause->sub(new \DateInterval("PT" . $array_time_sortie[0] . "H" . $array_time_sortie[1] . "M" . $array_time_sortie[2] . "S"));
 
                     if ($heure_pause->getTimestamp() > strtotime("00:10:00")) {
                         $retard_pause = $heure_pause->sub(new \DateInterval("PT" . $array_max_pause[0] . "H" . $array_max_pause[1] . "M" . $array_max_pause[2] . "S"))->format("H:i:s");
                     }
-                    // $array_total_pause = explode(':', $max_pause->sub(new \DateInterval("PT" . $array_diff[0] . "H" . $array_diff[1] . "M" . $array_diff[2] . "S"))->format("H:is"));
-
-                    // $retard_pause = $max_pause->sub(new \DateInterval("PT" . $array_total_pause[0] . "H" . $array_total_pause[1] . "M" . $array_total_pause[2] . "S"));
-
-                    // dd($retard_pause);
-                    // if ($retard_pause < 0) {
-                    //     $retard_pause = date('H:i:s', $retard_pause);
-                    // }
                 }
             }
         }
-        dump($personnel, $id_personnel, $retard, $retard_pause);
+        dump($pointage_one, $id_personnel, $retard, $retard_pause);
         return $this->render("securite/identification.html.twig", [
-            "personnel" => $personnel,
+            "personnel" => $pointage_one,
             "id_personnel" => $id_personnel,
             'retard' => $retard,
             "retard_pause" => $retard_pause

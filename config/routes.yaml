@@ -290,8 +290,8 @@ visiteur:
 
 #Sortie avant heure
 interne:
-    path: /interne/{paramDefaults}/{id}
-    controller: App\Controller\SecuriteController::interne
+    path: securite/sortie-avant-heure/{paramDefaults}/{id}
+    controller: App\Controller\SecuriteController::sortieAvantHeure
     options:
         expose: true
     defaults:

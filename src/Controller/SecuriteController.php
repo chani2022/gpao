@@ -166,7 +166,7 @@ class SecuriteController extends AbstractController
     /**
      * @Security("is_granted('ROLE_RH')")
      */
-    public function interne($paramDefaults = null, int $id = null, Request $request, Connection $connex, $okSecurite = null)
+    public function sortieAvantHeure($paramDefaults = null, int $id = null, Request $request, Connection $connex, $okSecurite = null)
     {
 
         $objSortie = new SortieAvantHeure($connex);
@@ -181,7 +181,7 @@ class SecuriteController extends AbstractController
                 "id_sortie_avant_heure" => $id
             ])->execute();
 
-            return $this->redirectToRoute("interne");
+            return $this->redirectToRoute("securite_sortie_avant_heure");
         }
 
         $form = $this->createFormBuilder()
@@ -212,7 +212,7 @@ class SecuriteController extends AbstractController
                 "donneur_ordre" => $donneur_ordre,
                 "ok_securite" => 0
             ])->execute();
-            return $this->redirectToRoute("interne");
+            return $this->redirectToRoute("securite_sortie_avant_heure");
         }
         $users_sortie_avant_heure = $objSortie->Get([
             "sortie_avant_heure.*",
@@ -327,7 +327,7 @@ class SecuriteController extends AbstractController
         //     $list_visiteur = $manager->getRepository(Interne::class)->findDataHierAndToDate();
         // }
 
-        return $this->render('securite/interne.html.twig', [
+        return $this->render('securite/sortie_avant_heure.html.twig', [
             "form" => $form->createView(),
             'list_visiteur' => $users_sortie_avant_heure
         ]);
@@ -373,7 +373,7 @@ class SecuriteController extends AbstractController
                 ->where('personnel.id_personnel = :id_personnel')
                 ->setParameter('id_personnel', $id_personnel)
                 ->andWhere("date_debut = :d")
-                // ->setParameter('d', "2018-09-07")
+                //->setParameter('d', "2018-09-07")
                 ->setParameter("d", (new \DateTime())->format("Y-m-d"))
                 ->orderBy("date_debut", "ASC")
                 ->execute()

@@ -33,7 +33,6 @@
 </div>
     <br/>
 
-   
     <div class="col-lg-12 col-md-12">
             <br/>
             <div class="card">
@@ -43,21 +42,67 @@
                             <table class="table tbl_scroll_1">
                                 <thead style="background:#4272d7;color:#fff;">
                                     <tr>
+                                        <th>Photo</th>
                                         <th>Matricule</th>
+                                        <th>Nom</th>
+                                        <th>Prénom</th>
                                         <th>Heure sortie</th>
+                                        <th>Date sortie</th>
                                         <th>Observation</th>
+                                        <th>Donneur d'ordre</th>
                                     </tr>
                                 </thead>
                                 <!--<tbody class="value_data_heure_manquant_extras"> -->
                                  <tbody> 
-                                  
+                                    {% for value in list_visiteur %}
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td>
+                                            <div class="card mb-3" style="border-radius: .5rem;">
+                                                <div class="row g-0">
+                                                    <div style="background:#f8f9fb" class="col-md-4 gradient-custom text-center" style="border-top-left-radius: .5rem; border-bottom-left-radius: .5rem;">
+                                                        <img src="http://192.168.8.3/public/user_photo/{{value.photo}}" alt="Avatar" class="img-fluid my-5" style="width: 80px;">
+                                
+                                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong">
+                                                            <li class="fas fa-eye"></li>&nbsp;Agrandir la photo
+                                                        </button>
+                                
+                                                        <!-- Modal -->
+                                                        <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                                                            <div class="modal-dialog" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                            <span aria-hidden="true">&times;</span>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <img src="http://192.168.8.3/public/user_photo/{{value.photo}}" alt="Avatar" class="img-fluid my-5">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                
+                                                </div>
+                                
+                                                <br/>
+                                            </div>
+                                        </td>
+                                        <td>{{value.id_personnel}}</td>
+                                        <td>{{value.nom}}</td>
+                                        <td>{{value.prenom}}</td>
+                                        <td>{{value.heure_sortie}}</td>
+                                        <td>{{value.date_sortie}}</td>
+                                        <td>{{value.observation}}</td>
+                                        <td>{{value.donneur_ordre}}</td>
                                                                            
                                     </tr>
-                                   
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -65,7 +110,7 @@
                 </div>
             </div>
     </div>
-    
+  
 
 
 {% endblock %}{% block javascripts %}{% endblock %}

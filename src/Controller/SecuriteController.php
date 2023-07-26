@@ -168,7 +168,7 @@ class SecuriteController extends AbstractController
      */
     public function sortieAvantHeure($paramDefaults = null, int $id = null, Request $request, Connection $connex, $okSecurite = null)
     {
-
+        date_default_timezone_set("Indian/Antananarivo");
         $objSortie = new SortieAvantHeure($connex);
         $date_sortie = (new DateTime())->format("Y-m-d");
         /**
@@ -176,12 +176,12 @@ class SecuriteController extends AbstractController
          */
         if ($paramDefaults == "sortie-avant-heure") {
             $objSortie->updateData([
-                "ok_security" => 1
+                "ok_securite" => 1
             ], [
                 "id_sortie_avant_heure" => $id
             ])->execute();
 
-            return $this->redirectToRoute("securite_sortie_avant_heure");
+            return $this->redirectToRoute("interne");
         }
 
         $form = $this->createFormBuilder()
@@ -191,7 +191,9 @@ class SecuriteController extends AbstractController
                 ]
             ])
             ->add('heure_sortie', TextType::class)
-            ->add('observation', TextareaType::class)
+            ->add('observation', TextareaType::class, [
+                "required" => false
+            ])
             ->getForm();
 
         $form->handleRequest($request);
@@ -204,15 +206,20 @@ class SecuriteController extends AbstractController
             $date_sortie = $date_sortie;
             $donneur_ordre = $this->getUser()->getUserDetails()["id_personnel"];
 
+            if ($heure_sortie <= (new DateTime())->format("H:i:s")) {
+                $this->addFlash("danger", "Veuillez vérifiez l'heure de sortie");
+                return $this->redirectToRoute("interne");
+            }
+
             $objSortie->insertData([
                 "id_personnel" => $id_personnel,
                 "date_sortie" => $date_sortie,
                 "heure_sortie" => $heure_sortie,
-                "observations" => $observation,
+                "observation" => $observation,
                 "donneur_ordre" => $donneur_ordre,
                 "ok_securite" => 0
             ])->execute();
-            return $this->redirectToRoute("securite_sortie_avant_heure");
+            return $this->redirectToRoute("interne");
         }
         $users_sortie_avant_heure = $objSortie->Get([
             "sortie_avant_heure.*",
@@ -326,7 +333,7 @@ class SecuriteController extends AbstractController
         //     //$list_visiteur = $manager->getRepository(Interne::class)->findAll();
         //     $list_visiteur = $manager->getRepository(Interne::class)->findDataHierAndToDate();
         // }
-
+        dump($users_sortie_avant_heure);
         return $this->render('securite/sortie_avant_heure.html.twig', [
             "form" => $form->createView(),
             'list_visiteur' => $users_sortie_avant_heure
@@ -335,6 +342,7 @@ class SecuriteController extends AbstractController
 
     public function identificationPersonne(Request $request, Connection $connex): Response
     {
+        date_default_timezone_set("Indian/Antananarivo");
         $pers = new Personnel($connex);
         $point = new Pointage($connex);
         // $tacheOperateur = new EquipeTacheOperateur($connex);
@@ -383,6 +391,7 @@ class SecuriteController extends AbstractController
                 $this->addFlash("danger", "Aucune pointage du matricule " . $id_personnel . " a été detectée aujourd'hui");
                 return $this->redirectToRoute("app_securite_identification");
             }
+
             /**
              * recuperation du description du pointage
              * si on a deux pointages

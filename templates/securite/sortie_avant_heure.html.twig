@@ -32,7 +32,6 @@
     </div>
 </div>
     <br/>
-
     <div class="col-lg-12 col-md-12">
             <br/>
             <div class="card">
@@ -50,10 +49,12 @@
                                         <th>Date sortie</th>
                                         <th>Observation</th>
                                         <th>Donneur d'ordre</th>
+                                        <th>Ok sécurité</th>
                                     </tr>
                                 </thead>
                                 <!--<tbody class="value_data_heure_manquant_extras"> -->
                                  <tbody> 
+                                    
                                     {% for value in list_visiteur %}
                                     <tr>
                                         <td>
@@ -85,9 +86,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
-                                                    
-                                
+                                             
                                                 </div>
                                 
                                                 <br/>
@@ -99,8 +98,16 @@
                                         <td>{{value.heure_sortie}}</td>
                                         <td>{{value.date_sortie}}</td>
                                         <td>{{value.observation}}</td>
+                                        
                                         <td>{{value.donneur_ordre}}</td>
-                                                                           
+                                        <td>
+                                            {% if value.ok_securite !=0 %}
+                                            <span style="color:green"><strong>Validé</strong></span>
+                                            {% else %}
+                                           <a class="btn btn-danger" href="{{ path('interne', { 'paramDefaults': 'sortie-avant-heure', 'id': value.id_sortie_avant_heure }) }}"><li class="fas fa-check"></li>&nbsp;</a>
+                                           {% endif %}
+                                        </td>
+                           
                                     </tr>
                                     {% endfor %}
                                 </tbody>

@@ -483,9 +483,11 @@ class DossierController extends AbstractController
     {
 
         date_default_timezone_set("Indian/Antananarivo");
+
         $type_pointage = "1"; //equipe matin
         $total_encours_traitement = 0;
         $user_prod = [];
+        $list_user_encours_traitement = [];
 
         $list_fonction_query = ' IN (\'CORE 2\',\'CORE 1\',\'OP 2\', \'OP 1\',\'CQ 1\') ';
         $equipe_one = 0;
@@ -508,7 +510,8 @@ class DossierController extends AbstractController
             "personnel.id_personnel", "personnel.nom", "personnel.prenom", "personnel.id_equipe_tache_operateur", "personnel.id_type_pointage", "pointage.heure_reel_entree", "personnel.nom_fonction", "personnel.nom_fonction", "personnel.nom_privilege", "type_pointage.description"
         ])
             ->where('pointage.date_debut = :db')
-            ->setParameter('db', (new \DateTime())->format("Y-m-d"))
+            ->setParameter('db', (new \DateTime())->format("Y-m-d")) //averenina
+            // ->setParameter('db', "2018-09-20")
             ->andWhere('personnel.actif = :actif')
             ->setParameter('actif', 'Oui')
             ->andWhere('pointage.heure_reel_sortie is NULL ')
@@ -526,9 +529,8 @@ class DossierController extends AbstractController
                 ->setParameter("description", "Extra");
         }
 
-
         $pers_present = $query->orderBy("personnel.id_personnel", "ASC")->execute()->fetchAll();
-
+        // dd($pers_present);
         //dump($pers_present);
         /**
          * listes des personnels qui travaille
@@ -563,9 +565,10 @@ class DossierController extends AbstractController
 
         $pers_works = $queryWork->andWhere('date_traitement = :date_tr')
             ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
+            // ->setParameter('date_tr', "2018-09-20")
             ->execute()
             ->fetchAll();
-
+        // dump($pers_works);
         /**
          * filtre des informations des personnes qui ne travaillent pas
          **/
@@ -578,7 +581,12 @@ class DossierController extends AbstractController
                     $pers_find = true;
                     $list_prods[] = $work;
                 }
+                /**
+                 * listes des production encours (C'EST QUI ONT DE TRAVAILLE)
+                 */
+                $list_user_encours_traitement[$work["id_personnel"]] = array_merge($present, $work);
             }
+
             /**
              * effectif qui prod
              */
@@ -607,6 +615,7 @@ class DossierController extends AbstractController
                          * recuperation du heure fin du traitement prod
                          */
                         $sqlProdNotWork = $prod->Get([
+                            "heure_debut",
                             "heure_fin"
                         ])->where("personnel.id_personnel = :id_personnel")
                             ->setParameter('id_personnel', $present["id_personnel"])
@@ -624,9 +633,14 @@ class DossierController extends AbstractController
                             ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
                             ->orderBy('heure_debut', "ASC")
                             ->execute()->fetchAll();
+                        // dd($prodNotWorks, $present);
                         $present["heure_fin"] = null;
                         if (count($prodNotWorks) > 0) {
                             $present["heure_fin"] = $prodNotWorks[count($prodNotWorks) - 1]["heure_fin"];
+                            /**
+                             * recuperation du production AVANT qu'il n'a pas de travail
+                             */
+                            $list_user_encours_traitement[$present["id_personnel"]] = array_merge($present, $prodNotWorks[count($prodNotWorks) - 1]);
                         }
                         $personne_dot_work[] = $present;
                         if ($present["id_equipe_tache_operateur"] == 1) {
@@ -676,6 +690,8 @@ class DossierController extends AbstractController
         //dump($total_encours_traitement);
         //dump($personne_dot_work);
         //dump($equipe_two_dot_work);
+        ksort($list_user_encours_traitement);
+        dump($list_user_encours_traitement);
         return $this->render('dossier/suivi.html.twig', [
             //"effectif" => count($pers_present),
             "effectif" => count($user_prod),
@@ -687,7 +703,8 @@ class DossierController extends AbstractController
             "nb_equipe_two" => $equipe_two,
             "list_pers_not_work" => $personne_dot_work,
             "nb_equipe_one_inactif" => $equipe_one_dot_work,
-            "nb_equipe_two_inactif" => $equipe_two_dot_work
+            "nb_equipe_two_inactif" => $equipe_two_dot_work,
+            "list_prod_en_cours" => $list_user_encours_traitement
         ]);
     }
     /**
@@ -8437,7 +8454,7 @@ class DossierController extends AbstractController
                      * si ces conditions sont remplit donc ces donnees ne sont pas filtre (ex: filtre matin, on exclut les extras et si ces extras, on exclut les productions 
                      */
                     if (!is_null($volume) && !is_null($objectif) && !is_null($nom_dossier) && !is_null($heure_reel)) {
-                        
+
                         // $tab_if_type_pointage_null[$prod["id_personnel"]][$date_traitement] = $isExtraOrComplement ? ["c"] : ["p"];
                         /**
                          * statistiques
@@ -8448,8 +8465,6 @@ class DossierController extends AbstractController
                             $statistiques[$prod["date_traitement"]]["heure_reference"] = !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" || is_null($type_pointage)  ? $heure_ref : 0);
                             $statistiques[$prod["id_personnel"]][] = $date_traitement;
                             $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]] = $isExtraOrComplement ? ["c"] : ["p"];
-                    
-
                         } else {
 
                             $statistiques[$prod["date_traitement"]]["heure_objectif"] += round($volume / $objectif, 2) - $prod["incident"];
@@ -8461,7 +8476,7 @@ class DossierController extends AbstractController
                                 if (!array_key_exists($prod["id_personnel"], $statistiques[$prod["date_traitement"]]["test"])) {
                                     $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]] = $isExtraOrComplement ? ["c"] : ["p"];
                                     // $statistiques[$date_traitement]["heure_reference"] += $isExtraOrComplement ? 4 : 6;
-                                    
+
                                 } else {
                                     if (
                                         !in_array("c", $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]]) &&
@@ -8471,7 +8486,7 @@ class DossierController extends AbstractController
                                         $statistiques[$date_traitement]["test"][$prod["id_personnel"]][] = "c";
                                     }
                                     if (
-                                        !in_array("p", $statistiques[$prod["date_traitement"]]["test"]  [$prod["id_personnel"]]) &&
+                                        !in_array("p", $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]]) &&
                                         !$isExtraOrComplement
                                     ) {
                                         $statistiques[$date_traitement]["heure_reference"] += 6;
@@ -8702,7 +8717,7 @@ class DossierController extends AbstractController
         }
         ksort($statistiques, SORT_LOCALE_STRING);
         dump($statistiques);
-        
+
         return $this->render('dossier/heure_objectif.html.twig', [
             "form" => $form->createView(),
             "data" => $data,

@@ -580,11 +580,11 @@ class DossierController extends AbstractController
                     $is_user_prod = true;
                     $pers_find = true;
                     $list_prods[] = $work;
+                    /**
+                     * listes des production encours (C'EST QUI ONT DE TRAVAILLE)
+                     */
+                    $list_user_encours_traitement[$work["id_personnel"]] = array_merge($present, $work);
                 }
-                /**
-                 * listes des production encours (C'EST QUI ONT DE TRAVAILLE)
-                 */
-                $list_user_encours_traitement[$work["id_personnel"]] = array_merge($present, $work);
             }
 
             /**
@@ -640,7 +640,7 @@ class DossierController extends AbstractController
                             /**
                              * recuperation du production AVANT qu'il n'a pas de travail
                              */
-                            $list_user_encours_traitement[$present["id_personnel"]] = array_merge($present, $prodNotWorks[count($prodNotWorks) - 1]);
+                            //$list_user_encours_traitement[$present["id_personnel"]] = array_merge($present, $prodNotWorks[count($prodNotWorks) - 1]);
                         }
                         $personne_dot_work[] = $present;
                         if ($present["id_equipe_tache_operateur"] == 1) {

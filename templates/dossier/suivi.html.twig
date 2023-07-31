@@ -34,39 +34,62 @@
                                 {% set countNotEmpty_normal = countNotEmpty_normal + 1 %}
                         {% endif %}
                      {% endfor %}
-                        <table class="table">
-                            <thead style="background:#4272d7;color:#fff;">
-                                <tr>
-                                    <th>Matricule des personnes inactives</th>
-                                    <th>Nom</th>
-                                    <th>Prénom</th>
-                                    <th>Equipe</th>
-                                    <th>Type de pointage actuel</th>
-                                    <th>Heure dernière prod</th>
-                                </tr>
-                            </thead>
-	                         <tbody> 
-                               	{% for x in list_pers_not_work %}
-	                            <tr>
-                                    <td>{{x.id_personnel}}</td>
-                                    <td>{{x.nom}}</td>
-                                    <td>{{x.prenom}}</td>
-                                    <td>{{x.id_equipe_tache_operateur}}</td>
-                                    <td>{{x.description}}</td>
-                                    <td>{{x.heure_fin}}</td>
-                                </tr>
-                                {% endfor %}
-	                        </tbody>
-                    </table>
+
+                     <!--Table-->
+                     <table class="table" id="myTable">
+                        <thead style="background:#4272d7;color:#fff;">
+                            <tr>
+                                <th>Matricule des personnes inactives</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Equipe</th>
+                                <th>Type de pointage actuel</th>
+                                <th>Heure dernière prod</th>
+                         </tr>
+                         </thead>
+                        <tbody id="datas">
+                        </tbody>
+                     </table>
+
                     <div style="text-align:end">
                         <span style="font-size:17px!important;font-weight: 700;">Extra:</span> <span style="font-size:17px!important;font-weight: 700;color:red">{{ countNotEmpty }}</span>
                         <br/>
                         <span style="font-size:17px!important;font-weight: 700;">Prod normal:</span> <span style="font-size:17px!important;font-weight: 700;color:red"> {{ countNotEmpty_normal }}</span>
                       
                      </div>
-                    
                    
-                        </div><table class="table">
+                        </div>
+                        <table class="table">
+                            <thead style="background:#4272d7;color:#fff;">
+                                <tr>
+                                    <th>Matricule</th>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Equipe</th>
+                                    <th>Type de pointage</th>
+                                    <th>Heure début prod</th>
+                                </tr>
+                            </thead>
+                             <tbody> 
+                             	{% for list in list_prod_en_cours %}
+	                            <tr>
+                                    <td>{{list.id_personnel}}</td>
+                                    <td>{{list.nom}}</td>
+                                    <td>{{list.prenom}}</td>
+                                    <td>{{list.id_equipe_tache_operateur}}</td>
+                                    {% if list.id_type_pointage!=1 %}
+                                    <td>Equipe APM</td>
+                                    {% else %}
+                                    <td>Equipe Matin</td>
+                                    {% endif %}
+                                    
+                                    <td>{{list.heure_debut}}</td>
+                                    
+                                </tr>
+	                            {% endfor %}
+	                        </tbody>
+                    </table>
+                        <table class="table">
                             <thead style="background:#4272d7;color:#fff;">
                                 <tr>
                                     <th>Effectif</th>
@@ -86,5 +109,46 @@
             </div>
         </div>
     </div>
+
+
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+var data2 = {{list_pers_not_work|json_encode()|raw}};
+let parsedDates = new Map(
+    data2.map(e => [e.heure_fin, e])
+      );
+
+data2 = data2.map(x => x.heure_fin).sort().map(x => parsedDates.get(x))
+//console.log("Triage par ordre croissante",data2)
+
+//Insert data function
+function Insert_Data() {
+  var table = document.getElementById("datas");
+  table.innerHTML="";
+  var tr="";
+  for (const [key, value] of Object.entries(data2)) {
+  if(value.id_type_pointage==1){
+    tr+='<tr>';
+     tr+='<td>'+value.id_personnel+'</td>'+'<td>'+value.nom+'</td>'+'<td>'+value.prenom+'</td>'+'<td>'+value.id_equipe_tache_operateur+'</td>'+'<td>Equipe Matin</td>'+'<td>'+value.heure_fin+'</td>'
+     tr+='</tr>'
+  }else{
+    tr+='<tr>';
+     tr+='<td>'+value.id_personnel+'</td>'+'<td>'+value.nom+'</td>'+'<td>'+value.prenom+'</td>'+'<td>'+value.id_equipe_tache_operateur+'</td>'+'<td>Equipe APM</td>'+'<td>'+value.heure_fin+'</td>'
+     tr+='</tr>'
+  }
+}
+  table.innerHTML+=tr;
+  //Help......  
+}
+
+Insert_Data()
+
+
+  
+
+</script>
 
 {% endblock %}

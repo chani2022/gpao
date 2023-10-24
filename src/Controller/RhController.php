@@ -11,6 +11,7 @@ use App\Model\GPAOModels\Personnel;
 use App\Model\GPAOModels\Fonction;
 use App\Model\GPAOModels\Pointage;
 use App\Model\GPAOModels\Production;
+use App\Model\GPAOModels\Recolte;
 use Doctrine\DBAL\Driver\Connection;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,9 +30,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use DateInterval;
 use DateTime;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Contracts\Cache\CacheInterface;
+use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use PhpOffice\PhpWord\Element\Cell;
+use Doctrine\ORM\QueryBuilder;
 
 class RhController extends AbstractController
 {
@@ -3012,7 +3020,7 @@ class RhController extends AbstractController
                 ->where('id_' . $name_suffix_id_entity . ' = :id_delete')
                 ->setParameter("id_delete", $id)
                 ->execute();
-            $this->addFlash("danger", 'Le congé du matricule '.$id.' a été effacé avec succes');
+            $this->addFlash("danger", 'Le congé du matricule ' . $id . ' a été effacé avec succes');
             return $this->redirectToRoute($path_redirect, ['option' => $option]);
         }
         /**
@@ -3134,5 +3142,117 @@ class RhController extends AbstractController
             "data" => $data,
             "date_envigeure" => $date_fin_envigeure ? $date_fin_envigeure : date('Y-m-d'),
         ]);
+    }
+    /**
+     * @Route("/rh/recolte", name="rh_recolte")
+     */
+    public function recolte(Request $request, Connection $connection): Response
+    {
+        $form = $this->createFormBuilder()
+            ->add('file', FileType::class, [
+                "constraints" => [
+                    new File([
+                        "mimeTypes" => ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+                        "uploadExtensionErrorMessage" => 'Veuillez uploader seulement des fichiers .xlsx'
+                    ])
+                ]
+            ])
+            ->add('submit', SubmitType::class)
+            ->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $personnel = new Personnel($connection);
+
+            /** @var Fonction $fonction */
+            // $fonction = new Fonction($connection);
+
+            // $equipe = new EquipeTacheOperateur($connection);
+
+            $personnels = [];
+            $matricules = [];
+
+            /** suppression des donnée de la table */
+            // $recolte = new Recolte($connection);
+            // $recolte->deleteData();
+
+            /** @var UploadedFile $uploaded_file */
+            $uploaded_file = $form->get('file')->getData();
+
+            $reader = ReaderEntityFactory::createXLSXReader();
+
+            $reader->open($uploaded_file->getPathname());
+
+
+            foreach ($reader->getSheetIterator() as $sheet) {
+                foreach ($sheet->getRowIterator() as $i => $row) {
+                    // do stuff with the row
+                    if ($i > 1) {
+                        $cells = $row->getCells();
+                        // dd($cells);
+                        $matricules[] = $cells[0]->getValue();
+                        // $fonc = $cells[1]->getValue();
+                        $equipe = $cells[4]->getValue();
+
+                        // $personnels[] = $matr;
+                        // $fonctions[$matr] = $fonc;
+                        // $equipes[$matr] = $equipe;
+                        // $fonction = $cells[1]->getValue();
+                        // $nom = $cells[2]->getValue();
+                        // $prenom = $cells[3]->getValue();
+                        // $equipe = $cells[4]->getValue();
+
+                    }
+                }
+            }
+            /** @var QueryBuilder $sqlPersonnel  */
+            $qb = $personnel->Get([
+                "personnel.id_personnel",
+                "personnel.nom",
+                "prenom",
+                "nom_fonction",
+                "type_pointage.description"
+            ]);
+
+            $str_matricules = implode(", ", $matricules);
+            $operator_matricules = "IN (" . $str_matricules . ")";
+            $personnels = $qb->where("personnel.id_personnel " . $operator_matricules)
+                ->orderBy("personnel.id_personnel", "ASC")
+                ->execute()
+                ->fetchAll();
+            // $whereBegin = false;
+            // foreach ($equipes as $matr => $equipe) {
+            //     $key_personnel = ":id_personnel_" . $matr;
+            //     $key_description = ":description_" . $matr;
+
+            //     if (!$whereBegin) {
+            //         $whereBegin = true;
+            //         $qb->where("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+            //     } else {
+            //         $qb->orWhere("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+            //     }
+
+            //     $qb->setParameter(str_replace(":", "", $key_personnel), $matr)
+            //         ->setParameter(str_replace(":", "", $key_description), "%" . $equipe . "%");
+            // }
+            // dump($qb);
+
+            dd($personnels);
+        }
+        return $this->render("recolte/recolte.html.twig", [
+            "form" => $form->createView(),
+        ]);
+    }
+
+    public function importRecolte(Request $request, Connection $connection): ?JsonResponse
+    {
+        if ($request->isXmlHttpRequest()) {
+            $recolte = new Recolte($connection);
+            $recolte->deleteData();
+
+            $excelObj = $request->files->get('file');
+        }
+
+        return null;
     }
 }

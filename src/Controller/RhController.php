@@ -3143,9 +3143,7 @@ class RhController extends AbstractController
             "date_envigeure" => $date_fin_envigeure ? $date_fin_envigeure : date('Y-m-d'),
         ]);
     }
-    /**
-     * @Route("/rh/recolte", name="rh_recolte")
-     */
+
     public function recolte(Request $request, Connection $connection): Response
     {
         $form = $this->createFormBuilder()

@@ -544,7 +544,8 @@ class DossierController extends AbstractController
             "personnel.nom_fonction",
             "personnel.nom_privilege",
             "production.etat",
-            "personnel.id_equipe_tache_operateur"
+            "personnel.id_equipe_tache_operateur",
+            "nom_dossier"
         ])
             ->where('production.etat = :etat')
             ->setParameter('etat', "Encours-Traitement")
@@ -568,21 +569,25 @@ class DossierController extends AbstractController
             // ->setParameter('date_tr', "2018-09-20")
             ->execute()
             ->fetchAll();
-        // dump($pers_works);
+        // dd($pers_works), count($pers_present));
         /**
          * filtre des informations des personnes qui ne travaillent pas
          **/
+        $dossier_test = [];
         foreach ($pers_present as $present) {
             $pers_find = false;
             $is_user_prod = false;
+            $dossier_name = null;
             foreach ($pers_works as $work) {
                 if ($present["id_personnel"] == $work["id_personnel"]) {
                     $is_user_prod = true;
                     $pers_find = true;
                     $list_prods[] = $work;
+                    $dossier_name = $work['nom_dossier'];
                     /**
                      * listes des production encours (C'EST QUI ONT DE TRAVAILLE)
                      */
+                    // dump(array_merge($present, $work));
                     $list_user_encours_traitement[$work["id_personnel"]] = array_merge($present, $work);
                 }
             }
@@ -597,11 +602,18 @@ class DossierController extends AbstractController
                 } else {
                     $equipe_two += 1;
                 }
+                if (!array_key_exists($dossier_name, $dossier_test)) {
+                    $dossier_test[$dossier_name] = 1;
+                } else {
+                    $dossier_test[$dossier_name] = $dossier_test[$dossier_name] + 1;
+                }
             }
             /**
-             * personne not extra
+             * personne doesn't prod
+             * 
              */
             if (!$pers_find) {
+                // dump($present);
                 /**
                  * si fonction != cq
                  */
@@ -653,36 +665,46 @@ class DossierController extends AbstractController
             }
         }
         asort($personne_dot_work);
-        //dump($personne_dot_work);
+
+        $dossiers = [];
+        foreach ($dossier_test as $name_dossier => $nb) {
+            $dossiers[] = [
+                "nb_dossier" => $nb,
+                "nom_dossier" => $name_dossier
+            ];
+        }
+        // dump(count($user_prod), $dossier_test);
+        // dump($personne_dot_work);
         /**
          * total de personne qui traite UN dossier
          */
-        $queryCount = $prod->Get([
-            "DISTINCT COUNT(nom_dossier) as nb_dossier",
-            "nom_dossier",
+        // $queryCount = $prod->Get([
+        //     "DISTINCT COUNT(nom_dossier) as nb_dossier",
+        //     "nom_dossier",
 
-        ])
-            ->where('production.etat = :etat')
-            ->setParameter('etat', "Encours-Traitement")
-            ->andWhere('personnel.nom_fonction ' . $list_fonction_query)
+        // ])
+        //     ->where('production.etat = :etat')
+        //     ->setParameter('etat', "Encours-Traitement")
+        //     ->andWhere('personnel.nom_fonction ' . $list_fonction_query)
 
-            ->andWhere('personnel.actif = :actif')
-            ->setParameter('actif', 'Oui');
-        if (strtotime(date('H:i:s')) < strtotime("12:10:00")) {
-            $queryCount->andWhere('heure_debut < :heure_entre')
-                ->setParameter('heure_entre', "12:10:00");
-        } else {
-            $queryCount->andWhere('heure_debut > :heure_entre')
-                ->setParameter('heure_entre', "12:10:00");
-        }
+        //     ->andWhere('personnel.actif = :actif')
+        //     ->setParameter('actif', 'Oui');
+        // if (strtotime(date('H:i:s')) < strtotime("12:10:00")) {
+        //     $queryCount->andWhere('heure_debut < :heure_entre')
+        //         ->setParameter('heure_entre', "12:10:00");
+        // } else {
+        //     $queryCount->andWhere('heure_debut > :heure_entre')
+        //         ->setParameter('heure_entre', "12:10:00");
+        // }
 
-        $dossiers = $queryCount->andWhere('date_traitement = :date_tr')
-            ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
-            ->groupBy("nom_dossier")
-            ->orderBy('nom_dossier', "ASC")
-            ->execute()
-            ->fetchAll();
+        // $dossiers = $queryCount->andWhere('date_traitement = :date_tr')
+        //     ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
+        //     ->groupBy("nom_dossier")
+        //     ->orderBy('nom_dossier', "ASC")
+        //     ->execute()
+        //     ->fetchAll();
 
+        // dump($dossiers);
         rsort($dossiers); //tri par ordre decroissant
         foreach ($dossiers as $dossier) {
             $total_encours_traitement += $dossier["nb_dossier"];
@@ -691,7 +713,18 @@ class DossierController extends AbstractController
         //dump($personne_dot_work);
         //dump($equipe_two_dot_work);
         ksort($list_user_encours_traitement);
-        dump($list_user_encours_traitement);
+        $quinzePremier = [];
+        if (count($list_user_encours_traitement) > 15) {
+            $i = 0;
+            foreach ($list_user_encours_traitement as $user_encours_traitement) {
+                if ($i < 15) {
+                    $quinzePremier[] = $user_encours_traitement;
+                }
+                $i++;
+            }
+        }
+        // dump();
+        // dump($personne_dot_work, $total_encours_traitement, count($user_prod));
         return $this->render('dossier/suivi.html.twig', [
             //"effectif" => count($pers_present),
             "effectif" => count($user_prod),
@@ -704,7 +737,7 @@ class DossierController extends AbstractController
             "list_pers_not_work" => $personne_dot_work,
             "nb_equipe_one_inactif" => $equipe_one_dot_work,
             "nb_equipe_two_inactif" => $equipe_two_dot_work,
-            "list_prod_en_cours" => $list_user_encours_traitement
+            "list_prod_en_cours" => count($list_user_encours_traitement) > 15 ? $quinzePremier : $list_user_encours_traitement
         ]);
     }
     /**
@@ -6764,6 +6797,8 @@ class DossierController extends AbstractController
                  * pointage
                  */
                 $pointage = new \App\Model\GPAOModels\Pointage($connex);
+                $pointageModel = new \App\Model\GPAOModels\Pointage($connex);
+
                 $sqlPointage = $pointage->Get([
                     "personnel.nom_fonction",
                     "personnel.id_personnel",
@@ -6856,7 +6891,18 @@ class DossierController extends AbstractController
                  * maka ny extra
                  */
                 $pros = [];
+                // dump($pointageAll);
+                // foreach ($pointageAll as $pointage) {
+                //     if ($pointage["id_personnel"] == 36) {
+                //         dump($pointage);
+                //     }
+                // }
                 foreach ($prods as $prod) {
+                    // if ($prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)") {
+                    //     dump($prod);
+                    //     dd($pointageAll);
+                    // }
+                    // dump($prod["nom_dossier"]);
                     // if($prod["id_personnel"] == 1307){
                     //     if(strtotime($prod["date_traitement"]) == strtotime("2022-08-24")){
                     //         $pros[] = $prod;
@@ -6875,11 +6921,89 @@ class DossierController extends AbstractController
                             }
                         }
                     }
+                    /**
+                     * sans pointage extra mais extra
+                     */
+                    if (strtotime($prod["date_reel_livraison"]) < strtotime($prod["date_traitement"])) {
+                        // if ($prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)") {
+                        //             dump($prod);
+                        //             dd($pointageAll);
+                        //         }
+
+                        // $pointage = $pointageModel->Get([
+                        //     // "personnel.nom_fonction",
+                        //     // "personnel.id_personnel",
+                        //     // "personnel.id_type_pointage",
+                        //     "pointage.heure_entre",
+                        //     "pointage.heure_sortie",
+                        //     // "type_pointage.description",
+                        //     "date_debut",
+                        //     // "personnel.type_contrat"
+                        // ])
+                        //     ->where('type_pointage.description LIKE :desc')
+                        //     ->andWhere('personnel.id_personnel = :id_personnel')
+                        //     ->andWhere('date_debut = :date')
+                        //     ->setParameter('desc', 'Extra%')
+                        //     ->setParameter('id_personnel', $prod['id_personnel'])
+                        //     ->setParameter('date', $prod["date_traitement"])
+                        //     ->execute()->fetch();
+
+                        // if ($pointage) {
+                        //     if (
+                        //         strtotime($prod["heure_debut"]) >= strtotime($pointage["heure_entre"]) &&
+                        //         strtotime($prod["heure_debut"]) <= strtotime($pointage["heure_sortie"])
+                        //     ) {
+                        //         $isExtra = true;
+                        //         // dd($prod);
+                        //     }
+                        // }
+                        // $pattern = "/E-D00-010-230382_N (Dossier_E10SF)|
+                        // E-D00-010-230409_N (Dossier_E10SF)|
+                        // E-D00-040-230330_MD (Dossier_COS4)|
+                        // E-D06-040-230369_MD (Dossier_COS4)|
+                        // E-D06-040-230369_N (Dossier_COS4)|
+                        // E-P00-050-230392_N (Dossier_JVMFULLF)/";
+
+
+                        if (
+                            $prod["nom_dossier"] == "E-D00-010-230382_N (Dossier_E10SF)" ||
+                            $prod["nom_dossier"] == "E-D00-040-230330_MD (Dossier_COS4)" ||
+                            $prod["nom_dossier"] == "E-D06-040-230369_MD (Dossier_COS4)" ||
+                            $prod["nom_dossier"] == "E-D06-040-230369_N (Dossier_COS4)" ||
+                            $prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)"
+                        ) {
+
+                            $heure_default_debut = "12:10:00";
+                            $heure_default_fin = "18:30:00";
+
+                            if ($prod["id_type_pointage"] == 24) {
+                                $heure_default_debut = "06:00:00";
+                                $heure_default_fin = "12:10:00";
+                            }
+
+                            if (
+                                strtotime($prod["heure_debut"]) >= strtotime($heure_default_debut) &&
+                                strtotime($prod["heure_debut"]) <= strtotime($heure_default_fin)
+                            ) {
+                                // if ($prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)") {
+                                //     dump($prod);
+                                //     dd($pointageAll);
+                                // }
+
+                                $isExtra = true;
+                                // dump($prod);
+                                // dump("tsiz");
+                                // dump($prod);
+                                // dd($pointageAll);
+                            }
+                        }
+                    }
                     // }
                     if ($isExtra) {
                         $taux = null;
                         $prix_unitaire = $prod["prix"];
                         $prix = $prod["volume"] * $prix_unitaire;
+
 
                         /**
                          * liste des dossier dont les prix ne sont pas indiqués

@@ -6923,8 +6923,14 @@ class DossierController extends AbstractController
                     }
                     /**
                      * sans pointage extra mais extra
+                     * ->setParameter('db', $intervalDateFacturable["dateDebutCompte"])
+                     * ->setParameter('df', $intervalDateFacturable["dateFinCompte"])
                      */
-                    if (strtotime($prod["date_reel_livraison"]) < strtotime($prod["date_traitement"])) {
+                    if (
+                        strtotime($prod["date_reel_livraison"]) < strtotime($prod["date_traitement"]) &&
+                        strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) &&
+                        strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"])
+                    ) {
                         // if ($prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)") {
                         //             dump($prod);
                         //             dd($pointageAll);

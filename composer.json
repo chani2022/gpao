@@ -60,10 +60,12 @@
             "*": "dist"
         },
         "sort-packages": true,
+        "platform": {
+            "php": "7.4.33"
+        },
         "allow-plugins": {
-            "ocramius/package-versions": true,
-            "symfony/flex": true,
-            "composer/package-versions-deprecated": true
+            "ocramius/package-versions": false,
+            "symfony/flex": true
         }
     },
     "autoload": {

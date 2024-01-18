@@ -8,7 +8,7 @@
 /var/
 /vendor/
 /vendor.rar
-/.php-version
+
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
@@ -24,3 +24,7 @@
 /public/lettres/
 /public/upload/
 /public/rib/
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###

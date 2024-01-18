@@ -3,11 +3,15 @@
 namespace App\Controller;
 
 use App\Model\GPAOModels\AbsencePersonnel;
+use App\Model\GPAOModels\Allaitement;
+use App\Model\GPAOModels\CongeMaternite;
 use App\Model\GPAOModels\DemandeSupplementaire;
+use App\Model\GPAOModels\EquipeTacheOperateur;
 use App\Model\GPAOModels\Personnel;
 use App\Model\GPAOModels\Fonction;
 use App\Model\GPAOModels\Pointage;
 use App\Model\GPAOModels\Production;
+use App\Model\GPAOModels\Recolte;
 use Doctrine\DBAL\Driver\Connection;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,8 +30,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use DateInterval;
 use DateTime;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Contracts\Cache\CacheInterface;
+use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use PhpOffice\PhpWord\Element\Cell;
+use Doctrine\ORM\QueryBuilder;
+use FontLib\Table\Type\name;
 
 class RhController extends AbstractController
 {
@@ -2682,6 +2695,15 @@ class RhController extends AbstractController
             }
         }
         /**
+         * forcer l'utilisateur à renseigner la date dans le recherche
+         */
+        if ($request->query->get('slug') == "search") {
+            if ($request->request->get('date') == "") {
+                $this->addFlash("error_search", "Veuillez renseigner la date.");
+                return $this->redirectToRoute("app_gestion_demande");
+            }
+        }
+        /**
          * si session plage_date ou matricule existe, donc il y a une recherche qui est activé
          **/
         if ($session->get('plage_date') or $session->get('matricule')) {
@@ -2882,6 +2904,8 @@ class RhController extends AbstractController
         $data = [];
         $pointage = new Pointage($connex);
         $prod = new Production($connex);
+        $equipe = new EquipeTacheOperateur($connex);
+
 
         $form = $this->createFormBuilder()
             ->add('date', TextType::class, [
@@ -2895,6 +2919,7 @@ class RhController extends AbstractController
             $pointages = $pointage->Get([
                 "personnel.id_personnel",
                 "pointage.heure_entre",
+                "pointage.heure_reel_entree",
             ])
                 ->where('personnel.nom_fonction IN (\'OP 1\',\'OP 2\')')
                 ->andWhere('date_debut = :date')
@@ -2906,7 +2931,7 @@ class RhController extends AbstractController
             $productions = $prod->Get([
                 "personnel.id_personnel",
                 "production.heure_reel_debut"
-            ])->where("production.date_debut = :date_debut")
+            ])->where("production.date_traitement = :date_debut")
                 ->andWhere('personnel.nom_fonction IN (\'OP 1\', \'OP 2\')')
                 ->setParameter("date_debut", $date)
                 ->orderBy('production.heure_debut', 'ASC')
@@ -2932,6 +2957,7 @@ class RhController extends AbstractController
                             if ($pointage["heure_entre"] < $production["heure_reel_debut"]) {
                                 $data[$pointage["id_personnel"]] = [
                                     "heure_entre" => $pointage["heure_entre"],
+                                    "heure_reel_entre" => $pointage['heure_reel_entree'],
                                     "heure_debut_prod" => $production["heure_reel_debut"],
                                     "difference" => date("H:i:s", $heure_dif_timestamp)
                                 ];
@@ -2941,9 +2967,295 @@ class RhController extends AbstractController
                 }
             }
         }
+        dump($data);
         return $this->render("rh/fraude.html.twig", [
             "form" => $form->createView(),
             "data" => $data
         ]);
+    }
+    /**
+     * @Security("is_granted('ROLE_RH')")
+     * 
+     */
+    public function gestionAllaitementAndcongeMaternite(string $option, int $id = null, Request $request, Connection $connex): Response
+    {
+        $name_suffix_id_entity = null;
+        $entity = null;
+        $pers = new \App\Model\GPAOModels\Personnel($connex);
+        $data = null;
+        $search_active = false;
+        $personnels = [];
+        $date_fin_envigeure = null;
+        $path_redirect = null;
+
+        $filter = [
+            "personnel.id_personnel",
+            "personnel.nom",
+            "personnel.prenom"
+        ];
+        $date_search = null;
+        $personnels_get = $pers->Get($filter)
+            ->where('personnel.actif =\'Oui\' AND personnel.sexe = \'FEMININ\'')
+            ->orderBy('id_personnel', 'ASC')
+            ->execute()
+            ->fetchAll();
+
+        foreach ($personnels_get as $pers) {
+            $personnels[$pers['id_personnel'] . ' - ' . $pers['nom'] . ' ' . $pers['prenom']] = $pers['id_personnel'];
+        }
+
+        if ($option == "allaitement") {
+            $name_suffix_id_entity = $option;
+            $entity = new \App\Model\GPAOModels\Allaitement($connex);
+            $path_redirect = "app_gestion_allaitement_conge_maternite";
+        } else {
+            $entity = new \App\Model\GPAOModels\CongeMaternite($connex);
+            $name_suffix_id_entity = "conge_maternite";
+            $path_redirect = "app_gestion_conge_maternite";
+        }
+        /**
+         * suppression
+         */
+        if ($id) {
+            $entity->deleteData()
+                ->where('id_' . $name_suffix_id_entity . ' = :id_delete')
+                ->setParameter("id_delete", $id)
+                ->execute();
+            $this->addFlash("danger", 'Le congé du matricule ' . $id . ' a été effacé avec succes');
+            return $this->redirectToRoute($path_redirect, ['option' => $option]);
+        }
+        /**
+         * search
+         */
+        if ($request->request->get('search')) {
+
+            $date_search = $request->request->get('search');
+            $envigere = $request->request->get('envigueur');
+
+            $date_fin = explode(' - ', $date_search)[1];
+            $date_fin_envigeure = $date_fin;
+            $date_debut = explode(' - ', $date_search)[0];
+
+            if (strtotime($date_debut) > strtotime($date_fin)) {
+                $this->addFlash('error', "La date de debut doit être inférieur à la date de fin");
+                return $this->redirectToRoute($path_redirect, ['option' => $option]);
+            }
+
+            $search_active = true;
+            $filter[] = 'date_debut';
+            $filter[] = 'date_fin';
+            $filter[] = 'remarques';
+            $filter[] = $option == 'allaitement' ? 'id_allaitement' : 'id_conge_maternite';
+
+            $sql = $entity->Get($filter);
+
+            if ($envigere) {
+                $sql->where('date_fin >= :date_fin')
+                    ->setParameter('date_fin', $date_fin);
+            } else {
+                $sql->where('date_fin BETWEEN :dD AND :df OR date_debut BETWEEN :dD AND :df')
+                    ->setParameter('dD', $date_debut)
+                    ->setParameter('df', $date_fin);
+            }
+            $data = $sql
+                ->orderBy('date_fin', 'DESC')
+                ->execute()
+                ->fetchAll();
+        }
+        /**
+         * form
+         */
+        $form = $this->createFormBuilder()
+            ->add('personnel', ChoiceType::class, [
+                "placeholder" => '-Selectionnez-',
+                "choices" => $personnels,
+                "required" => true
+            ])
+            ->add('dates', TextType::class, [
+                'required' => true
+            ])
+            ->add('remarques', TextareaType::class, [
+                "required" => true
+            ])->getForm();
+
+        $form->handleRequest($request);
+        /**
+         * form submit
+         */
+        if ($form->isSubmitted()) {
+            $data = $form->getData();
+            $id_personnel = $data['personnel'];
+            $dates = $data['dates'];
+            $date_debut = explode(' - ', $dates)[0];
+            $date_fin = explode(' - ', $dates)[1];
+            $remarques = $data['remarques'];
+
+            if ($date_debut > $date_fin) {
+                $this->addFlash('danger', "La date de debut doit être inférieur à la date de fin");
+                return $this->redirectToRoute($path_redirect, ['option' => $option]);
+            }
+            /**
+             * verification si sa date de congé n'est pas encore expirée
+             */
+            $user = $entity->Get([
+                "personnel.id_personnel"
+            ])->where('personnel.id_personnel = :id_personnel')
+                ->andWhere('date_fin >= :date_fin')
+                ->setParameter('id_personnel', $id_personnel)
+                ->setParameter('date_fin', date("Y-m-d"))
+                ->execute()->fetch();
+
+            if ($user) {
+                $this->addFlash('danger', "Impossible d'insérer le congé du matricule " . $id_personnel . " car sa date de congé n'a pas encore expiré");
+                return $this->redirectToRoute($path_redirect, ['option' => $option]);
+            }
+
+            $entity->insertData([
+                "id_personnel" => $id_personnel,
+                "date_debut" => $date_debut,
+                "date_fin" => $date_fin,
+                "remarques" => $remarques
+            ])->execute();
+            $this->addFlash('success', "Le congé du matricule " . $id_personnel . "a été inséré avec succes");
+            return $this->redirectToRoute($path_redirect, ['option' => $option]);
+        }
+        /**
+         * default data
+         */
+        if (!$search_active) {
+            $data = $entity->Get([
+                "id_" . $name_suffix_id_entity,
+                "personnel.id_personnel",
+                "remarques",
+                "date_debut",
+                "date_fin",
+                "personnel.nom",
+                "personnel.prenom"
+            ])
+                ->orderBy('date_fin', 'DESC')
+                ->setMaxResults(100)
+                ->execute()->fetchAll();
+        }
+        return $this->render('rh/gestion_allaitement_or_conge_maternite.html.twig', [
+            "form" => $form->createView(),
+            'option' => $option,
+            "date_search" => $date_search,
+            "data" => $data,
+            "date_envigeure" => $date_fin_envigeure ? $date_fin_envigeure : date('Y-m-d'),
+        ]);
+    }
+
+    /**
+     * @Route("/rh/recolte", name="app_recolte")
+     */
+    public function recolte(Request $request, Connection $connection): Response
+    {
+        $form = $this->createFormBuilder()
+            ->add('file', FileType::class, [
+                "constraints" => [
+                    new File([
+                        "mimeTypes" => ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+                        "uploadExtensionErrorMessage" => 'Veuillez uploader seulement des fichiers .xlsx'
+                    ])
+                ]
+            ])
+            ->add('submit', SubmitType::class)
+            ->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $personnel = new Personnel($connection);
+
+            /** @var Fonction $fonction */
+            // $fonction = new Fonction($connection);
+
+            // $equipe = new EquipeTacheOperateur($connection);
+
+            $personnels = [];
+            $matricules = [];
+
+            /** suppression des donnée de la table */
+            // $recolte = new Recolte($connection);
+            // $recolte->deleteData();
+
+            /** @var UploadedFile $uploaded_file */
+            $uploaded_file = $form->get('file')->getData();
+
+            $reader = ReaderEntityFactory::createXLSXReader();
+
+            $reader->open($uploaded_file->getPathname());
+
+
+            foreach ($reader->getSheetIterator() as $sheet) {
+                foreach ($sheet->getRowIterator() as $i => $row) {
+                    // do stuff with the row
+                    if ($i > 1) {
+                        $cells = $row->getCells();
+                        // dd($cells);
+                        $matricules[] = $cells[0]->getValue();
+                        // $fonc = $cells[1]->getValue();
+                        $equipe = $cells[4]->getValue();
+
+                        // $personnels[] = $matr;
+                        // $fonctions[$matr] = $fonc;
+                        // $equipes[$matr] = $equipe;
+                        // $fonction = $cells[1]->getValue();
+                        // $nom = $cells[2]->getValue();
+                        // $prenom = $cells[3]->getValue();
+                        // $equipe = $cells[4]->getValue();
+
+                    }
+                }
+            }
+            /** @var QueryBuilder $sqlPersonnel  */
+            $qb = $personnel->Get([
+                "personnel.id_personnel",
+                "personnel.nom",
+                "prenom",
+                "nom_fonction",
+                "type_pointage.description"
+            ]);
+
+            $str_matricules = implode(", ", $matricules);
+            $operator_matricules = "IN (" . $str_matricules . ")";
+            $personnels = $qb->where("personnel.id_personnel " . $operator_matricules)
+                ->orderBy("personnel.id_personnel", "ASC")
+                ->execute()
+                ->fetchAll();
+            // $whereBegin = false;
+            // foreach ($equipes as $matr => $equipe) {
+            //     $key_personnel = ":id_personnel_" . $matr;
+            //     $key_description = ":description_" . $matr;
+
+            //     if (!$whereBegin) {
+            //         $whereBegin = true;
+            //         $qb->where("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+            //     } else {
+            //         $qb->orWhere("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+            //     }
+
+            //     $qb->setParameter(str_replace(":", "", $key_personnel), $matr)
+            //         ->setParameter(str_replace(":", "", $key_description), "%" . $equipe . "%");
+            // }
+            // dump($qb);
+
+            dd($personnels);
+        }
+        return $this->render("recolte/recolte.html.twig", [
+            "form" => $form->createView(),
+        ]);
+    }
+
+    #[Route("/api/rh/import-recolte")]
+    public function importRecolte(Request $request, Connection $connection): ?JsonResponse
+    {
+        if ($request->isXmlHttpRequest()) {
+            $recolte = new Recolte($connection);
+            $recolte->deleteData();
+
+            $excelObj = $request->files->get('file');
+        }
+
+        return null;
     }
 }

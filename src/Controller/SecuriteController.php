@@ -6,13 +6,22 @@ use App\Entity\Interne;
 use App\Entity\Visiteur;
 use App\Form\InterneType;
 use App\Form\VisiteurType;
+use App\Model\GPAOModels\EquipeTacheOperateur;
+use App\Model\GPAOModels\Personnel;
+use App\Model\GPAOModels\Pointage;
+use App\Model\GPAOModels\SortieAvantHeure;
+use App\Model\GPAOModels\TypePointage;
+use DateTime;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class SecuriteController extends AbstractController
 {
@@ -20,13 +29,15 @@ class SecuriteController extends AbstractController
     /**
      * @Security("is_granted('ROLE_RH')")
      */
-    public function visiteur($paramDefaults = 0, Request $request, EntityManagerInterface $manager)
+    public function visiteur($paramDefaults = 0, int $id, Request $request, EntityManagerInterface $manager)
     {
         $isSearchClicked = false;
         $isSearchDate = false;
         $list_visiteur = [];
         $visiteur = new Visiteur();
-        $form = $this->createForm(VisiteurType::class, $visiteur);
+        $form = $this->createForm(VisiteurType::class, $visiteur, [
+            "id" => $id
+        ]);
 
         $builder = $this->createFormBuilder();
         $form_search = $builder->add("search", TextType::class, [
@@ -35,7 +46,7 @@ class SecuriteController extends AbstractController
 
         $builder_search = $this->createFormBuilder();
         $form_search_date = $builder_search->add('date_search', TextType::class, [
-            "required"=>false
+            "required" => false
         ])->getForm();
 
         $newInsert = true;
@@ -93,7 +104,7 @@ class SecuriteController extends AbstractController
          */
         $form_search->handleRequest($request);
         $data = "";
-        if($form_search->isSubmitted() && $form_search->isValid()) {
+        if ($form_search->isSubmitted() && $form_search->isValid()) {
             $data = $form_search->getData();
             $data = $data["search"];
             /**
@@ -107,17 +118,17 @@ class SecuriteController extends AbstractController
         $debut = "";
         $fin = "";
         $form_search_date->handleRequest($request);
-        if($form_search_date->isSubmitted() and $form_search_date->isValid()){
+        if ($form_search_date->isSubmitted() and $form_search_date->isValid()) {
             $data = $form_search_date->getData();
             $data = $data["date_search"];
 
-            if(stristr($data, " - ")){
+            if (stristr($data, " - ")) {
                 $debut = explode("-", $data)[0];
-                $debut = str_replace("/","-", $debut);
+                $debut = str_replace("/", "-", $debut);
                 $fin = explode("-", $data)[1];
-                $fin = str_replace("/","-", $fin);
-            }else{
-                $debut = str_replace("/","-", $data);
+                $fin = str_replace("/", "-", $fin);
+            } else {
+                $debut = str_replace("/", "-", $data);
                 $fin = $debut;
             }
 
@@ -126,21 +137,20 @@ class SecuriteController extends AbstractController
              */
             $isSearchDate = true;
             $isSearchClicked = true;
-
         }
         if ($isSearchClicked) {
-            if($isSearchDate){
-                if($debut == "" and $fin == ""){
+            if ($isSearchDate) {
+                if ($debut == "" and $fin == "") {
                     $list_visiteur = $manager->getRepository(Visiteur::class)->findDataHierAndToDate();
-                }else {
+                } else {
                     $list_visiteur = $manager->getRepository(Visiteur::class)->searchByDate($debut, $fin);
                 }
                 //on reinitialise le boolea
                 $isSearchDate = false;
-            }else {
+            } else {
                 $list_visiteur = $manager->getRepository(Visiteur::class)->searchVisiteur($data);
             }
-        }else{
+        } else {
             $list_visiteur = $manager->getRepository(Visiteur::class)->findDataHierAndToDate();
             //$list_visiteur = $manager->getRepository(Visiteur::class)->findAll();
 
@@ -149,116 +159,288 @@ class SecuriteController extends AbstractController
             'form' => $form->createView(),
             'list_visiteur' => $list_visiteur,
             "form_search" => $form_search->createView(),
-            'form_search_by_date'=> $form_search_date->createView()
+            'form_search_by_date' => $form_search_date->createView()
         ]);
     }
 
     /**
      * @Security("is_granted('ROLE_RH')")
      */
-    public function interne($paramDefaults = 0, Request $request, EntityManagerInterface $manager)
+    public function sortieAvantHeure($paramDefaults = null, int $id = null, Request $request, Connection $connex, $okSecurite = null)
     {
-        $list_visiteur = [];
-        $interne = new Interne();
-        $isSearchClicked = false;
-        $isSearchDate = false;
-
-        $builder = $this->createFormBuilder();
-        $form_search = $builder->add("search", TextType::class, [
-            'required' => false
-        ])->getForm();
-
-        $builder_search = $this->createFormBuilder();
-        $form_search_date = $builder_search->add('date_search', TextType::class, [
-            "required"=>false
-        ])->getForm();
-
-
-        $form = $this->createForm(InterneType::class, $interne);
+        date_default_timezone_set("Indian/Antananarivo");
+        $objSortie = new SortieAvantHeure($connex);
+        $date_sortie = (new DateTime())->format("Y-m-d");
         /**
-         * suppression
+         * update securite
          */
-        if ($paramDefaults == 2) {
-            $id_user = $request->query->get('id');
-            $get = $manager->getRepository(Interne::class)->find($id_user);
+        if ($paramDefaults == "sortie-avant-heure") {
+            $objSortie->updateData([
+                "ok_securite" => 1
+            ], [
+                "id_sortie_avant_heure" => $id
+            ])->execute();
 
-            if ($get !== null) {
-                $manager->remove($get);
-                $manager->flush();
-                $this->addFlash("success", "Suppression effectuéz avec success");
-                return $this->redirectToRoute("interne");
-            }
+            return $this->redirectToRoute("interne");
         }
+
+        $form = $this->createFormBuilder()
+            ->add('id_personnel', TextType::class, [
+                "attr" => [
+                    "value" => $id
+                ]
+            ])
+            ->add('heure_sortie', TextType::class)
+            ->add('observation', TextareaType::class, [
+                "required" => false
+            ])
+            ->getForm();
 
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $interne->setDates((new \DateTime()));
-            $interne->setHeuresortie((new \DateTime())->setTimezone(new \DateTimeZone("Indian/Antananarivo")));
-            $manager->persist($interne);
-            $manager->flush();
-            $this->addFlash("success", "Donnée enregistrée");
-        }
-        /**
-         * seach by name,firstname and cin
-         */
-        $data = "";
-        $form_search->handleRequest($request);
-        if ($form_search->isSubmitted() && $form_search->isValid()) {
-            $data = $form_search->getData();
-            $data = $data["search"];
-            /**
-             * on attribue a true s'il fait de recherche
-             */
-            $isSearchClicked = true;
-        }
-        /**
-         * search by date
-         */
-        $debut="";
-        $fin="";
-        $form_search_date->handleRequest($request);
-        if($form_search_date->isSubmitted() and $form_search_date->isValid()){
-            $data = $form_search_date->getData();
-            $data = $data["date_search"];
-            /**
-             * si interval de date, on la scie
-             */
-            if(stristr($data, " - ")){
-                $debut = explode("-", $data)[0];
-                $debut = str_replace("/","-", $debut);
-                $fin = explode("-", $data)[1];
-                $fin = str_replace("/","-", $fin);
-            }else{
-                $debut = str_replace("/","-", $data);
-                $fin = $debut;
+
+        if ($form->isSubmitted()) {
+            $data = $form->getData();
+            $id_personnel = $data["id_personnel"];
+            $heure_sortie = $data["heure_sortie"];
+            $observation = $data["observation"];
+            $date_sortie = $date_sortie;
+            $donneur_ordre = $this->getUser()->getUserDetails()["id_personnel"];
+
+            if ($heure_sortie <= (new DateTime())->format("H:i:s")) {
+                $this->addFlash("danger", "Veuillez vérifiez l'heure de sortie");
+                return $this->redirectToRoute("interne");
             }
-            /**
-             * on attribue a true s'il fait de recherche
-             */
-            $isSearchClicked = true;
-            $isSearchDate = true;
+
+            $objSortie->insertData([
+                "id_personnel" => $id_personnel,
+                "date_sortie" => $date_sortie,
+                "heure_sortie" => $heure_sortie,
+                "observation" => $observation,
+                "donneur_ordre" => $donneur_ordre,
+                "ok_securite" => 0
+            ])->execute();
+            return $this->redirectToRoute("interne");
         }
+        $users_sortie_avant_heure = $objSortie->Get([
+            "sortie_avant_heure.*",
+            "personnel.id_personnel",
+            "personnel.nom",
+            "personnel.prenom",
+            "personnel.photo"
+        ])->where('date_sortie = :date')
+            ->setParameter('date', $date_sortie)
+            ->execute()
+            ->fetchAll();
 
-        if ($isSearchClicked) {
-            if($isSearchDate){
-                $list_visiteur = $manager->getRepository(Interne::class)->searchByDate($debut, $fin);
-                //on reinitialise le boolean
-                $isSearchDate = false;
-            }else {
-                $list_visiteur = $manager->getRepository(Interne::class)->searchInterne($data);
-            }
-        }else{
-            //$list_visiteur = $manager->getRepository(Interne::class)->findAll();
-            $list_visiteur = $manager->getRepository(Interne::class)->findDataHierAndToDate();
 
-        }
+        //  ->add('donneur_ordre', )
 
-        return $this->render('visiteur/interne.html.twig', [
+        // $list_visiteur = [];
+        // $interne = new Interne();
+        // $isSearchClicked = false;
+        // $isSearchDate = false;
+
+        // $builder = $this->createFormBuilder();
+        // $form_search = $builder->add("search", TextType::class, [
+        //     'required' => false
+        // ])->getForm();
+
+        // $builder_search = $this->createFormBuilder();
+        // $form_search_date = $builder_search->add('date_search', TextType::class, [
+        //     "required" => false
+        // ])->getForm();
+
+
+        // $form = $this->createForm(InterneType::class, $interne, [
+        //     'id' => $id
+        // ]);
+        // /**
+        //  * suppression
+        //  */
+        // if ($paramDefaults == 2) {
+        //     // $id_user = $request->query->get('id');
+
+        //     // dd($id_user);
+        //     // dd($id);
+        //     $get = $manager->getRepository(Interne::class)->find($id);
+
+        //     if ($get !== null) {
+        //         $manager->remove($get);
+        //         $manager->flush();
+        //         $this->addFlash("success", "Suppression effectuéz avec success");
+        //         return $this->redirectToRoute("interne");
+        //     }
+        // }
+
+        // $form->handleRequest($request);
+        // if ($form->isSubmitted() && $form->isValid()) {
+        //     $interne->setDates((new \DateTime()));
+        //     $interne->setHeuresortie((new \DateTime())->setTimezone(new \DateTimeZone("Indian/Antananarivo")));
+        //     $manager->persist($interne);
+        //     $manager->flush();
+        //     $this->addFlash("success", "Donnée enregistrée");
+        // }
+        // /**
+        //  * seach by name,firstname and cin
+        //  */
+        // $data = "";
+        // $form_search->handleRequest($request);
+        // if ($form_search->isSubmitted() && $form_search->isValid()) {
+        //     $data = $form_search->getData();
+        //     $data = $data["search"];
+        //     /**
+        //      * on attribue a true s'il fait de recherche
+        //      */
+        //     $isSearchClicked = true;
+        // }
+        // /**
+        //  * search by date
+        //  */
+        // $debut = "";
+        // $fin = "";
+        // $form_search_date->handleRequest($request);
+        // if ($form_search_date->isSubmitted() and $form_search_date->isValid()) {
+        //     $data = $form_search_date->getData();
+        //     $data = $data["date_search"];
+        //     /**
+        //      * si interval de date, on la scie
+        //      */
+        //     if (stristr($data, " - ")) {
+        //         $debut = explode("-", $data)[0];
+        //         $debut = str_replace("/", "-", $debut);
+        //         $fin = explode("-", $data)[1];
+        //         $fin = str_replace("/", "-", $fin);
+        //     } else {
+        //         $debut = str_replace("/", "-", $data);
+        //         $fin = $debut;
+        //     }
+        //     /**
+        //      * on attribue a true s'il fait de recherche
+        //      */
+        //     $isSearchClicked = true;
+        //     $isSearchDate = true;
+        // }
+
+        // if ($isSearchClicked) {
+        //     if ($isSearchDate) {
+        //         $list_visiteur = $manager->getRepository(Interne::class)->searchByDate($debut, $fin);
+        //         //on reinitialise le boolean
+        //         $isSearchDate = false;
+        //     } else {
+        //         $list_visiteur = $manager->getRepository(Interne::class)->searchInterne($data);
+        //     }
+        // } else {
+        //     //$list_visiteur = $manager->getRepository(Interne::class)->findAll();
+        //     $list_visiteur = $manager->getRepository(Interne::class)->findDataHierAndToDate();
+        // }
+        dump($users_sortie_avant_heure);
+        return $this->render('securite/sortie_avant_heure.html.twig', [
             "form" => $form->createView(),
-            'list_visiteur' => $list_visiteur,
-            'form_search' => $form_search->createView(),
-            'form_search_by_date'=> $form_search_date->createView()
+            'list_visiteur' => $users_sortie_avant_heure
         ]);
     }
 
+    public function identificationPersonne(Request $request, Connection $connex): Response
+    {
+        date_default_timezone_set("Indian/Antananarivo");
+        $pers = new Personnel($connex);
+        $point = new Pointage($connex);
+        // $tacheOperateur = new EquipeTacheOperateur($connex);
+        $pointage_one = null;
+        $retard = null;
+        $retard_pause = null;
+
+        $id_personnel = $request->query->get('id_personnel');
+        /**
+         * recherche
+         */
+        if ($id_personnel) {
+            // dd(
+            //     $pers->Get()->execute()->fetch()
+            // );
+            // $personnel = $pers->Get(["equipe_tache_operateur.*"])->where('id_personnel = :id_personnel')
+            //     ->setParameter('id_personnel', $id_personnel)
+            //     ->execute()->fetch();
+            // dd($personnel);
+
+            $pointages = $point->Get([
+                "nom",
+                "prenom",
+                "personnel.id_personnel",
+                "photo",
+                "login",
+                "type_pointage.description",
+                "pointage.heure_entre",
+                "date_debut",
+                "retard",
+                "total_pause",
+                "sortie_pause",
+                "entree_pause",
+                "description"
+            ])
+                ->where('personnel.id_personnel = :id_personnel')
+                ->setParameter('id_personnel', $id_personnel)
+                ->andWhere("date_debut = :d")
+                //->setParameter('d', "2018-09-07")
+                ->setParameter("d", (new \DateTime())->format("Y-m-d"))
+                ->orderBy("date_debut", "ASC")
+                ->execute()
+                ->fetchAll();
+            // dd($pointages);
+            if (count($pointages) == 0) {
+                $this->addFlash("danger", "Aucune pointage du matricule " . $id_personnel . " a été detectée aujourd'hui");
+                return $this->redirectToRoute("app_securite_identification");
+            }
+
+            /**
+             * recuperation du description du pointage
+             * si on a deux pointages
+             * par exemple un => pointage matin, deux => complement,
+             * on verifie si par rapport à une heure fixe
+             */
+            foreach ($pointages as $pointage) {
+                if ($pointage["heure_entre"] < "12:10:00" && $pointage["heure_entre"] < (new DateTime())->format("H:i:s")) {
+                    $pointage_one = $pointage;
+                    // $description = $pointage["description"];
+                }
+                if ($pointage["heure_entre"] > "12:10:00" && $pointage["heure_entre"] < (new DateTime())->format("H:i:s")) {
+                    // $description = $pointage['description'];
+                    $pointage_one = $pointage;
+                }
+            }
+
+            $pers = $pers->Get(["nom_equipe"])
+                ->where('id_personnel = :id')
+                ->setParameter('id', $id_personnel)
+                ->execute()
+                ->fetch();
+            $pointage_one["nom_equipe"] = $pers["nom_equipe"];
+            // $personnel["description"] = $description;
+
+            if ($request->query->get('type')) {
+                $type = $request->query->get('type');
+
+                if ($type == "retard") {
+                    $retard = $pointage_one["retard"];
+                } else {
+                    $max_pause = new \DateTime("00:10:00");
+                    $array_max_pause = explode(':', $max_pause->format("H:i:s"));
+                    $array_time_sortie = explode(":", $pointage_one["sortie_pause"]);
+                    $entree_pause = new \DateTime($pointage_one["entree_pause"]);
+                    $heure_pause = $entree_pause->sub(new \DateInterval("PT" . $array_time_sortie[0] . "H" . $array_time_sortie[1] . "M" . $array_time_sortie[2] . "S"));
+
+                    if ($heure_pause->getTimestamp() > strtotime("00:10:00")) {
+                        $retard_pause = $heure_pause->sub(new \DateInterval("PT" . $array_max_pause[0] . "H" . $array_max_pause[1] . "M" . $array_max_pause[2] . "S"))->format("H:i:s");
+                    }
+                }
+            }
+        }
+        dump($pointage_one, $id_personnel, $retard, $retard_pause);
+        return $this->render("securite/identification.html.twig", [
+            "personnel" => $pointage_one,
+            "id_personnel" => $id_personnel,
+            'retard' => $retard,
+            "retard_pause" => $retard_pause
+        ]);
+    }
 }

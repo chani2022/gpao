@@ -27,6 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Model\GPAOModels\DemandeSupplementaire;
 use App\Model\GPAOModels\Dossier as GPAODossier;
 use App\Model\GPAOModels\FichiersHistoriqueModif;
+use App\Model\GPAOModels\LivraisonDossier;
 use Symfony\Component\Routing\Annotation\Route;
 
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
@@ -41,6 +42,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 /**
@@ -480,9 +483,11 @@ class DossierController extends AbstractController
     {
 
         date_default_timezone_set("Indian/Antananarivo");
+
         $type_pointage = "1"; //equipe matin
         $total_encours_traitement = 0;
         $user_prod = [];
+        $list_user_encours_traitement = [];
 
         $list_fonction_query = ' IN (\'CORE 2\',\'CORE 1\',\'OP 2\', \'OP 1\',\'CQ 1\') ';
         $equipe_one = 0;
@@ -505,7 +510,8 @@ class DossierController extends AbstractController
             "personnel.id_personnel", "personnel.nom", "personnel.prenom", "personnel.id_equipe_tache_operateur", "personnel.id_type_pointage", "pointage.heure_reel_entree", "personnel.nom_fonction", "personnel.nom_fonction", "personnel.nom_privilege", "type_pointage.description"
         ])
             ->where('pointage.date_debut = :db')
-            ->setParameter('db', (new \DateTime())->format("Y-m-d"))
+            ->setParameter('db', (new \DateTime())->format("Y-m-d")) //averenina
+            // ->setParameter('db', "2018-09-20")
             ->andWhere('personnel.actif = :actif')
             ->setParameter('actif', 'Oui')
             ->andWhere('pointage.heure_reel_sortie is NULL ')
@@ -523,9 +529,8 @@ class DossierController extends AbstractController
                 ->setParameter("description", "Extra");
         }
 
-
         $pers_present = $query->orderBy("personnel.id_personnel", "ASC")->execute()->fetchAll();
-
+        // dd($pers_present);
         //dump($pers_present);
         /**
          * listes des personnels qui travaille
@@ -539,7 +544,8 @@ class DossierController extends AbstractController
             "personnel.nom_fonction",
             "personnel.nom_privilege",
             "production.etat",
-            "personnel.id_equipe_tache_operateur"
+            "personnel.id_equipe_tache_operateur",
+            "nom_dossier"
         ])
             ->where('production.etat = :etat')
             ->setParameter('etat', "Encours-Traitement")
@@ -560,22 +566,32 @@ class DossierController extends AbstractController
 
         $pers_works = $queryWork->andWhere('date_traitement = :date_tr')
             ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
+            // ->setParameter('date_tr', "2018-09-20")
             ->execute()
             ->fetchAll();
-
+        // dd($pers_works), count($pers_present));
         /**
          * filtre des informations des personnes qui ne travaillent pas
          **/
+        $dossier_test = [];
         foreach ($pers_present as $present) {
             $pers_find = false;
             $is_user_prod = false;
+            $dossier_name = null;
             foreach ($pers_works as $work) {
                 if ($present["id_personnel"] == $work["id_personnel"]) {
                     $is_user_prod = true;
                     $pers_find = true;
                     $list_prods[] = $work;
+                    $dossier_name = $work['nom_dossier'];
+                    /**
+                     * listes des production encours (C'EST QUI ONT DE TRAVAILLE)
+                     */
+                    // dump(array_merge($present, $work));
+                    $list_user_encours_traitement[$work["id_personnel"]] = array_merge($present, $work);
                 }
             }
+
             /**
              * effectif qui prod
              */
@@ -586,11 +602,18 @@ class DossierController extends AbstractController
                 } else {
                     $equipe_two += 1;
                 }
+                if (!array_key_exists($dossier_name, $dossier_test)) {
+                    $dossier_test[$dossier_name] = 1;
+                } else {
+                    $dossier_test[$dossier_name] = $dossier_test[$dossier_name] + 1;
+                }
             }
             /**
-             * personne not extra
+             * personne doesn't prod
+             * 
              */
             if (!$pers_find) {
+                // dump($present);
                 /**
                  * si fonction != cq
                  */
@@ -604,6 +627,7 @@ class DossierController extends AbstractController
                          * recuperation du heure fin du traitement prod
                          */
                         $sqlProdNotWork = $prod->Get([
+                            "heure_debut",
                             "heure_fin"
                         ])->where("personnel.id_personnel = :id_personnel")
                             ->setParameter('id_personnel', $present["id_personnel"])
@@ -621,9 +645,14 @@ class DossierController extends AbstractController
                             ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
                             ->orderBy('heure_debut', "ASC")
                             ->execute()->fetchAll();
+                        // dd($prodNotWorks, $present);
                         $present["heure_fin"] = null;
                         if (count($prodNotWorks) > 0) {
                             $present["heure_fin"] = $prodNotWorks[count($prodNotWorks) - 1]["heure_fin"];
+                            /**
+                             * recuperation du production AVANT qu'il n'a pas de travail
+                             */
+                            //$list_user_encours_traitement[$present["id_personnel"]] = array_merge($present, $prodNotWorks[count($prodNotWorks) - 1]);
                         }
                         $personne_dot_work[] = $present;
                         if ($present["id_equipe_tache_operateur"] == 1) {
@@ -636,36 +665,46 @@ class DossierController extends AbstractController
             }
         }
         asort($personne_dot_work);
-        //dump($personne_dot_work);
+
+        $dossiers = [];
+        foreach ($dossier_test as $name_dossier => $nb) {
+            $dossiers[] = [
+                "nb_dossier" => $nb,
+                "nom_dossier" => $name_dossier
+            ];
+        }
+        // dump(count($user_prod), $dossier_test);
+        // dump($personne_dot_work);
         /**
          * total de personne qui traite UN dossier
          */
-        $queryCount = $prod->Get([
-            "DISTINCT COUNT(nom_dossier) as nb_dossier",
-            "nom_dossier",
+        // $queryCount = $prod->Get([
+        //     "DISTINCT COUNT(nom_dossier) as nb_dossier",
+        //     "nom_dossier",
 
-        ])
-            ->where('production.etat = :etat')
-            ->setParameter('etat', "Encours-Traitement")
-            ->andWhere('personnel.nom_fonction ' . $list_fonction_query)
+        // ])
+        //     ->where('production.etat = :etat')
+        //     ->setParameter('etat', "Encours-Traitement")
+        //     ->andWhere('personnel.nom_fonction ' . $list_fonction_query)
 
-            ->andWhere('personnel.actif = :actif')
-            ->setParameter('actif', 'Oui');
-        if (strtotime(date('H:i:s')) < strtotime("12:10:00")) {
-            $queryCount->andWhere('heure_debut < :heure_entre')
-                ->setParameter('heure_entre', "12:10:00");
-        } else {
-            $queryCount->andWhere('heure_debut > :heure_entre')
-                ->setParameter('heure_entre', "12:10:00");
-        }
+        //     ->andWhere('personnel.actif = :actif')
+        //     ->setParameter('actif', 'Oui');
+        // if (strtotime(date('H:i:s')) < strtotime("12:10:00")) {
+        //     $queryCount->andWhere('heure_debut < :heure_entre')
+        //         ->setParameter('heure_entre', "12:10:00");
+        // } else {
+        //     $queryCount->andWhere('heure_debut > :heure_entre')
+        //         ->setParameter('heure_entre', "12:10:00");
+        // }
 
-        $dossiers = $queryCount->andWhere('date_traitement = :date_tr')
-            ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
-            ->groupBy("nom_dossier")
-            ->orderBy('nom_dossier', "ASC")
-            ->execute()
-            ->fetchAll();
+        // $dossiers = $queryCount->andWhere('date_traitement = :date_tr')
+        //     ->setParameter('date_tr', (new \DateTime())->format("Y-m-d"))
+        //     ->groupBy("nom_dossier")
+        //     ->orderBy('nom_dossier', "ASC")
+        //     ->execute()
+        //     ->fetchAll();
 
+        // dump($dossiers);
         rsort($dossiers); //tri par ordre decroissant
         foreach ($dossiers as $dossier) {
             $total_encours_traitement += $dossier["nb_dossier"];
@@ -673,6 +712,19 @@ class DossierController extends AbstractController
         //dump($total_encours_traitement);
         //dump($personne_dot_work);
         //dump($equipe_two_dot_work);
+        ksort($list_user_encours_traitement);
+        $quinzePremier = [];
+        if (count($list_user_encours_traitement) > 15) {
+            $i = 0;
+            foreach ($list_user_encours_traitement as $user_encours_traitement) {
+                if ($i < 15) {
+                    $quinzePremier[] = $user_encours_traitement;
+                }
+                $i++;
+            }
+        }
+        // dump();
+        // dump($personne_dot_work, $total_encours_traitement, count($user_prod));
         return $this->render('dossier/suivi.html.twig', [
             //"effectif" => count($pers_present),
             "effectif" => count($user_prod),
@@ -684,7 +736,8 @@ class DossierController extends AbstractController
             "nb_equipe_two" => $equipe_two,
             "list_pers_not_work" => $personne_dot_work,
             "nb_equipe_one_inactif" => $equipe_one_dot_work,
-            "nb_equipe_two_inactif" => $equipe_two_dot_work
+            "nb_equipe_two_inactif" => $equipe_two_dot_work,
+            "list_prod_en_cours" => count($list_user_encours_traitement) > 15 ? $quinzePremier : $list_user_encours_traitement
         ]);
     }
     /**
@@ -3441,7 +3494,7 @@ class DossierController extends AbstractController
         ]);
     }
 
-    private function getIntervalDateInCompte(string $dateDebut, string $dateFin)
+    private function getIntervalDateInCompte(string $dateDebut, string $dateFin, $isPointage = false)
     {
         $dateDebut = implode('-', array_reverse(explode('/', $dateDebut)));
         $dateFin = implode('-', array_reverse(explode('/', $dateFin)));
@@ -3450,26 +3503,41 @@ class DossierController extends AbstractController
         $monthBegin = null;
         $yearBegin = (new \DateTime($dateDebut))->format("Y");
 
-        if ($daySearch > 20) {
-            $monthBegin = (new \DateTime($dateDebut))->format("m");
+        $monthEnd = (new \DateTime($dateFin))->format("m");
+        $yearEnd = (new \DateTime($dateFin))->format("Y");
+
+        if ($monthEnd == 12) {
+            $yearEnd += 1;
+        }
+        $dateDebutCompte = null;
+        $dateFinCompte = null;
+
+        if ($isPointage) {
+            $dateDebutCompte = "21-" . (new \DateTime($dateDebut))->sub(new \DateInterval('P2M'))->format("m") . "-" . $yearBegin;
+            $dateFinCompte = "20-" . (new \DateTime($dateFin))->add(new \DateInterval('P2M'))->format("m") . "-" . $yearEnd;
         } else {
-            $monthBegin = (new \DateTime($dateDebut))->sub(new \DateInterval('P1M'))->format("m");
+            if ($daySearch > 20) {
+                $monthBegin = (new \DateTime($dateDebut))->format("m");
+            } else {
+                $monthBegin = (new \DateTime($dateDebut))->sub(new \DateInterval('P1M'))->format("m");
+            }
+            $dateDebutCompte = "21-" . $monthBegin . "-" . $yearBegin;
+
+            $daySearchEnd = (int)(new \DateTime($dateFin))->format("d");
+            $monthEndCompte = (new \DateTime($dateFin))->format("m");
+            $yearEndCompte = (new \DateTime($dateFin))->format("Y");
+
+            if ($daySearchEnd > 20) {
+                $monthEndCompte = (new \DateTime($dateFin))->add(new \DateInterval('P1M'))->format("m");
+            }
+
+            //$dateFin = new \DateTime($dateFin);
+            $dateFinCompte = "20-" . $monthEndCompte . "-" . $yearEndCompte;
         }
-        $dateDebutCompte = "21-" . $monthBegin . "-" . $yearBegin;
 
-        $daySearchEnd = (int)(new \DateTime($dateFin))->format("d");
-        $monthEndCompte = (new \DateTime($dateFin))->format("m");
-        $yearEndCompte = (new \DateTime($dateFin))->format("Y");
 
-        if ($daySearchEnd > 20) {
-            $monthEndCompte = (new \DateTime($dateFin))->add(new \DateInterval('P1M'))->format("m");
-        }
+        // 
 
-        //$dateFin = new \DateTime($dateFin);
-        $dateFinCompte = "20-" . $monthEndCompte . "-" . $yearEndCompte;
-
-        //dump($dateDebutCompte);
-        //dd($dateFinCompte);
         return [
             "dateDebutCompte" => $dateDebutCompte,
             "dateFinCompte" => $dateFinCompte
@@ -6728,22 +6796,32 @@ class DossierController extends AbstractController
                 $dD = explode(' - ', $dates)[0];
                 $dF = explode(' - ', $dates)[1];
 
+
                 $name_excel = "/extra" . date('YmdH:i:s') . ".xlsx";
 
-                $intervalDateFacturable = $this->getIntervalDateInCompte($dD, $dF);
+                // $compteSuivant = $this->getIntervalDateInCompte($dD, $dF, false);
+                // dd($compteSuivant);
 
+                $intervalDateFacturable = $this->getIntervalDateInCompte($dD, $dF, true);
+                $dateProdInCompte = $this->getIntervalDateInCompte($dD, $dF);
+
+                // dd($intervalDateFacturable, $dateProdInCompte);
                 /**
                  * maka ny debut et fin du compte teo aloha
                  * afaan maka ny extra ny cadre satria ny heuren variable
                  */
-                $timestamp = strtotime($intervalDateFacturable["dateDebutCompte"]);
-                $datePrecedent = date("Y-m-d", strtotime("-1 day", $timestamp));
-                $comptePrecedent = $this->getIntervalDateInCompte($datePrecedent, $datePrecedent);
+                // $timestamp = strtotime($intervalDateFacturable["dateDebutCompte"]);
+                // $datePrecedent = date("Y-m-d", strtotime("-1 day", $timestamp));
+                // $comptePrecedent = $this->getIntervalDateInCompte($datePrecedent, $datePrecedent);
+
+
+                // dd($comptePrecedent, $intervalDateFacturable, $compteSuivant);
 
                 /**
                  * pointage
                  */
                 $pointage = new \App\Model\GPAOModels\Pointage($connex);
+
                 $sqlPointage = $pointage->Get([
                     "personnel.nom_fonction",
                     "personnel.id_personnel",
@@ -6754,7 +6832,7 @@ class DossierController extends AbstractController
                     "date_debut",
                     "personnel.type_contrat"
                 ])
-                    ->where("((date_debut BETWEEN :deb AND :fin) OR (date_debut BETWEEN :db AND :df))");
+                    ->where("date_debut BETWEEN :deb AND :fin");
                 //->setParameter("debut", date('Y-m-d'))
                 //->where('type_contrat = :type_contrat AND ((date_debut BETWEEN :deb AND :fin) OR (date_debut BETWEEN :d AND :f))');
 
@@ -6768,8 +6846,10 @@ class DossierController extends AbstractController
                 $sqlPointage->andWhere('type_pointage.description LIKE :desc')
                     ->setParameter('deb', $intervalDateFacturable["dateDebutCompte"])
                     ->setParameter('fin', $intervalDateFacturable["dateFinCompte"])
-                    ->setParameter('db', $comptePrecedent["dateDebutCompte"])
-                    ->setParameter('df', $comptePrecedent["dateFinCompte"])
+                    // ->setParameter('db', $comptePrecedent["dateDebutCompte"])
+                    // ->setParameter('df', $comptePrecedent["dateFinCompte"])
+                    // ->setParameter('suivantD', $compteSuivant['dateDebutCompte'])
+                    // ->setParameter('suivantF', $compteSuivant['dateFinCompte'])
                     ->setParameter('desc', 'Extra%')
                     ->orderBy("personnel.id_personnel", "ASC");
                 //->orderBy('date_debut','ASC');
@@ -6827,8 +6907,10 @@ class DossierController extends AbstractController
                     $writer->addRow($cells);
                 }
                 $prods = $sqlProd
-                    ->setParameter('db', $intervalDateFacturable["dateDebutCompte"])
-                    ->setParameter('df', $intervalDateFacturable["dateFinCompte"])
+                    ->setParameter('db', $dateProdInCompte["dateDebutCompte"])
+                    ->setParameter('df', $dateProdInCompte["dateFinCompte"])
+                    // ->setParameter('db', $dD)
+                    // ->setParameter('df', $dF)
                     ->orderBy('personnel.id_personnel', 'ASC')
                     ->execute()->fetchAll();
 
@@ -6836,7 +6918,18 @@ class DossierController extends AbstractController
                  * maka ny extra
                  */
                 $pros = [];
+                // dump($pointageAll);
+                // foreach ($pointageAll as $pointage) {
+                //     if ($pointage["id_personnel"] == 36) {
+                //         dump($pointage);
+                //     }
+                // }
                 foreach ($prods as $prod) {
+                    // if ($prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)") {
+                    //     dump($prod);
+                    //     dd($pointageAll);
+                    // }
+                    // dump($prod["nom_dossier"]);
                     // if($prod["id_personnel"] == 1307){
                     //     if(strtotime($prod["date_traitement"]) == strtotime("2022-08-24")){
                     //         $pros[] = $prod;
@@ -6845,9 +6938,17 @@ class DossierController extends AbstractController
                     $isExtra = false;
                     foreach ($pointageAll as $pointage) {
                         if ($pointage["id_personnel"] == $prod["id_personnel"]) {
+                            // if (
+                            //     strtotime($pointage["date_debut"]) == strtotime($prod["date_traitement"]) && strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) && strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) ||
+                            //     ($pointage["date_debut"] == $prod["date_traitement"] && (is_null($prod["date_reel_livraison"]) && (strtotime($prod["date_traitement"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) && strtotime($prod["date_traitement"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]))))
+                            // ) {
+                            //     if ($prod["heure_debut"] !== null && ((strtotime($prod["heure_debut"]) >= strtotime($pointage["heure_entre"]) && strtotime($prod["heure_debut"]) <= strtotime($pointage["heure_sortie"])))) {
+                            //         $isExtra = true;
+                            //     }
+                            // }
                             if (
-                                strtotime($pointage["date_debut"]) == strtotime($prod["date_traitement"]) && strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) && strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) ||
-                                ($pointage["date_debut"] == $prod["date_traitement"] && (is_null($prod["date_reel_livraison"]) && (strtotime($prod["date_traitement"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) && strtotime($prod["date_traitement"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]))))
+                                strtotime($pointage["date_debut"]) == strtotime($prod["date_traitement"]) && strtotime($prod["date_reel_livraison"]) >= strtotime($dateProdInCompte["dateDebutCompte"]) && strtotime($prod["date_reel_livraison"]) <= strtotime($dateProdInCompte["dateFinCompte"]) ||
+                                ($pointage["date_debut"] == $prod["date_traitement"] && (is_null($prod["date_reel_livraison"]) && (strtotime($prod["date_traitement"]) <= strtotime($dateProdInCompte["dateFinCompte"]) && strtotime($prod["date_traitement"]) >= strtotime($dateProdInCompte["dateDebutCompte"]))))
                             ) {
                                 if ($prod["heure_debut"] !== null && ((strtotime($prod["heure_debut"]) >= strtotime($pointage["heure_entre"]) && strtotime($prod["heure_debut"]) <= strtotime($pointage["heure_sortie"])))) {
                                     $isExtra = true;
@@ -6855,11 +6956,50 @@ class DossierController extends AbstractController
                             }
                         }
                     }
+                    /**
+                     * sans pointage extra mais extra
+                     * ->setParameter('db', $intervalDateFacturable["dateDebutCompte"])
+                     * ->setParameter('df', $intervalDateFacturable["dateFinCompte"])
+                     */
+                    // if (
+                    //     strtotime($prod["date_reel_livraison"]) < strtotime($prod["date_traitement"]) &&
+                    //     strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) &&
+                    //     strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"])
+                    // ) {
+
+
+
+                    //     if (
+                    //         $prod["nom_dossier"] == "E-D00-010-230382_N (Dossier_E10SF)" ||
+                    //         $prod["nom_dossier"] == "E-D00-040-230330_MD (Dossier_COS4)" ||
+                    //         $prod["nom_dossier"] == "E-D06-040-230369_MD (Dossier_COS4)" ||
+                    //         $prod["nom_dossier"] == "E-D06-040-230369_N (Dossier_COS4)" ||
+                    //         $prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)"
+                    //     ) {
+
+                    //         $heure_default_debut = "12:10:00";
+                    //         $heure_default_fin = "18:30:00";
+
+                    //         if ($prod["id_type_pointage"] == 24) {
+                    //             $heure_default_debut = "06:00:00";
+                    //             $heure_default_fin = "12:10:00";
+                    //         }
+
+                    //         if (
+                    //             strtotime($prod["heure_debut"]) >= strtotime($heure_default_debut) &&
+                    //             strtotime($prod["heure_debut"]) <= strtotime($heure_default_fin)
+                    //         ) {
+                    //             $isExtra = true;
+
+                    //         }
+                    //     }
+                    // }
                     // }
                     if ($isExtra) {
                         $taux = null;
                         $prix_unitaire = $prod["prix"];
                         $prix = $prod["volume"] * $prix_unitaire;
+
 
                         /**
                          * liste des dossier dont les prix ne sont pas indiqués
@@ -7980,6 +8120,7 @@ class DossierController extends AbstractController
         $export = false;
         $statistiques = [];
         $equipe_choix = "";
+        $categorie = "";
         $choices_equipe = [
             "Matin 6h" => 1,
             "APM 6h" => 24,
@@ -7989,7 +8130,7 @@ class DossierController extends AbstractController
 
         $user = new Personnel($connex);
         $users = $user->Get(
-            ["id_personnel", "nom", "prenom", "id_type_pointage"]
+            ["id_personnel", "nom", "prenom", "personnel.id_type_pointage"]
         )
             ->where('id_personnel > 0 and actif = \'Oui\'')
             ->andWhere('personnel.nom_fonction IN (\'OP 1\',\'OP 2\',\'CORE 1\',\'CORE 2\')')
@@ -8023,11 +8164,23 @@ class DossierController extends AbstractController
                 "attr" => [
                     "class" => "form-control"
                 ],
-                "choices" => $choices_equipe
+                "choices" => $choices_equipe,
+                "required" => false
             ])
             ->add('export', \Symfony\Component\Form\Extension\Core\Type\CheckboxType::class, [
                 "required" => false,
 
+            ])
+            ->add('categorie', ChoiceType::class, [
+                "required" => false,
+                "placeholder" => '-Selectionnez-',
+                "attr" => [
+                    "class" => "form-control"
+                ],
+                "choices" => [
+                    "Equipe 1" => 1,
+                    "Equipe 2" => 2
+                ]
             ])
             ->getForm();
         $form->handleRequest($request);
@@ -8040,6 +8193,7 @@ class DossierController extends AbstractController
             $export = $form->getData()["export"];
             $equipe_selected = $form->getData()["equipe"];
             $matricule = $form->getData()["matricule"];
+            $categorie = $form->getData()['categorie'];
 
             foreach ($choices_equipe as $equipe => $type_pointage) {
                 if ($type_pointage == $equipe_selected) {
@@ -8088,6 +8242,10 @@ class DossierController extends AbstractController
                     ->setParameter("id_personnel", $matricule);
             } else {
                 $sqlDemandeSuppl->andWhere('personnel.nom_fonction IN (\'OP 1\',\'OP 2\',\'CORE 1\',\'CORE 2\')');
+                if ($categorie) {
+                    $sqlDemandeSuppl->andWhere('personnel.id_equipe_tache_operateur = :equipe')
+                        ->setParameter('equipe', $categorie);
+                }
             }
 
             /**
@@ -8132,6 +8290,10 @@ class DossierController extends AbstractController
                         ->setParameter("id_personnel", $matricule);
                 } else {
                     $sqlProd->andWhere('nom_fonction IN (\'OP 1\',\'OP 2\',\'CORE 1\',\'CORE 2\')');
+                    if ($categorie) {
+                        $sqlProd->andWhere('personnel.id_equipe_tache_operateur = :equipe')
+                            ->setParameter('equipe', $categorie);
+                    }
                 }
             }
 
@@ -8162,16 +8324,24 @@ class DossierController extends AbstractController
                     $sqlPointage->andWhere("personnel.id_personnel = :id_personnel")
                         ->setParameter("id_personnel", $matricule);
                 }
-                $pointages = $sqlPointage->orderBy("personnel.id_personnel", "ASC")
+                if ($categorie) {
+                    $sqlPointage->andWhere('personnel.id_equipe_tache_operateur = :equipe')
+                        ->setParameter('equipe', $categorie);
+                }
+                $pointages = $sqlPointage
+                    ->orderBy("personnel.id_personnel", "ASC")
                     ->execute()
                     ->fetchAll();
-                // if ($matricule) {
-                //     $pointages->andWhere("personnel.id_personnel = :id_personnel")
-                //         ->setParameter("id_personnel", $matricule);
+
+                /**
+                 * list complement
+                 */
+                // $list_complement = [];
+                // foreach ($pointages as $pointage) {
+                //     if (!in_array($pointage["id_personnel"], $list_complement)) {
+                //         $list_complement[] = $pointage["id_personnel"];
+                //     }
                 // }
-                // $pointages->orderBy("personnel.id_personnel", "ASC")
-                //     ->execute()
-                //     ->fetchAll();
                 /**
                  * seulement complement
                  */
@@ -8183,18 +8353,25 @@ class DossierController extends AbstractController
                         }
                     }
 
-                    //if (count($list_complement) > 0) {
-                    $sqlProd->andWhere('personnel.id_personnel IN (' . implode(',', $list_complement) . ')');
-                    //}
+                    if (count($list_complement) > 0) {
+                        $sqlProd->andWhere('personnel.id_personnel IN (' . implode(',', $list_complement) . ')');
+                    }
                     //}
                 } else {
-                    $sqlProd->andWhere('personnel.id_type_pointage = :id_type_pointage')
-                        ->setParameter('id_type_pointage', $type_pointage)
-                        ->andWhere('personnel.type_contrat != :type_contrat')
-                        ->setParameter('type_contrat', "EXTRA");
 
-                    $sqlDemandeSuppl->andWhere('personnel.id_type_pointage = :id_type_pointage')
-                        ->setParameter('id_type_pointage', $type_pointage);
+                    $sqlProd->andWhere('personnel.type_contrat != :type_contrat')
+                        ->setParameter('type_contrat', "EXTRA");
+                    // ->andWhere('nom_etape NOT IN(\'PREPARATION\',\'DECOUPE\',\'CQ-DECOUPE\',\'VALIDATION_ECHANT\',\'SUBDIVISION\')'); //napina anty
+                    // ->andWhere('personnel.id_personnel IN (' . implode(',', $list_complement) . ')'); //napina anty
+
+                    if (!is_null($type_pointage)) {
+                        $sqlProd->andWhere('personnel.id_type_pointage = :id_type_pointage')
+                            ->setParameter('id_type_pointage', $type_pointage);
+
+
+                        $sqlDemandeSuppl->andWhere('personnel.id_type_pointage = :id_type_pointage')
+                            ->setParameter('id_type_pointage', $type_pointage);
+                    }
                 }
             } else {
                 $sqlProd->andWhere('nom_etape NOT IN(\'PREPARATION\',\'DECOUPE\',\'CQ-DECOUPE\',\'VALIDATION_ECHANT\',\'SUBDIVISION\')');
@@ -8228,44 +8405,67 @@ class DossierController extends AbstractController
                     $extras[$pointage["id_personnel"]][$pointage["date_debut"]] = [$heure_entre, $pointage["heure_sortie"]];
                 }
             } else {
-
-                //matin apm et extra
                 /**
-                 * extra
+                 * type de pointage recherche formulaire renseigne
                  */
-                foreach ($demandesExtras as $demande) {
-                    $date = date_create($demande["heure_debut_supplementaire"]);
-                    $heure_entre = date_sub($date, date_interval_create_from_date_string("10 min"));
-                    $heure_entre = date_format($heure_entre, "H:i:s");
-                    $extras[$demande["id_personnel"]][$demande["date_suplementaire"]] = [$heure_entre, $demande["heure_fin_supplementaire"]];
+                if (!is_null($type_pointage)) {
+                    //matin apm et extra
                     /**
-                     * test
+                     * extra
                      */
-                    // if ($demande["id_personnel"] == 417) {
-                    //     $demandes_test[] = $demande;
-                    // }
-                }
-                /**
-                 * si extra recherche => complement = []
-                 */
-                foreach ($pointages as $pointage) {
-                    $date = date_create($pointage["heure_entre"]);
-                    $heure_entre = date_sub($date, date_interval_create_from_date_string("10 min"));
-                    $heure_entre = date_format($heure_entre, "H:i:s");
-                    // $extras[$pointage["id_personnel"]][$pointage["date_debut"]] = [$pointage["heure_entre"], $pointage["heure_sortie"]];
-                    $extras[$pointage["id_personnel"]][$pointage["date_debut"]] = [$heure_entre, $pointage["heure_sortie"]];
+                    foreach ($demandesExtras as $demande) {
+                        $date = date_create($demande["heure_debut_supplementaire"]);
+                        $heure_entre = date_sub($date, date_interval_create_from_date_string("10 min"));
+                        $heure_entre = date_format($heure_entre, "H:i:s");
+                        $extras[$demande["id_personnel"]][$demande["date_suplementaire"]] = [$heure_entre, $demande["heure_fin_supplementaire"]];
+                        /**
+                         * test
+                         */
+                        // if ($demande["id_personnel"] == 417) {
+                        //     $demandes_test[] = $demande;
+                        // }
+                    }
+                    /**
+                     * si extra recherche => complement = []
+                     */
+                    foreach ($pointages as $pointage) {
+                        $date = date_create($pointage["heure_entre"]);
+                        $heure_entre = date_sub($date, date_interval_create_from_date_string("10 min"));
+                        $heure_entre = date_format($heure_entre, "H:i:s");
+                        // $extras[$pointage["id_personnel"]][$pointage["date_debut"]] = [$pointage["heure_entre"], $pointage["heure_sortie"]];
+                        $extras[$pointage["id_personnel"]][$pointage["date_debut"]] = [$heure_entre, $pointage["heure_sortie"]];
 
-                    // if ($pointage["id_personnel"] == 1039) {
-                    //     $complement_test[] = $pointage;
-                    // }
+                        // if ($pointage["id_personnel"] == 1039) {
+                        //     $complement_test[] = $pointage;
+                        // }
+                    }
+                } else {
+                    /**
+                     * complement seulement
+                     */
+                    foreach ($pointages as $pointage) {
+                        $date = date_create($pointage["heure_entre"]);
+                        $heure_entre = date_sub($date, date_interval_create_from_date_string("10 min"));
+                        $heure_entre = date_format($heure_entre, "H:i:s");
+                        // $extras[$pointage["id_personnel"]][$pointage["date_debut"]] = [$pointage["heure_entre"], $pointage["heure_sortie"]];
+                        $extras[$pointage["id_personnel"]][$pointage["date_debut"]] = [$heure_entre, $pointage["heure_sortie"]];
+
+                        // if ($pointage["id_personnel"] == 1039) {
+                        //     $complement_test[] = $pointage;
+                        // }
+                    }
                 }
             }
-            //dump($complement_test);
+
+
+
 
             // $prod_test = [];
             // $total_heure = 0;
             // dump($extras, $prods);
             foreach ($prods as $prod) {
+
+
 
                 // if ($prod["id_personnel"] == 1060 || $prod["id_personnel"] == ) {
                 //     $prod_test[$prod["id_personnel"]][] = $prod;
@@ -8276,10 +8476,11 @@ class DossierController extends AbstractController
 
                     $volume = $prod["volume"];
                     $objectif = $prod["objectif"];
-                    $heure_ref = null;
+                    $heure_ref = 6;
                     $heure_reel = $prod["temps_realisation"];
                     $isExtraOrComplement = false;
                     $isProdExtra = false;
+
 
                     $date_traitement = $prod["date_traitement"];
                     $nom_dossier = $prod["nom_dossier"];
@@ -8297,6 +8498,17 @@ class DossierController extends AbstractController
                                 if ($date == $prod["date_traitement"]) {
                                     if ($prod["heure_debut"] >= $heures[0] && ($prod["heure_debut"] <= $heures[1] || is_null($heures[1]))) { //eto no mila amboarin
                                         $isProdExtra = true;
+                                        // $isComplement = false;
+                                        /**
+                                         * complement
+                                         */
+                                        // if ($prod["type_contrat"] != "EXTRA") {
+
+                                        //     $heure_ref = 4;
+                                        //     // $isProdExtra = false;
+                                        //     // $isComplement = true;
+                                        //     // dump("heure de reference");
+                                        // }
 
                                         // $isExtra = true;
                                         if ($equipe_selected  == 1 || $equipe_selected == 24) {
@@ -8322,27 +8534,39 @@ class DossierController extends AbstractController
                         //     $total_heure += $heure_reel;
                         // }
                     } else {
-                        $isExtraOrComplement = true;
-                        if ($prod["type_contrat"] == "EXTRA") {
-                            $isProdExtra = true;
-                        }
-                        if ($type_pointage == "Complement") {
-                            $heure_ref = 4;
-                        }
+                        if (!is_null($type_pointage)) {
+                            $isExtraOrComplement = true;
+                            if ($prod["type_contrat"] == "EXTRA") {
+                                $isProdExtra = true;
+                            }
+                            if ($type_pointage == "Complement") {
+                                $heure_ref = 4;
+                            }
 
-                        if (!$isProdExtra) {
-                            $volume = null;
-                            $objectif = null;
-                            $date_traitement = null;
-                            $nom_dossier = null;
-                            $nom_etape = null;
-                            $heure_reel = null;
+                            if (!$isProdExtra) {
+                                // dd($prod);
 
-                            // if ($prod["id_personnel"] == 749) {
-                            //     $filtres[] = 
-                            // }
+                                $volume = null;
+                                $objectif = null;
+                                $date_traitement = null;
+                                $nom_dossier = null;
+                                $nom_etape = null;
+                                $heure_reel = null;
+
+
+                                // if ($prod["id_personnel"] == 749) {
+                                //     $filtres[] = 
+                                // }
+                            }
+                        } else {
+                            if ($isProdExtra) {
+                                // dump("makato");
+                                $isExtraOrComplement = true;
+                                $heure_ref = 4;
+                            }
                         }
                     }
+
 
 
 
@@ -8351,24 +8575,54 @@ class DossierController extends AbstractController
                      */
                     if (!is_null($volume) && !is_null($objectif) && !is_null($nom_dossier) && !is_null($heure_reel)) {
 
+                        // $tab_if_type_pointage_null[$prod["id_personnel"]][$date_traitement] = $isExtraOrComplement ? ["c"] : ["p"];
                         /**
                          * statistiques
                          */
                         if (!array_key_exists($date_traitement, $statistiques)) {
                             $statistiques[$prod["date_traitement"]]["heure_objectif"] = round($volume / $objectif, 2) - $prod["incident"];
                             $statistiques[$prod["date_traitement"]]["heure_reel"] = $heure_reel;
-                            $statistiques[$prod["date_traitement"]]["heure_reference"] = !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" ? $heure_ref : 0);
+                            $statistiques[$prod["date_traitement"]]["heure_reference"] = !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" || is_null($type_pointage)  ? $heure_ref : 0);
                             $statistiques[$prod["id_personnel"]][] = $date_traitement;
+                            $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]] = $isExtraOrComplement ? ["c"] : ["p"];
                         } else {
 
                             $statistiques[$prod["date_traitement"]]["heure_objectif"] += round($volume / $objectif, 2) - $prod["incident"];
                             $statistiques[$prod["date_traitement"]]["heure_reel"] += $heure_reel;
+                            /**
+                             * si type pointage vide
+                             */
+                            if (is_null($type_pointage)) {
+                                if (!array_key_exists($prod["id_personnel"], $statistiques[$prod["date_traitement"]]["test"])) {
+                                    $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]] = $isExtraOrComplement ? ["c"] : ["p"];
+                                    // $statistiques[$date_traitement]["heure_reference"] += $isExtraOrComplement ? 4 : 6;
+
+                                } else {
+                                    if (
+                                        !in_array("c", $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]]) &&
+                                        $isExtraOrComplement
+                                    ) {
+                                        $statistiques[$date_traitement]["heure_reference"] += 4;
+                                        $statistiques[$date_traitement]["test"][$prod["id_personnel"]][] = "c";
+                                    }
+                                    if (
+                                        !in_array("p", $statistiques[$prod["date_traitement"]]["test"][$prod["id_personnel"]]) &&
+                                        !$isExtraOrComplement
+                                    ) {
+                                        $statistiques[$date_traitement]["heure_reference"] += 6;
+                                        $statistiques[$date_traitement]["test"][$prod["id_personnel"]][] = "p";
+                                    }
+                                }
+                            }
+                            // $statistiques[$prod["date_traitement"]]["heure_reference"] = !$isExtraOrComplement ? $statistiques[$prod["date_traitement"]]["heure_reference"] : (is_null($type_pointage)  ?$statistiques[$prod["date_traitement"]]["heure_reference"] + $heure_ref : $statistiques[$prod["date_traitement"]]["heure_reference"]);
                             if (!array_key_exists($prod["id_personnel"], $statistiques)) {
-                                $statistiques[$prod["date_traitement"]]["heure_reference"] += !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" ? $heure_ref : 0);
+                                $statistiques[$prod["date_traitement"]]["heure_reference"] += !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" || is_null($type_pointage) ? $heure_ref : 0);
                                 $statistiques[$prod["id_personnel"]][] = $date_traitement;
                             } else {
+
                                 if (!in_array($date_traitement, $statistiques[$prod["id_personnel"]])) {
-                                    $statistiques[$prod["date_traitement"]]["heure_reference"] += !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" ? $heure_ref : 0);
+                                    // dd("makato");
+                                    $statistiques[$prod["date_traitement"]]["heure_reference"] += !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" || is_null($type_pointage) ? $heure_ref : 0);
                                     $statistiques[$prod["id_personnel"]][] = $date_traitement;
                                 }
                             }
@@ -8384,9 +8638,10 @@ class DossierController extends AbstractController
                                 "description" => $prod["description"],
                                 "equipe" => $prod["id_equipe_tache_operateur"],
                                 "type_pointage" => $prod["id_type_pointage"],
-                                "heure_ref" => !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" ? $heure_ref : null),
+                                "heure_ref" => !$isExtraOrComplement ? $heure_ref : ($type_pointage == "Complement" || is_null($type_pointage) ? $heure_ref : null),
                                 "heure_reel" => $heure_reel,
                                 "date_traitement" => [$date_traitement],
+                                "tab_complement_or_prod" => [$date_traitement => $isExtraOrComplement ? ["c"] : ["p"]],
                                 "heure_objectif" => 0,
                                 "dossiers" => [
                                     $nom_dossier => [
@@ -8398,19 +8653,79 @@ class DossierController extends AbstractController
                                 ],
 
                             ];
+                            // if ($prod["id_personnel"] == 417) {
+                            //     if (!$isExtraOrComplement) {
+                            //         dd($data);
+                            //     }
+                            // }
                         } else {
                             /**
-                             * si on ne trouve pas le date parcouru, donc c'est un nouveau jour et on ajout 6 à l'heure_ref
+                             * si on ne trouve pas le date parcouru, donc c'est un nouveau jour et on ajout 6 ou 4 à l'heure_ref
                              */
                             if (!in_array($date_traitement, $data[$prod["id_personnel"]]["date_traitement"])) {
-                                $data[$prod["id_personnel"]]["heure_ref"] = !$isExtraOrComplement ? ($data[$prod["id_personnel"]]["heure_ref"] + $heure_ref) : ($type_pointage == "Complement" ? ($data[$prod["id_personnel"]]["heure_ref"] + $heure_ref) : null);
+                                $data[$prod["id_personnel"]]["heure_ref"] = !$isExtraOrComplement ? ($data[$prod["id_personnel"]]["heure_ref"] + $heure_ref) : ($type_pointage == "Complement" || is_null($type_pointage) ? ($data[$prod["id_personnel"]]["heure_ref"] + $heure_ref) : null);
                                 $data[$prod["id_personnel"]]["date_traitement"][] = $date_traitement;
                                 $data[$prod["id_personnel"]]["heure_reel"] = ($data[$prod["id_personnel"]]["heure_reel"] + $heure_reel);
                                 //$data[$prod["id_personnel"]]["heure_objectif"] = $data[$prod["id_personnel"]]["heure_objectif"] + round($prod["volume"]/$prod["objectif"],2);
 
                             } else {
                                 $data[$prod["id_personnel"]]["heure_reel"] = ($data[$prod["id_personnel"]]["heure_reel"] + $heure_reel);
+
+                                // if (is_null($type_pointage)) {
+                                //     if (!in_array("c", $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement])) {
+
+                                //         $data[$prod["id_personnel"]]["heure_ref"] += 4; //napina anty
+                                //         $data[$prod["id_personnel"]]["tab_complement_or_prod"][] = "c";
+
+                                //         // array_unique($data[$prod["id_personnel"]]["tab_complement_or_prod"]);
+                                //     }
+                                //     if (!in_array("p", $data[$prod["id_personnel"]]["tab_complement_or_prod"])) {
+                                //         $data[$prod["id_personnel"]]["heure_ref"] += 6; //napina anty
+                                //         $data[$prod["id_personnel"]]["tab_complement_or_prod"][] = "p";
+                                //     }
+                                // }
+
+                                // $data[$prod["id_personnel"]]["heure_ref"] = !$isExtraOrComplement ? ($data[$prod["id_personnel"]]["heure_ref"]) : (is_null($type_pointage) ? ($data[$prod["id_personnel"]]["heure_ref"] + $heure_ref) : $data[$prod["id_personnel"]]["heure_ref"]); //napina anty
                                 //$data[$prod["id_personnel"]]["heure_objectif"] = $data[$prod["id_personnel"]]["heure_objectif"] + round($prod["volume"]/$prod["objectif"],2);
+                            }
+                            if (is_null($type_pointage)) {
+
+                                if (!array_key_exists($date_traitement, $data[$prod["id_personnel"]]["tab_complement_or_prod"])) {
+                                    $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement] = $isExtraOrComplement ? ["c"] : ["p"];
+
+                                    if (
+                                        !in_array("c", $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement]) &&
+                                        $isExtraOrComplement
+                                    ) {
+
+                                        $data[$prod["id_personnel"]]["heure_ref"] += 4; //napina anty
+                                    }
+                                    if (
+                                        !in_array("p", $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement]) &&
+                                        !$isExtraOrComplement
+                                    ) {
+
+                                        $data[$prod["id_personnel"]]["heure_ref"] += 6; //napina anty
+
+                                    }
+                                } else {
+                                    if (
+                                        !in_array("c", $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement]) &&
+                                        $isExtraOrComplement
+                                    ) {
+
+                                        $data[$prod["id_personnel"]]["heure_ref"] += 4; //napina anty
+                                        $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement][] = "c";
+                                    }
+                                    if (
+                                        !in_array("p", $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement]) &&
+                                        !$isExtraOrComplement
+                                    ) {
+
+                                        $data[$prod["id_personnel"]]["heure_ref"] += 6; //napina anty
+                                        $data[$prod["id_personnel"]]["tab_complement_or_prod"][$date_traitement][] = "p";
+                                    }
+                                }
                             }
                             /**
                              * recuperation de volume et objectif filtré par dossier et etape
@@ -8434,6 +8749,7 @@ class DossierController extends AbstractController
                     }
                 }
             }
+            // dump($data);
             // dump("complement", $complement_test, "prod complement", $prod_test, "total heure", $total_heure);
             //dump($prod_test, $total_heure);
 
@@ -8462,6 +8778,7 @@ class DossierController extends AbstractController
              * export excel
              */
             if ($export) {
+                // dd($data);
                 foreach ($data as $d) {
                     $equipe = "EXTRA";
                     //$equipe = $d["description"];
@@ -8520,11 +8837,13 @@ class DossierController extends AbstractController
         }
         ksort($statistiques, SORT_LOCALE_STRING);
         dump($statistiques);
+
         return $this->render('dossier/heure_objectif.html.twig', [
             "form" => $form->createView(),
             "data" => $data,
             "statistique" => $statistiques,
-            "equipe" => $equipe_choix
+            "equipe" => $equipe_choix,
+            "categorie" => $categorie
         ]);
     }
 
@@ -8796,6 +9115,155 @@ class DossierController extends AbstractController
             "dossier_search" => $dossier_search,
             "personnels" => $pers_data,
             "dossiers" => $dossier_data
+        ]);
+    }
+    /**
+     * @Route("/dossier/livraison/{id}", name="app_dossier_livraison")
+     */
+    public function livraisionDossier(Request $request, Connection $connex, int $id = null): Response
+    {
+        $livraison = new LivraisonDossier($connex);
+        $livraisons = null;
+        $data_livraison = null;
+        $search_active = false;
+
+
+        /**
+         * search
+         */
+        // dump(empty($request->query->get('nom_dossier')), empty($request->query->get('dates')));
+        if ($request->query->get('nom_dossier') || $request->query->get('dates')) {
+
+            $search_active = true;
+
+            $queryBuilderLivraison = $livraison->Get();
+
+            if (!empty($request->query->get('nom_dossier')) && empty($request->query->get('dates'))) {
+                $queryBuilderLivraison->where('nom_dossier LIKE :nom_dossier')
+                    ->setParameter('nom_dossier', '%' . strtoupper($request->query->get('nom_dossier')) . '%');
+            }
+            if (!empty($request->query->get('dates')) && empty($request->query->get('nom_dossier'))) {
+                $dates = explode(" - ", $request->query->get('dates'));
+                $queryBuilderLivraison->where('date_livraison BETWEEN :d AND :f')
+                    ->setParameter('d', $dates[0])
+                    ->setParameter('f', $dates[1]);
+            }
+            if (!empty($request->query->get('dates')) && !empty($request->query->get('nom_dossier'))) {
+                $dates = explode(" - ", $request->query->get('dates'));
+                $queryBuilderLivraison->where('nom_dossier LIKE :nom_dossier')
+                    ->setParameter('nom_dossier', '%' . $request->query->get('nom_dossier'))
+                    ->andWhere('date_livraison BETWEEN :d AND :f')
+                    ->setParameter('d', $dates[0])
+                    ->setParameter('f', $dates[1]);
+            }
+
+            $livraisons = $queryBuilderLivraison->orderBy('date_livraison', "DESC")
+                ->execute()
+                ->fetchAll();
+        }
+        /**
+         * mise a jour livraison
+         */
+        if ($id) {
+            $data_livraison = $livraison->Get()
+                ->where('id_livraison_dossier = :id_livraison')
+                ->setParameter('id_livraison', $id)
+                ->execute()
+                ->fetch();
+        }
+
+        $form = $this->createFormBuilder()
+            ->add('nom_dossier', TextType::class, [
+                "required" => true,
+                "attr" => [
+                    "value" => $data_livraison ? $data_livraison['nom_dossier'] : null
+                ]
+            ])
+            ->add('date_livraison', TextType::class, [
+                "required" => true,
+                "attr" => [
+                    "value" => $data_livraison ? $data_livraison['date_livraison'] : null
+                ]
+            ])
+            ->add('volume', IntegerType::class, [
+                "required" => true,
+                "attr" => [
+                    "value" => $data_livraison ? $data_livraison['volumes'] : null
+                ]
+            ])
+            ->add('observations', TextareaType::class, [
+                "required" => false,
+                "data" => $data_livraison ? $data_livraison['observations'] : null
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $msg = " a été bien insérée";
+
+            $data = $form->getData();
+
+            $nom_dossier = strtoupper($data['nom_dossier']);
+            $date_livraison = $data["date_livraison"];
+            $volume = $data["volume"];
+            $observations = $data["observations"];
+
+            /**
+             * mise a jour
+             */
+            if ($id) {
+                $livraison->updateData([
+                    "nom_dossier" => $nom_dossier,
+                    "date_livraison" => $date_livraison,
+                    "volumes" => $volume,
+                    "observations" => $observations
+                ], [
+                    "id_livraison_dossier" => $id
+                ])->execute();
+
+                $msg = " a été bien modifiée";
+            } else {
+                /**
+                 * eviter le doublant du nom du dossier
+                 */
+                $data_livraison = $livraison->Get()
+                    ->where('nom_dossier = :nom')
+                    ->setParameter('nom', $nom_dossier)
+                    ->execute()
+                    ->fetch();
+
+                if ($data_livraison) {
+                    $this->addFlash("danger", "Ce dossier nommée " . $nom_dossier . " existe déjà");
+                    return $this->redirectToRoute("app_dossier_livraison");
+                }
+                /**
+                 * insertion
+                 */
+                $livraison->insertData([
+                    "nom_dossier" => $nom_dossier,
+                    "date_livraison" => $date_livraison,
+                    "volumes" => $volume,
+                    "observations" => $observations
+                ])->execute();
+            }
+            $this->addFlash("success", "Dossier " . $nom_dossier . "" . $msg);
+            return $this->redirectToRoute("app_dossier_livraison");
+        }
+        /**
+         * aucune recherche effectuée
+         */
+        if (!$search_active) {
+            $livraisons = $livraison->Get()
+                ->orderBy('date_livraison', "DESC")
+                ->setMaxResults(100)
+                ->execute()
+                ->fetchAll();
+        }
+        dump($livraisons);
+        return $this->render("dossier/livraison_dossier.html.twig", [
+            "form" => $form->createView(),
+            "livraisons" => $livraisons
         ]);
     }
 }

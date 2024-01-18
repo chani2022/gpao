@@ -1,261 +1,245 @@
 {% set ROUTES_ACTIVE = app.request.attributes.get('_route') %}
 <!doctype html>
 <html class="no-js" lang="">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{% block title %}App{% endblock %}</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- favicon
-		============================================ -->
-    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
-    
-    <link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-4.7/css/font-awesome.min.css')) }}"
-          rel="stylesheet" media="all">
-    <link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-5/css/fontawesome-all.min.css')) }}"
-          rel="stylesheet" media="all">
-    <link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}"
-          rel="stylesheet" media="all">
-    
-    
-    <link href="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.css')) }}" rel="stylesheet"
-          media="all">
-    
-    <!-- Google Fonts
-		============================================ -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet">
-    {#
-    <!-- Bootstrap CSS
-		============================================ -->
-        <link href="{{ absolute_url(asset('green-horizotal/css/bootstrap.min.css')) }}"
-        rel="stylesheet" media="all">
-    <!-- Bootstrap CSS
-		============================================ -->
-        <link href="{{ absolute_url(asset('green-horizotal/css/font-awesome.min.css')) }}"
-        rel="stylesheet" media="all">
-    #}
-    <!-- owl.carousel CSS
-		============================================ -->
-    
-        <link href="{{ absolute_url(asset('green-horizotal/css/owl.carousel.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/owl.theme.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/owl.transitions.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/meanmenu/meanmenu.min.css')) }}"
-        rel="stylesheet" media="all">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<title>
+			{% block title %}App
+			{% endblock %}
+		</title>
+		<meta name="description" content="">
+		<meta
+		name="viewport" content="width=device-width, initial-scale=1">
+		<!-- favicon
+						============================================ -->
+		<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
 
-        <link href="{{ absolute_url(asset('green-horizotal/css/animate.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/normalize.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/scrollbar/jquery.mCustomScrollbar.min.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/jvectormap/jquery-jvectormap-2.0.3.css')) }}"
-        rel="stylesheet" media="all">
-
-        <link href="{{ absolute_url(asset('green-horizotal/css/notika-custom-icon.css')) }}"
-        rel="stylesheet" media="all">
-
-        <link href="{{ absolute_url(asset('green-horizotal/css/wave/waves.min.css')) }}"
-        rel="stylesheet" media="all">
-       
-        <link href="{{ absolute_url(asset('green-horizotal/css/main.css')) }}"
-        rel="stylesheet" media="all">
-        
-        <link href="{{ absolute_url(asset('green-horizotal/style.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}"
-        rel="stylesheet" media="all">
-        <link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}"
-        rel="stylesheet" media="all">
-        
-        <link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}"
-          rel="stylesheet" media="all">
-    {% block stylesheets %}
-
-    {% endblock %}
+		<link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-4.7/css/font-awesome.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-5/css/fontawesome-all.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}" rel="stylesheet" media="all">
 
 
-    <link href="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.css')) }}" rel="stylesheet" media="all">
+		<link
+		href="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.css')) }}" rel="stylesheet" media="all">
 
-    {#<link href="{{ absolute_url(asset('cooladmin/css/theme.css')) }}" rel="stylesheet" media="all">#}
+		<!-- Google Fonts
+						============================================ -->
+		<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet">
+		{#
+				    <!-- Bootstrap CSS
+						============================================ -->
+				        <link href="{{ absolute_url(asset('green-horizotal/css/bootstrap.min.css')) }}"
+				        rel="stylesheet" media="all">
+				    <!-- Bootstrap CSS
+						============================================ -->
+				        <link href="{{ absolute_url(asset('green-horizotal/css/font-awesome.min.css')) }}"
+				        rel="stylesheet" media="all">
+				    #}
+		<!-- owl.carousel CSS
+						============================================ -->
 
-    <link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/summernote/summernote-bs4.css')) }}">
+		<link href="{{ absolute_url(asset('green-horizotal/css/owl.carousel.css')) }}" rel="stylesheet" media="all"> <link href="{{ absolute_url(asset('green-horizotal/css/owl.theme.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/owl.transitions.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/meanmenu/meanmenu.min.css')) }}" rel="stylesheet" media="all">
 
-    <link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/dropzone/dist/dropzone.css')) }}">
+		<link href="{{ absolute_url(asset('green-horizotal/css/animate.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/normalize.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/scrollbar/jquery.mCustomScrollbar.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/jvectormap/jquery-jvectormap-2.0.3.css')) }}" rel="stylesheet" media="all">
 
-    <link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/daterangepicker/daterangepicker.css')) }}">
-        
- <style>
- .notification_message{
-     position: absolute;
-    display: inline-block;
-    height: 15px;
-    width: 15px;
-    line-height: 0px;
-    text-align: center;
-    color:#fff ;
-    -webkit-border-radius: 100%;
-    -moz-border-radius: 100%;
-    border-radius: 100%;
-    font-size: 12px;
- 
- }
- .tous_message{
-     font-size: 12px;
-    display: block;
-    text-align: center;
-    font-size: 14px;
-    padding: 24px 0;
-    color: #3868cd;
- }
- .quantity_suite{
-     background-color: #ed657d;
-    color: #f2f2f2;
-    text-align: center;
-    border: 1px solid transparent;
-    border-radius: 4em;
-    box-shadow: 5px 5px 4px rgba(0, 0, 0, .2);
- }
+		<link href="{{ absolute_url(asset('green-horizotal/css/notika-custom-icon.css')) }}" rel="stylesheet" media="all">
 
- .account-dropdown .info {
-    padding: 25px;
-    border-top: 1px solid #f5f5f5;
-    border-bottom: 1px solid #f2f2f2;
-}
-.account-dropdown .info .content {
-    margin-left: 65px;
-    padding: 11px 0;
-    padding-left: 12px;
-}
-.account-item--style2 .account-dropdown .info .image {
-    -webkit-border-radius: 100%;
-    -moz-border-radius: 100%;
-    border-radius: 100%;
-}
- </style>   
+		<link href="{{ absolute_url(asset('green-horizotal/css/wave/waves.min.css')) }}" rel="stylesheet" media="all">
 
-</head>
+		<link href="{{ absolute_url(asset('green-horizotal/css/main.css')) }}" rel="stylesheet" media="all">
 
-<body>
- 
+		<link href="{{ absolute_url(asset('green-horizotal/style.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}" rel="stylesheet" media="all">
 
-    {# header #}
-    <div class="header-top-area">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
-                    <div class="logo-area">
-                        <a href="#"><img src="{{ absolute_url(asset('images/logo-eline-small-archives.png')) }}" alt="" /></a>
-                    </div>
-                </div>
-                
-                <div class="col-lg-6 col-md-2 col-sm-12 col-xs-12">
-                    <div class="logo-area">
-                        <form action="{{ path('transmission_fast_search') }}" method="post" class="form-inline">
-                            <div class="form-group">
-                                {% set varname = app.session.get('keys_rapide') %}
-                                 <input name="fast_search" value="{{varname}}"   type="text" class="form-control" placeholder="Recherche rapide...">
-                              </div>
-                              <div class="form-group">
-                                 
-                                  &nbsp;<input name="check_text" class="form-check-input" type="checkbox" value="">
-                              </div>
-                            <button type="submit" class="btn btn-primary">Rechercher</button>
-                          </form>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-8 col-sm-12 col-xs-12">
-                    <div class="header-top-menu">
-                    <ul class="nav navbar-nav notika-top-nav">
-                            <li class="nav-item dropdown">
-                                        <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle">
-                                            <span>
-                                                {% if app.user==null %}
-                                                    {{ logout_path() }}
-                                                {% endif %}
-                                                <img style="border-radius: 100%;"  width="20" height="20" src="http://192.168.8.3/public/user_photo/{{ app.user.userdetails['photo'] }}"
-                                                                                /> {{ app.user.userdetails['login']|capitalize  }}
-                                                   
-                                                
-                                            </span>
-                                        </a>
-                                        <div role="menu" class="dropdown-menu message-dd animated zoomIn">
-                                                <div class="hd-message-sn">
-                                                    <div class="hd-mg-ctn">
-                                                        <a href="{{ path('logout') }}">
-                                                            <h3><i class="fas fa-power-off"></i> Quitter</h3>
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                        </div>
-                            </li>
-                        </ul>
-                        <ul class="nav navbar-nav notika-top-nav">
-                            <li class="nav-item dropdown" style="right:20px">
-                                <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link ">
-                                    <span><i class="zmdi zmdi-comment-more"></i></span>
-                                    {% if is_granted("ROLE_SUPER_ADMIN") and app.request.get('_route') == 'dossier_extra_general' or app.request.get('_route') == 'dossier_suivi_extra_heure_manquant' or app.request.get('_route') == 'dossier_suivi_extra_extra_effectuez' or app.request.get('_route') == 'dossier_statistique_extra_et_production' %}
-                                            <span class="notification_message"></span>
-                                    {% else %}
-                                           <span class="notification_message">{{ render(controller('App\\Controller\\TransmissionController::getMyUnreadMessage')) }}</span>
-                                    {% endif %}
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {# end header #}
+		<link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}" rel="stylesheet" media="all"> {% block stylesheets %}{% endblock %}
 
-    {{ render(controller('App\\Controller\\MainController::getMenus', {activeRoutes:ROUTES_ACTIVE, newMenus:1})) }}
-    
-    {% block body %}
-         
-    {% endblock %}
-    <!-- Start Footer area-->
-    <div class="navbar fixed-bottom">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                    <div class="footer-copy-right text-center">
-                        <p>ELINE SOFT &amp; DATA 2020</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Footer area-->
-    <script src="{{ absolute_url(asset('cooladmin/vendor/jquery-3.2.1.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/popper.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.js')) }}"></script>
-    
-    <script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment.min.js')) }}"></script>
-    <script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment-with-locales.min.js')) }}"></script>
-    <script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/daterangepicker.js')) }}"></script>
-    
-    <script src="{{ absolute_url(asset('green-horizotal/js/vendor/modernizr-2.8.3.min.js')) }}"></script>
-    
-    <script src="{{ absolute_url(asset('cooladmin/vendor/slick/slick.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/wow/wow.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/animsition/animsition.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-progressbar/bootstrap-progressbar.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.waypoints.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.counterup.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/circle-progress/circle-progress.min.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/perfect-scrollbar/perfect-scrollbar.js')) }}"></script>
-    <script src="{{ absolute_url(asset('cooladmin/vendor/chartjs/Chart.bundle.min.js')) }}"></script>
-    
-    <script src="{{ absolute_url(asset('bundles/fosjsrouting/js/router.min.js')) }}"></script>
-    <script src="{{ url('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
-    <script src="{{ absolute_url(asset('js/dropzone/dist/dropzone.js')) }}"></script>
-    <script src="{{ absolute_url(asset('js/summernote/summernote.js')) }}"></script>
-  {% block javascripts %}{% endblock %}
-  </body>
+
+		<link
+		href="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.css')) }}" rel="stylesheet" media="all">
+
+		{#<link href="{{ absolute_url(asset('cooladmin/css/theme.css')) }}" rel="stylesheet" media="all">#}
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/summernote/summernote-bs4.css')) }}">
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/dropzone/dist/dropzone.css')) }}">
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/daterangepicker/daterangepicker.css')) }}">
+
+		<style>
+			.notification_message {
+				position: absolute;
+				display: inline-block;
+				height: 15px;
+				width: 15px;
+				line-height: 0;
+				text-align: center;
+				color: #fff;
+				-webkit-border-radius: 100%;
+				-moz-border-radius: 100%;
+				border-radius: 100%;
+				font-size: 12px;
+
+			}
+			.tous_message {
+				font-size: 12px;
+				display: block;
+				text-align: center;
+				font-size: 14px;
+				padding: 24px 0;
+				color: #3868cd;
+			}
+			.quantity_suite {
+				background-color: #ed657d;
+				color: #f2f2f2;
+				text-align: center;
+				border: 1px solid transparent;
+				border-radius: 4em;
+				box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.2);
+			}
+
+			.account-dropdown .info {
+				padding: 25px;
+				border-top: 1px solid #f5f5f5;
+				border-bottom: 1px solid #f2f2f2;
+			}
+			.account-dropdown .info .content {
+				margin-left: 65px;
+				padding: 11px 0 11px 12px;
+			}
+			.account-item--style2 .account-dropdown .info .image {
+				-webkit-border-radius: 100%;
+				-moz-border-radius: 100%;
+				border-radius: 100%;
+			}
+		</style>
+
+	</head>
+
+	<body>
+
+
+		{# header #}
+		<div class="header-top-area">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
+						<div class="logo-area">
+							<a href="#"><img src="{{ absolute_url(asset('images/logo-eline-small-archives.png')) }}" alt=""/></a>
+						</div>
+					</div>
+
+					<div class="col-lg-6 col-md-2 col-sm-12 col-xs-12">
+						<div class="logo-area">
+							<form action="{{ path('transmission_fast_search') }}" method="post" class="form-inline">
+								<div class="form-group">
+									{% set varname = app.session.get('keys_rapide') %}
+									<input name="fast_search" value="{{varname}}" type="text" class="form-control" placeholder="Recherche rapide...">
+								</div>
+								<div class="form-group">
+
+									&nbsp;<input name="check_text" class="form-check-input" type="checkbox" value="">
+								</div>
+								<button type="submit" class="btn btn-primary">Rechercher</button>
+							</form>
+						</div>
+					</div>
+					<div class="col-lg-4 col-md-8 col-sm-12 col-xs-12">
+						<div class="header-top-menu">
+							<ul class="nav navbar-nav notika-top-nav">
+								<li class="nav-item dropdown">
+									<a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link dropdown-toggle">
+										<span>
+											{% if app.user==null %}
+												{{ logout_path() }}
+											{% endif %}
+											<img style="border-radius: 100%;" width="20" height="20" src="http://192.168.8.3/public/user_photo/{{ app.user.userdetails['photo'] }}"/>
+											{{ app.user.userdetails['login']|capitalize  }}
+
+
+										</span>
+									</a>
+									<div role="menu" class="dropdown-menu message-dd animated zoomIn">
+										<div class="hd-message-sn">
+											<div class="hd-mg-ctn">
+												<a href="{{ path('logout') }}">
+													<h3>
+														<i class="fas fa-power-off"></i>
+														Quitter</h3>
+												</a>
+											</div>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<ul class="nav navbar-nav notika-top-nav">
+								<li class="nav-item dropdown" style="right:20px">
+									<a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="nav-link ">
+										<span>
+											<i class="zmdi zmdi-comment-more"></i>
+										</span>
+										{% if is_granted("ROLE_SUPER_ADMIN") and app.request.get('_route') == 'dossier_extra_general' or app.request.get('_route') == 'dossier_suivi_extra_heure_manquant' or app.request.get('_route') == 'dossier_suivi_extra_extra_effectuez' or app.request.get('_route') == 'dossier_statistique_extra_et_production' %}
+											<span class="notification_message"></span>
+										{% else %}
+											<span class="notification_message">{{ render(controller('App\\Controller\\TransmissionController::getMyUnreadMessage')) }}</span>
+										{% endif %}
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		{# end header #}
+
+		{{ render(controller('App\\Controller\\MainController::getMenus', {activeRoutes:ROUTES_ACTIVE, newMenus:1})) }}
+
+		{% block body %}{% endblock %}
+		<!-- Start Footer area-->
+		<div class="navbar fixed-bottom">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+						<div class="footer-copy-right text-center">
+							<p>ELINE SOFT &amp; DATA 2020</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Footer area-->
+		<script src="{{ absolute_url(asset('cooladmin/vendor/jquery-3.2.1.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/popper.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.js')) }}"></script>
+
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment.min.js')) }}"></script>
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment-with-locales.min.js')) }}"></script>
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/daterangepicker.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('green-horizotal/js/vendor/modernizr-2.8.3.min.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('cooladmin/vendor/slick/slick.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/wow/wow.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/animsition/animsition.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-progressbar/bootstrap-progressbar.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.waypoints.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.counterup.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/circle-progress/circle-progress.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/perfect-scrollbar/perfect-scrollbar.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/chartjs/Chart.bundle.min.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('bundles/fosjsrouting/js/router.min.js')) }}"></script>
+		<script src="{{ url('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+		<script src="{{ absolute_url(asset('js/dropzone/dist/dropzone.js')) }}"></script>
+		<script src="{{ absolute_url(asset('js/summernote/summernote.js')) }}"></script>
+		{% block javascripts %}{% endblock %}
+	</body>
 </html>

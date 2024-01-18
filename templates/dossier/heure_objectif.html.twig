@@ -49,6 +49,9 @@ ul {
                 {{ form_row(form.equipe, {'label': 'Equipe','attr': {'class': 'form-control'}}) }}    
             </div>
             <div class="form-group">
+                {{ form_row(form.categorie, {'label': 'Categorie','attr': {'class': 'form-control'}}) }}    
+            </div>
+            <div class="form-group">
                 {{ form_row(form.export) }}    
             </div>
            
@@ -136,6 +139,7 @@ $(function(){
       /*initialisation du champs user, pour l'utilisation du plugin select2 avec un filtre de recherche particulier*/
       $('select#form_equipe').select2({matcher: select2matchCustomUser});
       $('select#form_matricule').select2({matcher: select2matchCustomUser});
+      $('select#form_categorie').select2({matcher: select2matchCustomUser});
       /*initialisation de 'laffichage des champs*/
    
   });

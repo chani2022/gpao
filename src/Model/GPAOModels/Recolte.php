@@ -9,7 +9,7 @@ use App\Model\GPAODATAModel;
  *
  * @author Administrateur
  */
-class Pointage extends GPAODATAModel
+class Recolte extends GPAODATAModel
 {
 
     //put your code here
@@ -18,12 +18,13 @@ class Pointage extends GPAODATAModel
         return [
             "\App\Model\GPAOModels\Personnel" => "id_personnel",
             "\App\Model\GPAOModels\TypePointage" => "id_type_pointage",
+            "\App\Model\GPAOModels\EquipeTacheOperateur" => "id_equipe_tache_operateur"
         ];
     }
 
     protected function getTable()
     {
-        return "pointage";
+        return "recolte";
     }
 
     public function getPointages($matricule, $debut, $fin = NULL)

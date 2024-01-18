@@ -290,13 +290,15 @@ visiteur:
 
 #Sortie avant heure
 interne:
-    path: /interne/{paramDefaults}
-    controller: App\Controller\SecuriteController::interne
+    path: securite/sortie-avant-heure/{paramDefaults}/{id}
+    controller: App\Controller\SecuriteController::sortieAvantHeure
     options:
-      expose: true
+        expose: true
     defaults:
-      paramDefaults: 0
-      
+      paramDefaults: null
+      id: null
+
+
 absence_imprevu:
     path: /absence/imprevu
     controller: App\Controller\RhController::absenceImprevu
@@ -439,6 +441,45 @@ attribution_dossier:
 app_gestion_demande:
     path: /rh/gestion/demande/supplementaire
     controller: App\Controller\RhController::gestionDemande
+
+app_gestion_allaitement_conge_maternite:
+    path: /rh/gestion/allaitement/{id}
+    controller: App\Controller\RhController::gestionAllaitementAndcongeMaternite
+    defaults:
+        option: allaitement
+        id: null
+
+app_gestion_conge_maternite:
+    path: /rh/gestion/conge/{id}
+    controller: App\Controller\RhController::gestionAllaitementAndcongeMaternite
+    defaults:
+        option: conge
+        id: null
+
+app_dossier_livraison:
+    path: /dossier/livraisionDossier/{id}
+    controller: App\Controller\DossierController::livraisionDossier
+    defaults:
+        id: null
+
+app_securite_identification:
+    path: /securite/identificationPersonne/{id}
+    controller: App\Controller\SecuriteController::identificationPersonne
+    defaults:
+        id: null
+    
+
+
+
+
+
+
+
+
+
+
+        
+
 
 
     

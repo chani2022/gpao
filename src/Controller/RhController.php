@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Model\GPAOModels\AbsencePersonnel;
 use App\Model\GPAOModels\Allaitement;
+use App\Model\GPAOModels\CompteRecolteHeure;
+use App\Model\GPAOModels\CompteSalaire;
 use App\Model\GPAOModels\CongeMaternite;
 use App\Model\GPAOModels\DemandeSupplementaire;
 use App\Model\GPAOModels\EquipeTacheOperateur;
@@ -3150,112 +3152,156 @@ class RhController extends AbstractController
      */
     public function recolte(Request $request, Connection $connection): Response
     {
-        $form = $this->createFormBuilder()
-            ->add('file', FileType::class, [
-                "constraints" => [
-                    new File([
-                        "mimeTypes" => ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
-                        "uploadExtensionErrorMessage" => 'Veuillez uploader seulement des fichiers .xlsx'
-                    ])
-                ]
-            ])
-            ->add('submit', SubmitType::class)
-            ->getForm();
-        $form->handleRequest($request);
+        $compteRecolteHeure = new CompteRecolteHeure($connection);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $personnel = new Personnel($connection);
+        $compteSalaires = $compteRecolteHeure->Get()
+            ->execute()
+            ->fetchAll();
+        // foreach ($compteSalaires as $salaire) {
 
-            /** @var Fonction $fonction */
-            // $fonction = new Fonction($connection);
+        // }
+        // $form = $this->createFormBuilder()
+        //     ->add('file', FileType::class, [
+        //         "constraints" => [
+        //             new File([
+        //                 "mimeTypes" => ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+        //                 "uploadExtensionErrorMessage" => 'Veuillez uploader seulement des fichiers .xlsx'
+        //             ])
+        //         ]
+        //     ])
+        //     ->add('submit', SubmitType::class)
+        //     ->getForm();
+        // $form->handleRequest($request);
 
-            // $equipe = new EquipeTacheOperateur($connection);
+        // if ($form->isSubmitted() && $form->isValid()) {
+        //     $personnel = new Personnel($connection);
 
-            $personnels = [];
-            $matricules = [];
+        //     /** @var Fonction $fonction */
+        //     // $fonction = new Fonction($connection);
 
-            /** suppression des donnée de la table */
-            // $recolte = new Recolte($connection);
-            // $recolte->deleteData();
+        //     // $equipe = new EquipeTacheOperateur($connection);
 
-            /** @var UploadedFile $uploaded_file */
-            $uploaded_file = $form->get('file')->getData();
+        //     $personnels = [];
+        //     $matricules = [];
 
-            $reader = ReaderEntityFactory::createXLSXReader();
+        //     /** suppression des donnée de la table */
+        //     // $recolte = new Recolte($connection);
+        //     // $recolte->deleteData();
 
-            $reader->open($uploaded_file->getPathname());
+        //     /** @var UploadedFile $uploaded_file */
+        //     $uploaded_file = $form->get('file')->getData();
+
+        //     $reader = ReaderEntityFactory::createXLSXReader();
+
+        //     $reader->open($uploaded_file->getPathname());
 
 
-            foreach ($reader->getSheetIterator() as $sheet) {
-                foreach ($sheet->getRowIterator() as $i => $row) {
-                    // do stuff with the row
-                    if ($i > 1) {
-                        $cells = $row->getCells();
-                        // dd($cells);
-                        $matricules[] = $cells[0]->getValue();
-                        // $fonc = $cells[1]->getValue();
-                        $equipe = $cells[4]->getValue();
+        //     foreach ($reader->getSheetIterator() as $sheet) {
+        //         foreach ($sheet->getRowIterator() as $i => $row) {
+        //             // do stuff with the row
+        //             if ($i > 1) {
+        //                 $cells = $row->getCells();
+        //                 // dd($cells);
+        //                 $matricules[] = $cells[0]->getValue();
+        //                 // $fonc = $cells[1]->getValue();
+        //                 $equipe = $cells[4]->getValue();
 
-                        // $personnels[] = $matr;
-                        // $fonctions[$matr] = $fonc;
-                        // $equipes[$matr] = $equipe;
-                        // $fonction = $cells[1]->getValue();
-                        // $nom = $cells[2]->getValue();
-                        // $prenom = $cells[3]->getValue();
-                        // $equipe = $cells[4]->getValue();
+        //                 // $personnels[] = $matr;
+        //                 // $fonctions[$matr] = $fonc;
+        //                 // $equipes[$matr] = $equipe;
+        //                 // $fonction = $cells[1]->getValue();
+        //                 // $nom = $cells[2]->getValue();
+        //                 // $prenom = $cells[3]->getValue();
+        //                 // $equipe = $cells[4]->getValue();
 
-                    }
-                }
-            }
-            /** @var QueryBuilder $sqlPersonnel  */
-            $qb = $personnel->Get([
-                "personnel.id_personnel",
-                "personnel.nom",
-                "prenom",
-                "nom_fonction",
-                "type_pointage.description"
-            ]);
+        //             }
+        //         }
+        //     }
+        //     /** @var QueryBuilder $sqlPersonnel  */
+        //     $qb = $personnel->Get([
+        //         "personnel.id_personnel",
+        //         "personnel.nom",
+        //         "prenom",
+        //         "nom_fonction",
+        //         "type_pointage.description"
+        //     ]);
 
-            $str_matricules = implode(", ", $matricules);
-            $operator_matricules = "IN (" . $str_matricules . ")";
-            $personnels = $qb->where("personnel.id_personnel " . $operator_matricules)
-                ->orderBy("personnel.id_personnel", "ASC")
-                ->execute()
-                ->fetchAll();
-            // $whereBegin = false;
-            // foreach ($equipes as $matr => $equipe) {
-            //     $key_personnel = ":id_personnel_" . $matr;
-            //     $key_description = ":description_" . $matr;
+        //     $str_matricules = implode(", ", $matricules);
+        //     $operator_matricules = "IN (" . $str_matricules . ")";
+        //     $personnels = $qb->where("personnel.id_personnel " . $operator_matricules)
+        //         ->orderBy("personnel.id_personnel", "ASC")
+        //         ->execute()
+        //         ->fetchAll();
+        //     // $whereBegin = false;
+        //     // foreach ($equipes as $matr => $equipe) {
+        //     //     $key_personnel = ":id_personnel_" . $matr;
+        //     //     $key_description = ":description_" . $matr;
 
-            //     if (!$whereBegin) {
-            //         $whereBegin = true;
-            //         $qb->where("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
-            //     } else {
-            //         $qb->orWhere("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
-            //     }
+        //     //     if (!$whereBegin) {
+        //     //         $whereBegin = true;
+        //     //         $qb->where("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+        //     //     } else {
+        //     //         $qb->orWhere("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+        //     //     }
 
-            //     $qb->setParameter(str_replace(":", "", $key_personnel), $matr)
-            //         ->setParameter(str_replace(":", "", $key_description), "%" . $equipe . "%");
-            // }
-            // dump($qb);
+        //     //     $qb->setParameter(str_replace(":", "", $key_personnel), $matr)
+        //     //         ->setParameter(str_replace(":", "", $key_description), "%" . $equipe . "%");
+        //     // }
+        //     // dump($qb);
 
-            dd($personnels);
-        }
-        return $this->render("recolte/recolte.html.twig", [
-            "form" => $form->createView(),
-        ]);
+        //     dd($personnels);
+        // }
+        return $this->render("rh/recolte/recolte.html.twig", []);
     }
 
-    #[Route("/api/rh/import-recolte")]
-    public function importRecolte(Request $request, Connection $connection): ?JsonResponse
+    /**
+     * @Route("/rh/recolte/new", name="app_recolte_new")
+     */
+    public function newRecolte(Request $request, Connection $connection): Response
     {
-        if ($request->isXmlHttpRequest()) {
-            $recolte = new Recolte($connection);
-            $recolte->deleteData();
 
-            $excelObj = $request->files->get('file');
+
+        $form = $this->createFormBuilder()
+            ->add('periode', TextType::class, [
+                "required" => true,
+                "label" => false,
+                "attr" => [
+                    "placeholder" => "Période du compte"
+                ]
+            ])
+            ->add('description', TextType::class, [
+                "required" => true,
+                "label" => false,
+                "attr" => [
+                    "placeholder" => "Description"
+                ]
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $periodes = $form->get('periode')->getData();
+            $description = $form->get('description')->getData();
+
+            $date_debut = explode(" - ", $periodes)[0];
+            $date_fin = explode(" - ", $periodes)[1];
+
+            $data = [
+                "date_debut_compte" => $date_debut,
+                "date_fin_compte" => $date_fin
+            ];
+
+            $compteSalaire = new CompteSalaire($connection);
+            $compteSalaire->insertData($data)
+                ->execute();
+
+            $this->addFlash("success", "Compte du " . $date_debut . " - " . $date_fin . " a été bien enregistrée");
+            return $this->redirectToRoute("app_recolte_new");
         }
 
-        return null;
+        return $this->render("/rh/recolte/recolteNew.html.twig", [
+            "form" => $form->createView()
+        ]);
     }
 }

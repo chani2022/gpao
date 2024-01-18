@@ -3494,7 +3494,7 @@ class DossierController extends AbstractController
         ]);
     }
 
-    private function getIntervalDateInCompte(string $dateDebut, string $dateFin)
+    private function getIntervalDateInCompte(string $dateDebut, string $dateFin, $isPointage = false)
     {
         $dateDebut = implode('-', array_reverse(explode('/', $dateDebut)));
         $dateFin = implode('-', array_reverse(explode('/', $dateFin)));
@@ -3503,26 +3503,41 @@ class DossierController extends AbstractController
         $monthBegin = null;
         $yearBegin = (new \DateTime($dateDebut))->format("Y");
 
-        if ($daySearch > 20) {
-            $monthBegin = (new \DateTime($dateDebut))->format("m");
+        $monthEnd = (new \DateTime($dateFin))->format("m");
+        $yearEnd = (new \DateTime($dateFin))->format("Y");
+
+        if ($monthEnd == 12) {
+            $yearEnd += 1;
+        }
+        $dateDebutCompte = null;
+        $dateFinCompte = null;
+
+        if ($isPointage) {
+            $dateDebutCompte = "21-" . (new \DateTime($dateDebut))->sub(new \DateInterval('P2M'))->format("m") . "-" . $yearBegin;
+            $dateFinCompte = "20-" . (new \DateTime($dateFin))->add(new \DateInterval('P2M'))->format("m") . "-" . $yearEnd;
         } else {
-            $monthBegin = (new \DateTime($dateDebut))->sub(new \DateInterval('P1M'))->format("m");
+            if ($daySearch > 20) {
+                $monthBegin = (new \DateTime($dateDebut))->format("m");
+            } else {
+                $monthBegin = (new \DateTime($dateDebut))->sub(new \DateInterval('P1M'))->format("m");
+            }
+            $dateDebutCompte = "21-" . $monthBegin . "-" . $yearBegin;
+
+            $daySearchEnd = (int)(new \DateTime($dateFin))->format("d");
+            $monthEndCompte = (new \DateTime($dateFin))->format("m");
+            $yearEndCompte = (new \DateTime($dateFin))->format("Y");
+
+            if ($daySearchEnd > 20) {
+                $monthEndCompte = (new \DateTime($dateFin))->add(new \DateInterval('P1M'))->format("m");
+            }
+
+            //$dateFin = new \DateTime($dateFin);
+            $dateFinCompte = "20-" . $monthEndCompte . "-" . $yearEndCompte;
         }
-        $dateDebutCompte = "21-" . $monthBegin . "-" . $yearBegin;
 
-        $daySearchEnd = (int)(new \DateTime($dateFin))->format("d");
-        $monthEndCompte = (new \DateTime($dateFin))->format("m");
-        $yearEndCompte = (new \DateTime($dateFin))->format("Y");
 
-        if ($daySearchEnd > 20) {
-            $monthEndCompte = (new \DateTime($dateFin))->add(new \DateInterval('P1M'))->format("m");
-        }
+        // 
 
-        //$dateFin = new \DateTime($dateFin);
-        $dateFinCompte = "20-" . $monthEndCompte . "-" . $yearEndCompte;
-
-        //dump($dateDebutCompte);
-        //dd($dateFinCompte);
         return [
             "dateDebutCompte" => $dateDebutCompte,
             "dateFinCompte" => $dateFinCompte
@@ -6781,23 +6796,31 @@ class DossierController extends AbstractController
                 $dD = explode(' - ', $dates)[0];
                 $dF = explode(' - ', $dates)[1];
 
+
                 $name_excel = "/extra" . date('YmdH:i:s') . ".xlsx";
 
-                $intervalDateFacturable = $this->getIntervalDateInCompte($dD, $dF);
+                // $compteSuivant = $this->getIntervalDateInCompte($dD, $dF, false);
+                // dd($compteSuivant);
 
+                $intervalDateFacturable = $this->getIntervalDateInCompte($dD, $dF, true);
+                $dateProdInCompte = $this->getIntervalDateInCompte($dD, $dF);
+
+                // dd($intervalDateFacturable, $dateProdInCompte);
                 /**
                  * maka ny debut et fin du compte teo aloha
                  * afaan maka ny extra ny cadre satria ny heuren variable
                  */
-                $timestamp = strtotime($intervalDateFacturable["dateDebutCompte"]);
-                $datePrecedent = date("Y-m-d", strtotime("-1 day", $timestamp));
-                $comptePrecedent = $this->getIntervalDateInCompte($datePrecedent, $datePrecedent);
+                // $timestamp = strtotime($intervalDateFacturable["dateDebutCompte"]);
+                // $datePrecedent = date("Y-m-d", strtotime("-1 day", $timestamp));
+                // $comptePrecedent = $this->getIntervalDateInCompte($datePrecedent, $datePrecedent);
+
+
+                // dd($comptePrecedent, $intervalDateFacturable, $compteSuivant);
 
                 /**
                  * pointage
                  */
                 $pointage = new \App\Model\GPAOModels\Pointage($connex);
-                $pointageModel = new \App\Model\GPAOModels\Pointage($connex);
 
                 $sqlPointage = $pointage->Get([
                     "personnel.nom_fonction",
@@ -6809,7 +6832,7 @@ class DossierController extends AbstractController
                     "date_debut",
                     "personnel.type_contrat"
                 ])
-                    ->where("((date_debut BETWEEN :deb AND :fin) OR (date_debut BETWEEN :db AND :df))");
+                    ->where("date_debut BETWEEN :deb AND :fin");
                 //->setParameter("debut", date('Y-m-d'))
                 //->where('type_contrat = :type_contrat AND ((date_debut BETWEEN :deb AND :fin) OR (date_debut BETWEEN :d AND :f))');
 
@@ -6823,8 +6846,10 @@ class DossierController extends AbstractController
                 $sqlPointage->andWhere('type_pointage.description LIKE :desc')
                     ->setParameter('deb', $intervalDateFacturable["dateDebutCompte"])
                     ->setParameter('fin', $intervalDateFacturable["dateFinCompte"])
-                    ->setParameter('db', $comptePrecedent["dateDebutCompte"])
-                    ->setParameter('df', $comptePrecedent["dateFinCompte"])
+                    // ->setParameter('db', $comptePrecedent["dateDebutCompte"])
+                    // ->setParameter('df', $comptePrecedent["dateFinCompte"])
+                    // ->setParameter('suivantD', $compteSuivant['dateDebutCompte'])
+                    // ->setParameter('suivantF', $compteSuivant['dateFinCompte'])
                     ->setParameter('desc', 'Extra%')
                     ->orderBy("personnel.id_personnel", "ASC");
                 //->orderBy('date_debut','ASC');
@@ -6882,8 +6907,10 @@ class DossierController extends AbstractController
                     $writer->addRow($cells);
                 }
                 $prods = $sqlProd
-                    ->setParameter('db', $intervalDateFacturable["dateDebutCompte"])
-                    ->setParameter('df', $intervalDateFacturable["dateFinCompte"])
+                    ->setParameter('db', $dateProdInCompte["dateDebutCompte"])
+                    ->setParameter('df', $dateProdInCompte["dateFinCompte"])
+                    // ->setParameter('db', $dD)
+                    // ->setParameter('df', $dF)
                     ->orderBy('personnel.id_personnel', 'ASC')
                     ->execute()->fetchAll();
 
@@ -6911,9 +6938,17 @@ class DossierController extends AbstractController
                     $isExtra = false;
                     foreach ($pointageAll as $pointage) {
                         if ($pointage["id_personnel"] == $prod["id_personnel"]) {
+                            // if (
+                            //     strtotime($pointage["date_debut"]) == strtotime($prod["date_traitement"]) && strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) && strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) ||
+                            //     ($pointage["date_debut"] == $prod["date_traitement"] && (is_null($prod["date_reel_livraison"]) && (strtotime($prod["date_traitement"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) && strtotime($prod["date_traitement"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]))))
+                            // ) {
+                            //     if ($prod["heure_debut"] !== null && ((strtotime($prod["heure_debut"]) >= strtotime($pointage["heure_entre"]) && strtotime($prod["heure_debut"]) <= strtotime($pointage["heure_sortie"])))) {
+                            //         $isExtra = true;
+                            //     }
+                            // }
                             if (
-                                strtotime($pointage["date_debut"]) == strtotime($prod["date_traitement"]) && strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) && strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) ||
-                                ($pointage["date_debut"] == $prod["date_traitement"] && (is_null($prod["date_reel_livraison"]) && (strtotime($prod["date_traitement"]) <= strtotime($intervalDateFacturable["dateFinCompte"]) && strtotime($prod["date_traitement"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]))))
+                                strtotime($pointage["date_debut"]) == strtotime($prod["date_traitement"]) && strtotime($prod["date_reel_livraison"]) >= strtotime($dateProdInCompte["dateDebutCompte"]) && strtotime($prod["date_reel_livraison"]) <= strtotime($dateProdInCompte["dateFinCompte"]) ||
+                                ($pointage["date_debut"] == $prod["date_traitement"] && (is_null($prod["date_reel_livraison"]) && (strtotime($prod["date_traitement"]) <= strtotime($dateProdInCompte["dateFinCompte"]) && strtotime($prod["date_traitement"]) >= strtotime($dateProdInCompte["dateDebutCompte"]))))
                             ) {
                                 if ($prod["heure_debut"] !== null && ((strtotime($prod["heure_debut"]) >= strtotime($pointage["heure_entre"]) && strtotime($prod["heure_debut"]) <= strtotime($pointage["heure_sortie"])))) {
                                     $isExtra = true;
@@ -6926,84 +6961,39 @@ class DossierController extends AbstractController
                      * ->setParameter('db', $intervalDateFacturable["dateDebutCompte"])
                      * ->setParameter('df', $intervalDateFacturable["dateFinCompte"])
                      */
-                    if (
-                        strtotime($prod["date_reel_livraison"]) < strtotime($prod["date_traitement"]) &&
-                        strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) &&
-                        strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"])
-                    ) {
-                        // if ($prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)") {
-                        //             dump($prod);
-                        //             dd($pointageAll);
-                        //         }
-
-                        // $pointage = $pointageModel->Get([
-                        //     // "personnel.nom_fonction",
-                        //     // "personnel.id_personnel",
-                        //     // "personnel.id_type_pointage",
-                        //     "pointage.heure_entre",
-                        //     "pointage.heure_sortie",
-                        //     // "type_pointage.description",
-                        //     "date_debut",
-                        //     // "personnel.type_contrat"
-                        // ])
-                        //     ->where('type_pointage.description LIKE :desc')
-                        //     ->andWhere('personnel.id_personnel = :id_personnel')
-                        //     ->andWhere('date_debut = :date')
-                        //     ->setParameter('desc', 'Extra%')
-                        //     ->setParameter('id_personnel', $prod['id_personnel'])
-                        //     ->setParameter('date', $prod["date_traitement"])
-                        //     ->execute()->fetch();
-
-                        // if ($pointage) {
-                        //     if (
-                        //         strtotime($prod["heure_debut"]) >= strtotime($pointage["heure_entre"]) &&
-                        //         strtotime($prod["heure_debut"]) <= strtotime($pointage["heure_sortie"])
-                        //     ) {
-                        //         $isExtra = true;
-                        //         // dd($prod);
-                        //     }
-                        // }
-                        // $pattern = "/E-D00-010-230382_N (Dossier_E10SF)|
-                        // E-D00-010-230409_N (Dossier_E10SF)|
-                        // E-D00-040-230330_MD (Dossier_COS4)|
-                        // E-D06-040-230369_MD (Dossier_COS4)|
-                        // E-D06-040-230369_N (Dossier_COS4)|
-                        // E-P00-050-230392_N (Dossier_JVMFULLF)/";
+                    // if (
+                    //     strtotime($prod["date_reel_livraison"]) < strtotime($prod["date_traitement"]) &&
+                    //     strtotime($prod["date_reel_livraison"]) >= strtotime($intervalDateFacturable["dateDebutCompte"]) &&
+                    //     strtotime($prod["date_reel_livraison"]) <= strtotime($intervalDateFacturable["dateFinCompte"])
+                    // ) {
 
 
-                        if (
-                            $prod["nom_dossier"] == "E-D00-010-230382_N (Dossier_E10SF)" ||
-                            $prod["nom_dossier"] == "E-D00-040-230330_MD (Dossier_COS4)" ||
-                            $prod["nom_dossier"] == "E-D06-040-230369_MD (Dossier_COS4)" ||
-                            $prod["nom_dossier"] == "E-D06-040-230369_N (Dossier_COS4)" ||
-                            $prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)"
-                        ) {
 
-                            $heure_default_debut = "12:10:00";
-                            $heure_default_fin = "18:30:00";
+                    //     if (
+                    //         $prod["nom_dossier"] == "E-D00-010-230382_N (Dossier_E10SF)" ||
+                    //         $prod["nom_dossier"] == "E-D00-040-230330_MD (Dossier_COS4)" ||
+                    //         $prod["nom_dossier"] == "E-D06-040-230369_MD (Dossier_COS4)" ||
+                    //         $prod["nom_dossier"] == "E-D06-040-230369_N (Dossier_COS4)" ||
+                    //         $prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)"
+                    //     ) {
 
-                            if ($prod["id_type_pointage"] == 24) {
-                                $heure_default_debut = "06:00:00";
-                                $heure_default_fin = "12:10:00";
-                            }
+                    //         $heure_default_debut = "12:10:00";
+                    //         $heure_default_fin = "18:30:00";
 
-                            if (
-                                strtotime($prod["heure_debut"]) >= strtotime($heure_default_debut) &&
-                                strtotime($prod["heure_debut"]) <= strtotime($heure_default_fin)
-                            ) {
-                                // if ($prod["nom_dossier"] == "E-P00-050-230392_N (Dossier_JVMFULLF)") {
-                                //     dump($prod);
-                                //     dd($pointageAll);
-                                // }
+                    //         if ($prod["id_type_pointage"] == 24) {
+                    //             $heure_default_debut = "06:00:00";
+                    //             $heure_default_fin = "12:10:00";
+                    //         }
 
-                                $isExtra = true;
-                                // dump($prod);
-                                // dump("tsiz");
-                                // dump($prod);
-                                // dd($pointageAll);
-                            }
-                        }
-                    }
+                    //         if (
+                    //             strtotime($prod["heure_debut"]) >= strtotime($heure_default_debut) &&
+                    //             strtotime($prod["heure_debut"]) <= strtotime($heure_default_fin)
+                    //         ) {
+                    //             $isExtra = true;
+
+                    //         }
+                    //     }
+                    // }
                     // }
                     if ($isExtra) {
                         $taux = null;

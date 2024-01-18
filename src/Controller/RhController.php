@@ -40,6 +40,7 @@ use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use PhpOffice\PhpWord\Element\Cell;
 use Doctrine\ORM\QueryBuilder;
+use FontLib\Table\Type\name;
 
 class RhController extends AbstractController
 {
@@ -3144,6 +3145,9 @@ class RhController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/rh/recolte", name="app_recolte")
+     */
     public function recolte(Request $request, Connection $connection): Response
     {
         $form = $this->createFormBuilder()
@@ -3242,6 +3246,7 @@ class RhController extends AbstractController
         ]);
     }
 
+    #[Route("/api/rh/import-recolte")]
     public function importRecolte(Request $request, Connection $connection): ?JsonResponse
     {
         if ($request->isXmlHttpRequest()) {

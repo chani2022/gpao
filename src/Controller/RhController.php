@@ -3150,13 +3150,53 @@ class RhController extends AbstractController
     /**
      * @Route("/rh/recolte", name="app_recolte")
      */
-    public function recolte(Request $request, Connection $connection): Response
+    public function recolte(Request $request, Connection $connection, PaginatorInterface $paginator): Response
     {
-        $compteRecolteHeure = new CompteRecolteHeure($connection);
-
-        $compteSalaires = $compteRecolteHeure->Get()
+        $compteSalaires = (new CompteSalaire($connection))
+            ->Get([
+                "date_debut_compte",
+                "date_fin_compte"
+            ])
             ->execute()
             ->fetchAll();
+
+        $compteRecolteHeure = new CompteRecolteHeure($connection);
+        $query_recolte_heure = $compteRecolteHeure->Get([
+            "personnel.*",
+            "DISTINCT (date_debut_compte)",
+            "date_fin_compte",
+            "compte_recolte_heure.*"
+        ]);
+
+
+        $whereBegin = false;
+        foreach ($compteSalaires as $i => $comptes) {
+
+            if (!$whereBegin) {
+                $query_recolte_heure->where("compte_salaire.date_debut_compte = :dD" . $i . " AND compte_salaire.date_fin_compte = :dF" . $i);
+                $whereBegin = true;
+            } else {
+                $query_recolte_heure->andWhere("compte_salaire.date_debut_compte = :dD AND compte_salaire.date_fin_compte = :dF");
+            }
+            $query_recolte_heure->setParameter("dD" . $i, $comptes["date_debut_compte"])
+                ->setParameter("dF" . $i, $comptes["date_fin_compte"]);
+        }
+        $results = $query_recolte_heure
+            ->orderBy("date_debut_compte", "asc")
+            ->groupBy("date_debut_compte")
+            ->execute()
+            ->fetchAll();
+
+
+        $paginator = $paginator->paginate(
+            $query_recolte_heure,
+            $request->query->getInt('page', 1),
+            20
+        );
+        // dd($query);
+        // $compteSalaires = $compteRecolteHeure->Get()
+        //     ->execute()
+        //     ->fetchAll();
         // foreach ($compteSalaires as $salaire) {
 
         // }
@@ -3251,7 +3291,9 @@ class RhController extends AbstractController
 
         //     dd($personnels);
         // }
-        return $this->render("rh/recolte/recolte.html.twig", []);
+        return $this->render("rh/recolte/recolte.html.twig", [
+            "paginator" => $paginator
+        ]);
     }
 
     /**
@@ -3259,7 +3301,6 @@ class RhController extends AbstractController
      */
     public function newRecolte(Request $request, Connection $connection): Response
     {
-
         $form = $this->createFormBuilder()
             ->add('periode', TextType::class, [
                 "required" => true,
@@ -3287,8 +3328,8 @@ class RhController extends AbstractController
             $date_fin = explode(" - ", $periodes)[1];
 
             $data = [
-                "date_debut_compte" => $date_debut,
-                "date_fin_compte" => $date_fin,
+                "date_debut_compte" => date("Y-m-d", strtotime($date_debut)),
+                "date_fin_compte" => date("Y-m-d", strtotime($date_fin)),
                 "description" => $description
             ];
 

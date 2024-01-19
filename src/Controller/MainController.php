@@ -216,6 +216,12 @@ class MainController extends AbstractController
                         "roles" => [],
                         "icon" => "zmdi zmdi-format-color-text"
                     ],
+					[
+                        "name" => "Recolte II",
+                        "routes" => "app_recolte_new",
+                        "roles" => [],
+                        "icon" => "zmdi zmdi-format-color-text"
+                    ],
                     
 
 

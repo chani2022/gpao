@@ -3150,9 +3150,9 @@ class RhController extends AbstractController
     /**
      * @Route("/rh/recolte", name="app_recolte")
      */
-    public function recolte(Request $request, Connection $connection, PaginatorInterface $paginator): Response
-    {
-        $compteSalaires = (new CompteSalaire($connection))
+    //public function recolte(Request $request, Connection $connection, PaginatorInterface $paginator): Response
+    //{
+        /**$compteSalaires = (new CompteSalaire($connection))
             ->Get([
                 "date_debut_compte",
                 "date_fin_compte"
@@ -3194,6 +3194,8 @@ class RhController extends AbstractController
             $request->query->getInt('page', 1),
             20
         );
+		**/
+		//other
         // dd($query);
         // $compteSalaires = $compteRecolteHeure->Get()
         //     ->execute()
@@ -3292,10 +3294,10 @@ class RhController extends AbstractController
 
         //     dd($personnels);
         // }
-        return $this->render("rh/recolte/recolte.html.twig", [
-            "paginator" => $paginator
-        ]);
-    }
+       // return $this->render("rh/recolte/recolte.html.twig", [
+        //    "paginator" => $paginator
+       // ]);
+    // }
 
     /**
      * @Route("/rh/recolte/new", name="app_recolte_new")

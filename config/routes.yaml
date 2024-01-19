@@ -469,6 +469,10 @@ app_securite_identification:
         id: null
     
 
+recolte_route:
+    path: /recolte
+    controller: App\Controller\RhController::recolte
+
 
 
 

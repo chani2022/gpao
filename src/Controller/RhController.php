@@ -3235,7 +3235,6 @@ class RhController extends AbstractController
             // }
             // dump($qb);
 
-            dd($personnels);
         }
         return $this->render("recolte/recolte.html.twig", [
             "form" => $form->createView(),

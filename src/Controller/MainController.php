@@ -210,6 +210,12 @@ class MainController extends AbstractController
                         "roles" => [],
                         "icon" => "zmdi zmdi-format-color-text"
                     ],
+					[
+                        "name" => "Recolte",
+                        "routes" => "recolte_route",
+                        "roles" => [],
+                        "icon" => "zmdi zmdi-format-color-text"
+                    ],
                     
 
 

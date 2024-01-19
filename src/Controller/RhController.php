@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Model\GPAOModels\AbsencePersonnel;
 use App\Model\GPAOModels\Allaitement;
+use App\Model\GPAOModels\CompteRecolteHeure;
+use App\Model\GPAOModels\CompteSalaire;
 use App\Model\GPAOModels\CongeMaternite;
 use App\Model\GPAOModels\DemandeSupplementaire;
 use App\Model\GPAOModels\EquipeTacheOperateur;
@@ -40,6 +42,7 @@ use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use PhpOffice\PhpWord\Element\Cell;
 use Doctrine\ORM\QueryBuilder;
+use FontLib\Table\Type\name;
 
 class RhController extends AbstractController
 {
@@ -3144,112 +3147,203 @@ class RhController extends AbstractController
         ]);
     }
 
-    public function recolte(Request $request, Connection $connection): Response
+    /**
+     * @Route("/rh/recolte", name="app_recolte")
+     */
+    public function recolte(Request $request, Connection $connection, PaginatorInterface $paginator): Response
     {
-        $form = $this->createFormBuilder()
-            ->add('file', FileType::class, [
-                "constraints" => [
-                    new File([
-                        "mimeTypes" => ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
-                        "uploadExtensionErrorMessage" => 'Veuillez uploader seulement des fichiers .xlsx'
-                    ])
-                ]
+        $compteSalaires = (new CompteSalaire($connection))
+            ->Get([
+                "date_debut_compte",
+                "date_fin_compte"
             ])
-            ->add('submit', SubmitType::class)
-            ->getForm();
-        $form->handleRequest($request);
+            ->execute()
+            ->fetchAll();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $personnel = new Personnel($connection);
-
-            /** @var Fonction $fonction */
-            // $fonction = new Fonction($connection);
-
-            // $equipe = new EquipeTacheOperateur($connection);
-
-            $personnels = [];
-            $matricules = [];
-
-            /** suppression des donnée de la table */
-            // $recolte = new Recolte($connection);
-            // $recolte->deleteData();
-
-            /** @var UploadedFile $uploaded_file */
-            $uploaded_file = $form->get('file')->getData();
-
-            $reader = ReaderEntityFactory::createXLSXReader();
-
-            $reader->open($uploaded_file->getPathname());
+        $compteRecolteHeure = new CompteRecolteHeure($connection);
+        $query_recolte_heure = $compteRecolteHeure->Get([
+            "personnel.*",
+            "DISTINCT (date_debut_compte)",
+            "date_fin_compte",
+            "compte_recolte_heure.*"
+        ]);
 
 
-            foreach ($reader->getSheetIterator() as $sheet) {
-                foreach ($sheet->getRowIterator() as $i => $row) {
-                    // do stuff with the row
-                    if ($i > 1) {
-                        $cells = $row->getCells();
-                        // dd($cells);
-                        $matricules[] = $cells[0]->getValue();
-                        // $fonc = $cells[1]->getValue();
-                        $equipe = $cells[4]->getValue();
+        $whereBegin = false;
+        foreach ($compteSalaires as $i => $comptes) {
 
-                        // $personnels[] = $matr;
-                        // $fonctions[$matr] = $fonc;
-                        // $equipes[$matr] = $equipe;
-                        // $fonction = $cells[1]->getValue();
-                        // $nom = $cells[2]->getValue();
-                        // $prenom = $cells[3]->getValue();
-                        // $equipe = $cells[4]->getValue();
-
-                    }
-                }
+            if (!$whereBegin) {
+                $query_recolte_heure->where("compte_salaire.date_debut_compte = :dD" . $i . " AND compte_salaire.date_fin_compte = :dF" . $i);
+                $whereBegin = true;
+            } else {
+                $query_recolte_heure->andWhere("compte_salaire.date_debut_compte = :dD AND compte_salaire.date_fin_compte = :dF");
             }
-            /** @var QueryBuilder $sqlPersonnel  */
-            $qb = $personnel->Get([
-                "personnel.id_personnel",
-                "personnel.nom",
-                "prenom",
-                "nom_fonction",
-                "type_pointage.description"
-            ]);
 
-            $str_matricules = implode(", ", $matricules);
-            $operator_matricules = "IN (" . $str_matricules . ")";
-            $personnels = $qb->where("personnel.id_personnel " . $operator_matricules)
-                ->orderBy("personnel.id_personnel", "ASC")
-                ->execute()
-                ->fetchAll();
-            // $whereBegin = false;
-            // foreach ($equipes as $matr => $equipe) {
-            //     $key_personnel = ":id_personnel_" . $matr;
-            //     $key_description = ":description_" . $matr;
-
-            //     if (!$whereBegin) {
-            //         $whereBegin = true;
-            //         $qb->where("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
-            //     } else {
-            //         $qb->orWhere("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
-            //     }
-
-            //     $qb->setParameter(str_replace(":", "", $key_personnel), $matr)
-            //         ->setParameter(str_replace(":", "", $key_description), "%" . $equipe . "%");
-            // }
-            // dump($qb);
-
+            $query_recolte_heure->setParameter("dD" . $i, $comptes["date_debut_compte"])
+                ->setParameter("dF" . $i, $comptes["date_fin_compte"]);
         }
-        return $this->render("recolte/recolte.html.twig", [
-            "form" => $form->createView(),
+        $results = $query_recolte_heure
+            ->orderBy("date_debut_compte", "asc")
+            ->groupBy("date_debut_compte")
+            ->execute()
+            ->fetchAll();
+
+
+        $paginator = $paginator->paginate(
+            $query_recolte_heure,
+            $request->query->getInt('page', 1),
+            20
+        );
+        // dd($query);
+        // $compteSalaires = $compteRecolteHeure->Get()
+        //     ->execute()
+        //     ->fetchAll();
+        // foreach ($compteSalaires as $salaire) {
+
+        // }
+        // $form = $this->createFormBuilder()
+        //     ->add('file', FileType::class, [
+        //         "constraints" => [
+        //             new File([
+        //                 "mimeTypes" => ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+        //                 "uploadExtensionErrorMessage" => 'Veuillez uploader seulement des fichiers .xlsx'
+        //             ])
+        //         ]
+        //     ])
+        //     ->add('submit', SubmitType::class)
+        //     ->getForm();
+        // $form->handleRequest($request);
+
+        // if ($form->isSubmitted() && $form->isValid()) {
+        //     $personnel = new Personnel($connection);
+
+        //     /** @var Fonction $fonction */
+        //     // $fonction = new Fonction($connection);
+
+        //     // $equipe = new EquipeTacheOperateur($connection);
+
+        //     $personnels = [];
+        //     $matricules = [];
+
+        //     /** suppression des donnée de la table */
+        //     // $recolte = new Recolte($connection);
+        //     // $recolte->deleteData();
+
+        //     /** @var UploadedFile $uploaded_file */
+        //     $uploaded_file = $form->get('file')->getData();
+
+        //     $reader = ReaderEntityFactory::createXLSXReader();
+
+        //     $reader->open($uploaded_file->getPathname());
+
+
+        //     foreach ($reader->getSheetIterator() as $sheet) {
+        //         foreach ($sheet->getRowIterator() as $i => $row) {
+        //             // do stuff with the row
+        //             if ($i > 1) {
+        //                 $cells = $row->getCells();
+        //                 // dd($cells);
+        //                 $matricules[] = $cells[0]->getValue();
+        //                 // $fonc = $cells[1]->getValue();
+        //                 $equipe = $cells[4]->getValue();
+
+        //                 // $personnels[] = $matr;
+        //                 // $fonctions[$matr] = $fonc;
+        //                 // $equipes[$matr] = $equipe;
+        //                 // $fonction = $cells[1]->getValue();
+        //                 // $nom = $cells[2]->getValue();
+        //                 // $prenom = $cells[3]->getValue();
+        //                 // $equipe = $cells[4]->getValue();
+
+        //             }
+        //         }
+        //     }
+        //     /** @var QueryBuilder $sqlPersonnel  */
+        //     $qb = $personnel->Get([
+        //         "personnel.id_personnel",
+        //         "personnel.nom",
+        //         "prenom",
+        //         "nom_fonction",
+        //         "type_pointage.description"
+        //     ]);
+
+        //     $str_matricules = implode(", ", $matricules);
+        //     $operator_matricules = "IN (" . $str_matricules . ")";
+        //     $personnels = $qb->where("personnel.id_personnel " . $operator_matricules)
+        //         ->orderBy("personnel.id_personnel", "ASC")
+        //         ->execute()
+        //         ->fetchAll();
+        //     // $whereBegin = false;
+        //     // foreach ($equipes as $matr => $equipe) {
+        //     //     $key_personnel = ":id_personnel_" . $matr;
+        //     //     $key_description = ":description_" . $matr;
+
+        //     //     if (!$whereBegin) {
+        //     //         $whereBegin = true;
+        //     //         $qb->where("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+        //     //     } else {
+        //     //         $qb->orWhere("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
+        //     //     }
+
+        //     //     $qb->setParameter(str_replace(":", "", $key_personnel), $matr)
+        //     //         ->setParameter(str_replace(":", "", $key_description), "%" . $equipe . "%");
+        //     // }
+        //     // dump($qb);
+
+        //     dd($personnels);
+        // }
+        return $this->render("rh/recolte/recolte.html.twig", [
+            "paginator" => $paginator
         ]);
     }
 
-    public function importRecolte(Request $request, Connection $connection): ?JsonResponse
+    /**
+     * @Route("/rh/recolte/new", name="app_recolte_new")
+     */
+    public function newRecolte(Request $request, Connection $connection): Response
     {
-        if ($request->isXmlHttpRequest()) {
-            $recolte = new Recolte($connection);
-            $recolte->deleteData();
+        $form = $this->createFormBuilder()
+            ->add('periode', TextType::class, [
+                "required" => true,
+                "label" => false,
+                "attr" => [
+                    "placeholder" => "Période du compte"
+                ]
+            ])
+            ->add('description', TextType::class, [
+                "required" => true,
+                "label" => false,
+                "attr" => [
+                    "placeholder" => "Description"
+                ]
+            ])
+            ->getForm();
 
-            $excelObj = $request->files->get('file');
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $periodes = $form->get('periode')->getData();
+            $description = $form->get('description')->getData();
+
+            $date_debut = explode(" - ", $periodes)[0];
+            $date_fin = explode(" - ", $periodes)[1];
+
+            $data = [
+                "date_debut_compte" => date("Y-m-d", strtotime($date_debut)),
+                "date_fin_compte" => date("Y-m-d", strtotime($date_fin)),
+                "description" => $description
+            ];
+
+            $compteSalaire = new CompteSalaire($connection);
+            $compteSalaire->insertData($data)
+                ->execute();
+
+            $this->addFlash("success", "Compte du " . $date_debut . " - " . $date_fin . " a été bien enregistrée");
+            return $this->redirectToRoute("app_recolte_new");
         }
 
-        return null;
+        return $this->render("/rh/recolte/recolteNew.html.twig", [
+            "form" => $form->createView()
+        ]);
     }
 }

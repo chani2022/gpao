@@ -3150,156 +3150,47 @@ class RhController extends AbstractController
     /**
      * @Route("/rh/recolte", name="app_recolte")
      */
-    public function recolte(Request $request, Connection $connection, PaginatorInterface $paginator): Response
+    public function indexRecolte(Request $request, Connection $connection, PaginatorInterface $paginator): Response
     {
+        $path_recolte = $this->getParameter("app.recolte_dir");
+        $files = scandir($path_recolte);
+        $files_recoltes = [];
+
         $compteSalaires = (new CompteSalaire($connection))
             ->Get([
                 "date_debut_compte",
                 "date_fin_compte"
             ])
+            ->orderBy("id_compte_salaire", "asc")
             ->execute()
             ->fetchAll();
 
-        $compteRecolteHeure = new CompteRecolteHeure($connection);
-        $query_recolte_heure = $compteRecolteHeure->Get([
-            "personnel.*",
-            "DISTINCT (date_debut_compte)",
-            "date_fin_compte",
-            "compte_recolte_heure.*"
-        ]);
-
-
-        $whereBegin = false;
-        foreach ($compteSalaires as $i => $comptes) {
-
-            if (!$whereBegin) {
-                $query_recolte_heure->where("compte_salaire.date_debut_compte = :dD" . $i . " AND compte_salaire.date_fin_compte = :dF" . $i);
-                $whereBegin = true;
+        $messages = "";
+        foreach ($compteSalaires as $i => $compte) {
+            $compte_name = "RECOLTE VF " . date("d-m-Y", strtotime($compte["date_debut_compte"])) . " AU " . date("d-m-Y", strtotime($compte["date_fin_compte"])) . "xlsx";
+            if (in_array($compte_name, $files)) {
+                $files_recoltes[] = $path_recolte . "/" . $compte_name;
             } else {
-                $query_recolte_heure->andWhere("compte_salaire.date_debut_compte = :dD AND compte_salaire.date_fin_compte = :dF");
+                $messages .= "Le compte du " . $compte["date_debut_compte"] . " AU " . $compte["date_fin_compte"] . "<br/>";
             }
-            $query_recolte_heure->setParameter("dD" . $i, $comptes["date_debut_compte"])
-                ->setParameter("dF" . $i, $comptes["date_fin_compte"]);
         }
-        $results = $query_recolte_heure
-            ->orderBy("date_debut_compte", "asc")
-            ->groupBy("date_debut_compte")
-            ->execute()
-            ->fetchAll();
+        $this->addFlash("danger", $messages);
 
-
-        $paginator = $paginator->paginate(
-            $query_recolte_heure,
+        $paginations = $paginator->paginate(
+            $files_recoltes,
             $request->query->getInt('page', 1),
             20
         );
-        // dd($query);
-        // $compteSalaires = $compteRecolteHeure->Get()
-        //     ->execute()
-        //     ->fetchAll();
-        // foreach ($compteSalaires as $salaire) {
 
-        // }
-        // $form = $this->createFormBuilder()
-        //     ->add('file', FileType::class, [
-        //         "constraints" => [
-        //             new File([
-        //                 "mimeTypes" => ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
-        //                 "uploadExtensionErrorMessage" => 'Veuillez uploader seulement des fichiers .xlsx'
-        //             ])
-        //         ]
-        //     ])
-        //     ->add('submit', SubmitType::class)
-        //     ->getForm();
-        // $form->handleRequest($request);
-
-        // if ($form->isSubmitted() && $form->isValid()) {
-        //     $personnel = new Personnel($connection);
-
-        //     /** @var Fonction $fonction */
-        //     // $fonction = new Fonction($connection);
-
-        //     // $equipe = new EquipeTacheOperateur($connection);
-
-        //     $personnels = [];
-        //     $matricules = [];
-
-        //     /** suppression des donnée de la table */
-        //     // $recolte = new Recolte($connection);
-        //     // $recolte->deleteData();
-
-        //     /** @var UploadedFile $uploaded_file */
-        //     $uploaded_file = $form->get('file')->getData();
-
-        //     $reader = ReaderEntityFactory::createXLSXReader();
-
-        //     $reader->open($uploaded_file->getPathname());
-
-
-        //     foreach ($reader->getSheetIterator() as $sheet) {
-        //         foreach ($sheet->getRowIterator() as $i => $row) {
-        //             // do stuff with the row
-        //             if ($i > 1) {
-        //                 $cells = $row->getCells();
-        //                 // dd($cells);
-        //                 $matricules[] = $cells[0]->getValue();
-        //                 // $fonc = $cells[1]->getValue();
-        //                 $equipe = $cells[4]->getValue();
-
-        //                 // $personnels[] = $matr;
-        //                 // $fonctions[$matr] = $fonc;
-        //                 // $equipes[$matr] = $equipe;
-        //                 // $fonction = $cells[1]->getValue();
-        //                 // $nom = $cells[2]->getValue();
-        //                 // $prenom = $cells[3]->getValue();
-        //                 // $equipe = $cells[4]->getValue();
-
-        //             }
-        //         }
-        //     }
-        //     /** @var QueryBuilder $sqlPersonnel  */
-        //     $qb = $personnel->Get([
-        //         "personnel.id_personnel",
-        //         "personnel.nom",
-        //         "prenom",
-        //         "nom_fonction",
-        //         "type_pointage.description"
-        //     ]);
-
-        //     $str_matricules = implode(", ", $matricules);
-        //     $operator_matricules = "IN (" . $str_matricules . ")";
-        //     $personnels = $qb->where("personnel.id_personnel " . $operator_matricules)
-        //         ->orderBy("personnel.id_personnel", "ASC")
-        //         ->execute()
-        //         ->fetchAll();
-        //     // $whereBegin = false;
-        //     // foreach ($equipes as $matr => $equipe) {
-        //     //     $key_personnel = ":id_personnel_" . $matr;
-        //     //     $key_description = ":description_" . $matr;
-
-        //     //     if (!$whereBegin) {
-        //     //         $whereBegin = true;
-        //     //         $qb->where("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
-        //     //     } else {
-        //     //         $qb->orWhere("personnel.id_personnel = " . $key_personnel . " AND type_pointage.description LIKE " . $key_description);
-        //     //     }
-
-        //     //     $qb->setParameter(str_replace(":", "", $key_personnel), $matr)
-        //     //         ->setParameter(str_replace(":", "", $key_description), "%" . $equipe . "%");
-        //     // }
-        //     // dump($qb);
-
-        //     dd($personnels);
-        // }
         return $this->render("rh/recolte/recolte.html.twig", [
-            "paginator" => $paginator
+            "paginations" => $paginations
         ]);
     }
 
     /**
-     * @Route("/rh/recolte/new", name="app_recolte_new")
+     * @Route("/rh/recolte/create-periode", name="app_recolte_new")
      */
-    public function newRecolte(Request $request, Connection $connection): Response
+    public function createPeriodeRecolte(Request $request, Connection $connection): Response
     {
         $form = $this->createFormBuilder()
             ->add('periode', TextType::class, [
@@ -3338,11 +3229,48 @@ class RhController extends AbstractController
                 ->execute();
 
             $this->addFlash("success", "Compte du " . $date_debut . " - " . $date_fin . " a été bien enregistrée");
-            return $this->redirectToRoute("app_recolte_new");
+            return $this->redirectToRoute("app_recolte_undefined");
         }
 
-        return $this->render("/rh/recolte/recolteNew.html.twig", [
+        return $this->render("rh/recolte/recolteNew.html.twig", [
             "form" => $form->createView()
         ]);
+    }
+    /**
+     * @Route("/rh/recolte/create-new", name="app_recolte_create_new")
+     */
+    public function createRecolte(Request $request, Connection $conn): Response
+    {
+        $form = $this->createFormBuilder()
+            ->add('file', FileType::class, [
+                "constraints" => [
+                    new File([
+                        "extensions" => ['xlsx'],
+                        "extensionMessage" => "extension .xlsx autorise"
+                    ]),
+                    new NotBlank([
+                        "message" => "Fichier obligatoire"
+                    ])
+                ]
+            ])->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile $uploadedFile */
+            $uploadedFile = $form->get('file')->getData();
+            $file_path = $this->getParameter("app.recolte_dir");
+            // $uploadedFile->
+        }
+        return $this->render("rh/recolte/new-recolte", [
+            "form" => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("rh/recolte/undefined", name="app_recolte_undefined")
+     */
+    public function undefinedMethod(): Response
+    {
+        return $this->render("rh/recolte/undefined.html.twig");
     }
 }

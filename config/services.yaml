@@ -8,6 +8,7 @@ parameters:
     app.temp_dir: '%kernel.project_dir%/public/upload/temp'
     app.rib_dir: '%kernel.project_dir%/public/rib'
     locale: fr
+    app.recolte_dir: '%kernel.project_dir%/public/output/recolte'
 
 services:
     # default configuration for services in *this* file

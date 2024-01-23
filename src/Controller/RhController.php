@@ -3235,7 +3235,7 @@ class RhController extends AbstractController
             return $this->redirectToRoute("app_recolte_undefined");
         }
 
-        return $this->render("rh/recolte/recolteNew.html.twig", [
+        return $this->render("rh/recolte/createPeriode.html.twig", [
             "form" => $form->createView()
         ]);
     }

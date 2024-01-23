@@ -1,3 +1,66 @@
-{% extends "base.html.twig" %}
+{% extends 'base-home.html.twig' %}
+{% block title %}Recolte{% endblock %}
+
+{% block pageTitle %} Recolte {% endblock %}
+{% block style %}
+<style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+</style>
+{% endblock %}
 {% block body %}
-	{{form(form)}}{% endblock %}
+   
+    <div class="container">
+        <div class="col-lg-6 col-md-6">
+
+            <div class="card-body">
+                {% form_theme form 'form-theme.html.twig' %}
+					{{ form_start(form) }}
+						{{ form_widget(form.file, {'label': 'Filtre','attr': {'class': 'form-control'}}) }}
+						{{ form_widget(form.submit, {'label': 'Filtre', 'attr': {'class': 'form-control'}}) }}
+					{{ form_end(form) }}
+					{{ form_end(form) }}
+			</div>
+
+        </div>
+		
+		<div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+			
+                <table id="excel-table" class="table">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Date supplémentaire</th>
+                            <th>Heure début</th>
+                            <th>Heure fin</th>
+                            <th>Etat</th>
+                            <th>Matricule</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-body">
+                        <!-- Données chargées via Ajax seront ajoutées ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+		
+ </div>
+
+
+
+
+{% endblock %}
+{% block javascripts %}
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js">
+</script>
+<script>
+	$(document).ready( function () {
+		$('#excel-table').DataTable();
+	} );
+</script>
+
+
+{% endblock %}

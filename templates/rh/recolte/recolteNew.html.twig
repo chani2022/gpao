@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recolte</title>
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+
+		<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+
+		<link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-4.7/css/font-awesome.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-5/css/fontawesome-all.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}" rel="stylesheet" media="all">
+
+
+		<link
+		href="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.css')) }}" rel="stylesheet" media="all">
+
+		<!-- Google Fonts
+						============================================ -->
+		<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet">
+		{#
+				    <!-- Bootstrap CSS
+						============================================ -->
+				        <link href="{{ absolute_url(asset('green-horizotal/css/bootstrap.min.css')) }}"
+				        rel="stylesheet" media="all">
+				    <!-- Bootstrap CSS
+						============================================ -->
+				        <link href="{{ absolute_url(asset('green-horizotal/css/font-awesome.min.css')) }}"
+				        rel="stylesheet" media="all">
+				    #}
+		<!-- owl.carousel CSS
+						============================================ -->
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/owl.carousel.css')) }}" rel="stylesheet" media="all"> <link href="{{ absolute_url(asset('green-horizotal/css/owl.theme.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/owl.transitions.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/meanmenu/meanmenu.min.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/animate.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/normalize.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/scrollbar/jquery.mCustomScrollbar.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/jvectormap/jquery-jvectormap-2.0.3.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/notika-custom-icon.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/wave/waves.min.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/main.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/style.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}" rel="stylesheet" media="all"> {% block stylesheets %}{% endblock %}
+
+
+		<link
+		href="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.css')) }}" rel="stylesheet" media="all">
+
+		{#<link href="{{ absolute_url(asset('cooladmin/css/theme.css')) }}" rel="stylesheet" media="all">#}
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/summernote/summernote-bs4.css')) }}">
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/dropzone/dist/dropzone.css')) }}">
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/daterangepicker/daterangepicker.css')) }}">
+
+		
+</head>
+<body>
+
+    <div class="container-fluid">
+        <!-- En-tête à largeur maximale -->
+        <header style="background:#4272D7; padding: 0.1rem 0;" class="text-white text-center">
+            <h2>Récolte</h2>
+        </header>
+        
+		<div class="text-center mt-3">
+			<a href="#" class="btn custom-btn-color" style="background-color: #FAD6C2; color:#341504; font-size: 16px; font-weight: bold;">Nouveau</a>
+		</div>
+		<hr style="border-top: 6px solid #A0420C; height: 10px;">
+
+
+
+        
+
+
+    <script src="{{ absolute_url(asset('cooladmin/vendor/jquery-3.2.1.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/popper.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.js')) }}"></script>
+
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment.min.js')) }}"></script>
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment-with-locales.min.js')) }}"></script>
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/daterangepicker.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('green-horizotal/js/vendor/modernizr-2.8.3.min.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('cooladmin/vendor/slick/slick.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/wow/wow.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/animsition/animsition.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-progressbar/bootstrap-progressbar.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.waypoints.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.counterup.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/circle-progress/circle-progress.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/perfect-scrollbar/perfect-scrollbar.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/chartjs/Chart.bundle.min.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('bundles/fosjsrouting/js/router.min.js')) }}"></script>
+		<script src="{{ url('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+		<script src="{{ absolute_url(asset('js/dropzone/dist/dropzone.js')) }}"></script>
+		<script src="{{ absolute_url(asset('js/summernote/summernote.js')) }}"></script>
+		<script>
+
+
+ $(function(){  
+
+    $("#form_periode").daterangepicker({
+                //autoUpdateInput:false,
+                ranges: {
+                    'Aujourd\'hui': [moment(), moment()],
+                    'Hier': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Les 7 jours derniers': [moment().subtract(6, 'days'), moment()],
+                    'Les 30 jours derniers': [moment().subtract(29, 'days'), moment()],
+                    'Ce mois-ci': [moment().startOf('month'), moment().endOf('month')],
+                    'Le mois dernier': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                    'Compte actuel': [moment().startOf('month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').format('20-MM-YYYY')],
+                     'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(1, 'month').format('21-MM-YYYY'), moment().endOf('month').subtract(1, 'month').format('20-MM-YYYY')],
+          
+                // 'Compte précédent': [moment().startOf('month').subtract(1, 'month').subtract(10, 'days'), moment().endOf('month').subtract(1, 'month').subtract(10, 'days')],
+                },
+                locale:{
+                    format: "DD/MM/YYYY",
+                    separator: " - ",
+                    applyLabel: "Appliquer",
+                    cancelLabel: "Annuler",
+                    fromLabel: "Da",
+                    toLabel: "A",
+                    customRangeLabel: "Plage personnalisée",
+                    daysOfWeek: ["Di","Lu","Ma","Me","Jeu","Ve","Sa"],
+                    monthNames: ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
+                    firstDay: 1
+                },
+            });
+    })
+
+    </script>
+</body>
+</html>

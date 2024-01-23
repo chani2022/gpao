@@ -3157,6 +3157,8 @@ class RhController extends AbstractController
         $files_recoltes = [];
 
         $compteSalaires = (new CompteSalaire($connection))
+
+
             ->Get([
                 "date_debut_compte",
                 "date_fin_compte"
@@ -3186,6 +3188,7 @@ class RhController extends AbstractController
             "paginations" => $paginations
         ]);
     }
+
 
     /**
      * @Route("/rh/recolte/create-periode", name="app_recolte_new")

@@ -74,65 +74,16 @@
         <header style="background:#4272D7; padding: 0.1rem 0;" class="text-white text-center">
             <h2>Récolte</h2>
         </header>
-        <div class="row mt-3">
-            <div class="col-md-6 mx-auto">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Formulaire</h5>
-                        
-                        <!-- Début du formulaire -->
-                        <form method="post" action="{{ path('app_recolte_new') }}" class="form">
-                            {{ form_start(form) }}
-
-                            <div class="form-group">
-                                {{ form_label(form.periode) }}
-                                {{ form_widget(form.periode, {'attr': {'class': 'form-control', 'readonly': 'readonly'}, 'required': 'required'}) }}
-								{{ form_errors(form.periode) }}
-							
-                            </div>
-
-                            <div class="form-group">
-                                {{ form_label(form.description) }}
-                                {{ form_widget(form.description, {'attr': {'class': 'form-control'}, 'required': 'required'}) }}
-                            </div>
-
-                            {{ form_widget(form._token) }}
-
-                            <div class="form-group">
-                             	<button type="submit" class="btn custom-btn-color" style="background-color: #FAD6C2; color:#341504; font-size: 16px; font-weight: bold;">Envoyer</button>
-                            </div>
-
-                            {{ form_end(form) }}
-                        </form>
-                        <!-- Fin du formulaire -->
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-3">
-           <button class="btn custom-btn-color" style="background-color: #FAD6C2; color:#341504; font-size: 16px; font-weight: bold;">Nouveau</button>
-
-        </div>
-<hr style="border-top: 6px solid #A0420C; height: 10px;">
+        
+		<div class="text-center mt-3">
+			<a href="#" class="btn custom-btn-color" style="background-color: #FAD6C2; color:#341504; font-size: 16px; font-weight: bold;">Nouveau</a>
+		</div>
+		<hr style="border-top: 6px solid #A0420C; height: 10px;">
 
 
 
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <button class="btn custom-btn-color" style="background-color: #A0420C; color: #fff; font-size: 16px; font-weight: bold;">Document 1</button>
-                        <button class="btn custom-btn-color" style="background-color: #A0420C; color: #fff; font-size: 16px; font-weight: bold;">Document 2</button>
-                    </div>
-                </div>
-            </div>
+        
 
-            
-        </div>
-
-    </div>
 
     <script src="{{ absolute_url(asset('cooladmin/vendor/jquery-3.2.1.min.js')) }}"></script>
 		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/popper.min.js')) }}"></script>

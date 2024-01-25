@@ -14,6 +14,7 @@ use App\Model\GPAOModels\Fonction;
 use App\Model\GPAOModels\Pointage;
 use App\Model\GPAOModels\Production;
 use App\Model\GPAOModels\Recolte;
+use Box\Spout\Common\Entity\Cell as EntityCell;
 use Doctrine\DBAL\Driver\Connection;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -3157,8 +3158,6 @@ class RhController extends AbstractController
         $files_recoltes = [];
 
         $compteSalaires = (new CompteSalaire($connection))
-
-
             ->Get([
                 "date_debut_compte",
                 "date_fin_compte"
@@ -3188,7 +3187,6 @@ class RhController extends AbstractController
             "paginations" => $paginations
         ]);
     }
-
 
     /**
      * @Route("/rh/recolte/create-periode", name="app_recolte_new")
@@ -3232,7 +3230,7 @@ class RhController extends AbstractController
                 ->execute();
 
             $this->addFlash("success", "Compte du " . $date_debut . " - " . $date_fin . " a été bien enregistrée");
-            return $this->redirectToRoute("app_recolte_undefined");
+            return $this->redirectToRoute("app_recolte_new");
         }
 
         return $this->render("rh/recolte/recolteNew.html.twig", [
@@ -3240,16 +3238,17 @@ class RhController extends AbstractController
         ]);
     }
     /**
-     * @Route("/rh/recolte/create-new", name="app_recolte_create_new")
+     * @Route("/rh/recolte/new-document", name="app_recolte_new_document")
      */
-    public function createRecolte(Request $request, Connection $conn): Response
+    public function newDocRecolte(Request $request, Connection $conn): Response
     {
+        $doc_recoltes = [];
         $form = $this->createFormBuilder()
             ->add('file', FileType::class, [
                 "constraints" => [
                     new File([
-                        "extensions" => ['xlsx'],
-                        "extensionMessage" => "extension .xlsx autorise"
+                        "mimeTypes" => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+                        "mimeTypesMessage" => "extension .xlsx autorisé"
                     ]),
                     new NotBlank([
                         "message" => "Fichier obligatoire"
@@ -3261,19 +3260,138 @@ class RhController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var UploadedFile $uploadedFile */
             $uploadedFile = $form->get('file')->getData();
-            $file_path = $this->getParameter("app.recolte_dir");
-            // $uploadedFile->
-        }
-        return $this->render("rh/recolte/new-recolte", [
-            "form" => $form->createView()
-        ]);
-    }
+            $path_output_excel = $this->getParameter("app.recolte_dir");
+            $file_name = $uploadedFile->getClientOriginalName();
+            $tmp_path = $uploadedFile->getPathname();
+            // dd($uploadedFile);
+            $compte_recolte_heure_exist = false;
+            $date_debut_compte_salaire = null;
+            $date_fin_compte_salaire = null;
+            $compte_salaire = null;
 
-    /**
-     * @Route("rh/recolte/undefined", name="app_recolte_undefined")
-     */
-    public function undefinedMethod(): Response
-    {
-        return $this->render("rh/recolte/undefined.html.twig");
+
+            $reader = ReaderEntityFactory::createReaderFromFile($file_name);
+            $reader->open($tmp_path);
+            $compte_salaire_exist = false;
+            $compte_recolte_heure_query = new CompteRecolteHeure($conn);
+            $compte_salaire_query = new CompteSalaire($conn);
+
+            foreach ($reader->getSheetIterator() as $sheet) {
+                foreach ($sheet->getRowIterator() as $i => $row) {
+                    /** @var EntityCell $cells */
+                    $cells = $row->getCells();
+                    // do stuff with the row
+                    if (!$compte_salaire_exist && $i == 2) {
+                        $date_debut_compte_salaire = $cells[5]->getValue()->format("Y-m-d");
+                        $date_fin_compte_salaire = $cells[6]->getValue()->format("Y-m-d");
+
+
+                        $compte_salaire = $compte_salaire_query->Get()
+                            ->where("date_debut_compte = :date_d")
+                            ->andWhere("date_fin_compte = :date_f")
+                            ->setParameter("date_d", $date_debut_compte_salaire)
+                            ->setParameter('date_f', $date_fin_compte_salaire)
+                            ->execute()
+                            ->fetch();
+
+                        $compte_recolte_heure = $compte_recolte_heure_query->Get()
+                            ->where('date_debut_compte = :date_d')
+                            ->andWhere('date_fin_compte = :date_f')
+                            ->setParameter("date_d", $date_debut_compte_salaire)
+                            ->setParameter("date_f", $date_fin_compte_salaire)
+                            ->execute()
+                            ->fetch();
+
+
+                        if ($compte_recolte_heure) {
+                            $compte_recolte_heure_exist = true;
+                        }
+                        if ($compte_salaire) {
+                            $compte_salaire_exist = true;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if ($compte_salaire_exist) {
+                        /**
+                         * si cette compte recolte heure n'existe pas dans la base
+                         * on l'insere,
+                         * sinon, on fait rien
+                         */
+                        if (!$compte_recolte_heure_exist) {
+                            $recolte = [
+                                "id_personnel" => $cells[0]->getValue(),
+                                "id_compte_salaire" => $compte_salaire["id_compte_salaire"],
+                                "h_references" => floatval($cells[7]->getValue()),
+                                "nb_jour_references" => floatval($cells[8]->getValue()),
+                                "cumul_conge" => floatval($cells[9]->getValue()),
+                                "h_surplus" => floatval($cells[10]->getValue()),
+                                "h_travailles" => floatval($cells[11]->getValue()),
+                                "h_majorees" => floatval($cells[12]->getValue()),
+                                "h_supp_30" => floatval($cells[13]->getValue()),
+                                "h_supp_nuit_75" => floatval($cells[14]->getValue()),
+                                "h_supp_dimanche_100" => floatval($cells[15]->getValue()),
+                                "avantage_en_nature" => floatval($cells[16]->getValue()),
+                                "absence_conge_paye" => floatval($cells[17]->getValue()),
+                                "a_reguliere" => floatval($cells[18]->getValue()),
+                                "a_irreguliere" => floatval($cells[19]->getValue()),
+                                "retard" => floatval($cells[20]->getValue()),
+                                "indemnite_conge_paye" => floatval($cells[21]->getValue()),
+                                "indemnite_repas_transport" => floatval($cells[22]->getValue()),
+                                "h_comp" => floatval($cells[23]->getValue())
+                            ];
+                            $compte_recolte_heure_query->insertData($recolte)
+                                ->execute();
+                        }
+                    }
+                }
+            }
+
+            $reader->close();
+            if (!$compte_salaire_exist) {
+                $this->addFlash("danger", "compte salaire du " . $date_debut_compte_salaire . " au " . $date_fin_compte_salaire . "n'existe pas!");
+                return $this->redirectToRoute("app_recolte_new_document");
+            } else {
+                /**
+                 * verifie si le fichier est déja stocker
+                 */
+                $is_recolte_saved = false;
+                $file_recoltes = scandir($path_output_excel);
+                foreach ($file_recoltes as $file_excel) {
+                    if ($file_excel == $file_name) {
+                        $is_recolte_saved = true;
+                    }
+                }
+
+                if (!$is_recolte_saved) {
+                    $uploadedFile->move($path_output_excel, $file_name);
+                }
+
+                $doc_recoltes = $compte_recolte_heure_query->Get([
+                    "personnel.id_personnel",
+                    "personnel.nom_fonction",
+                    "personnel.nom",
+                    "personnel.prenom",
+                    "personnel.nom_fonction",
+                    "type_pointage.description",
+                    "compte_salaire.date_debut_compte",
+                    "compte_salaire.date_fin_compte",
+                    "compte_recolte_heure.*"
+                ])
+                    ->innerJoin('personnel', 'type_pointage', 'type_pointage', 'personnel.id_type_pointage = type_pointage.id_type_pointage')
+                    ->where("date_debut_compte = :dD")
+                    ->andWhere("date_fin_compte = :dF")
+                    ->setParameter("dD", $date_debut_compte_salaire)
+                    ->setParameter("dF", $date_fin_compte_salaire)
+                    ->execute()
+                    ->fetchAll();
+            }
+        }
+        dump($doc_recoltes);
+        return $this->render("rh/recolte/new-recolte.html.twig", [
+            "form" => $form->createView(),
+            "recoltes" => $doc_recoltes
+        ]);
     }
 }

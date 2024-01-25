@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\Service\ConnectionProviders;
 use Doctrine\DBAL\Driver\Connection;
+use Doctrine\DBAL\Query\QueryBuilder as QueryQueryBuilder;
 use Doctrine\ORM\QueryBuilder;
 
 /**

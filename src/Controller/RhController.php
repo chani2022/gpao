@@ -3233,7 +3233,7 @@ class RhController extends AbstractController
             return $this->redirectToRoute("app_recolte_new");
         }
 
-        return $this->render("rh/recolte/recolteNew.html.twig", [
+        return $this->render("rh/recolte/createPeriode.html.twig", [
             "form" => $form->createView()
         ]);
     }
@@ -3263,7 +3263,7 @@ class RhController extends AbstractController
             $path_output_excel = $this->getParameter("app.recolte_dir");
             $file_name = $uploadedFile->getClientOriginalName();
             $tmp_path = $uploadedFile->getPathname();
-            // dd($uploadedFile);
+
             $compte_recolte_heure_exist = false;
             $date_debut_compte_salaire = null;
             $date_fin_compte_salaire = null;

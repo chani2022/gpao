@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Récolte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .el-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .el-header {
+            background-color: #2e2e2e;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .el-menu {
+            display: flex;
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            overflow: hidden; 
+			background:#6a8b6a;
+        }
+
+        .el-menu-item {
+            padding: 10px;
+            color: #fff;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .el-menu-item i {
+            margin-right: 5px;
+        }
+
+        .el-content {
+            flex: 1;
+            padding: 20px;
+        }
+    </style>
+	<style>
+
+
+    .excel-cell {
+        border: 1px solid #ddd;
+        padding: 10px;
+    }
+
+    .el-content {
+        margin: 20px;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        text-align: center; /* Centrer le texte dans les en-têtes */
+    }
+</style>
+	<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+
+		<link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
+
+		<link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-4.7/css/font-awesome.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('cooladmin/vendor/font-awesome-5/css/fontawesome-all.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}" rel="stylesheet" media="all">
+
+
+		<link
+		href="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.css')) }}" rel="stylesheet" media="all">
+
+		<!-- Google Fonts
+						============================================ -->
+		<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700,900" rel="stylesheet">
+		{#
+				    <!-- Bootstrap CSS
+						============================================ -->
+				        <link href="{{ absolute_url(asset('green-horizotal/css/bootstrap.min.css')) }}"
+				        rel="stylesheet" media="all">
+				    <!-- Bootstrap CSS
+						============================================ -->
+				        <link href="{{ absolute_url(asset('green-horizotal/css/font-awesome.min.css')) }}"
+				        rel="stylesheet" media="all">
+				    #}
+		<!-- owl.carousel CSS
+						============================================ -->
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/owl.carousel.css')) }}" rel="stylesheet" media="all"> <link href="{{ absolute_url(asset('green-horizotal/css/owl.theme.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/owl.transitions.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/meanmenu/meanmenu.min.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/animate.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/normalize.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/scrollbar/jquery.mCustomScrollbar.min.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/jvectormap/jquery-jvectormap-2.0.3.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/notika-custom-icon.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/wave/waves.min.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/css/main.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('green-horizotal/style.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}" rel="stylesheet" media="all">
+		<link href="{{ absolute_url(asset('green-horizotal/css/responsive.css')) }}" rel="stylesheet" media="all">
+
+		<link href="{{ absolute_url(asset('cooladmin/vendor/mdi-font/css/material-design-iconic-font.min.css')) }}" rel="stylesheet" media="all"> {% block stylesheets %}{% endblock %}
+
+
+		<link
+		href="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.css')) }}" rel="stylesheet" media="all">
+
+		{#<link href="{{ absolute_url(asset('cooladmin/css/theme.css')) }}" rel="stylesheet" media="all">#}
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/summernote/summernote-bs4.css')) }}">
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/dropzone/dist/dropzone.css')) }}">
+
+		<link rel="stylesheet" type="text/css" href="{{ absolute_url(asset('js/daterangepicker/daterangepicker.css')) }}">
+</head>
+<body>
+
+<div class="el-container">
+    <div class="el-header" style="background:#4272D7; padding: 0.1rem 0;" class="text-white text-center">
+        <h3 style="font-size:20px">Gestion récolte</h3>
+    </div>
+
+	<div class="el-menu">
+		<div class="el-menu-item"><i class="fas fa-save fa-lg" title="Enregistrer"></i> Enregistrer</div>
+		<div class="el-menu-item"><i class="fas fa-upload fa-lg" title="Importer"></i> Importer</div>
+		<div class="el-menu-item"><i class="fas fa-info-circle fa-lg" title="Détails"></i> Détails</div>
+	</div>
+
+<div class="el-content">
+    <table>
+        <thead>
+            <tr class="excel-row-headers">
+                <th></th>
+                <th>&nbsp;A</th>
+                <th>&nbsp;B</th>
+                <th>&nbsp;C</th>
+                <th>&nbsp;D</th>
+                <th>&nbsp;E</th>
+                <th>&nbsp;F</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="excel-column-headers">
+                <th>&nbsp;1</th>
+                <td class="excel-cell">REF123</td>
+                <td class="excel-cell">Produit A</td>
+                <td class="excel-cell">10</td>
+                <td class="excel-cell">$20.00</td>
+                <td class="excel-cell">$200.00</td>
+                <td class="excel-cell">2024-01-24</td>
+            </tr>
+            <tr class="excel-column-headers">
+                <th>&nbsp;2</th>
+                <td class="excel-cell">XYZ789</td>
+                <td class="excel-cell">Produit B</td>
+                <td class="excel-cell">5</td>
+                <td class="excel-cell">$15.00</td>
+                <td class="excel-cell">$75.00</td>
+                <td class="excel-cell">2024-01-25</td>
+            </tr>
+            
+        </tbody>
+    </table>
+</div>
+
+</div>
+
+<script src="{{ absolute_url(asset('cooladmin/vendor/jquery-3.2.1.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/popper.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-4.1/bootstrap.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/select2/select2.min.js')) }}"></script>
+
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment.min.js')) }}"></script>
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/moment-with-locales.min.js')) }}"></script>
+		<script type="text/javascript" src="{{ absolute_url(asset('js/daterangepicker/daterangepicker.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('green-horizotal/js/vendor/modernizr-2.8.3.min.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('cooladmin/vendor/slick/slick.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/wow/wow.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/animsition/animsition.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/bootstrap-progressbar/bootstrap-progressbar.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.waypoints.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/counter-up/jquery.counterup.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/circle-progress/circle-progress.min.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/perfect-scrollbar/perfect-scrollbar.js')) }}"></script>
+		<script src="{{ absolute_url(asset('cooladmin/vendor/chartjs/Chart.bundle.min.js')) }}"></script>
+
+		<script src="{{ absolute_url(asset('bundles/fosjsrouting/js/router.min.js')) }}"></script>
+		<script src="{{ url('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+		<script src="{{ absolute_url(asset('js/dropzone/dist/dropzone.js')) }}"></script>
+		<script src="{{ absolute_url(asset('js/summernote/summernote.js')) }}"></script>
+</body>
+</html>
